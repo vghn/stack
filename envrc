@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+
+# Bash strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# Project
+export PROJECT_NAME='vpm'
+export PROJECT_PATH='/opt'
+export PROJECT_DIR="${PROJECT_PATH}/${PROJECT_NAME}"
+
+# Paths
+export APPDIR TMPDIR PATH DOTENV
+APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
+PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/usr/local/bin:${PATH}"
+DOTENV="${APPDIR}/.env"
+
+# Load functions
+for file in ${APPDIR}/lib/*.sh; do
+  # shellcheck disable=1090
+  . "$file"
+done
+
+# Load private environment
+# shellcheck disable=1090
+. "$DOTENV"
+
+# shellcheck disable=1090,1091
+. /opt/vgs/load 2>/dev/null || . ~/vgs/load 2>/dev/null || ensure_vgs || true
+
+# Version
+export VERSION_FILE="${APPDIR}/VERSION"
+export CHANGELOG_FILE="${APPDIR}/CHANGELOG.md"
+export VERSION; VERSION=$(cat "$VERSION_FILE")
+
+# Detect environment
+GIT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo '')
+GIT_SHA1=$(git rev-parse --short HEAD 2>/dev/null || echo '0')
+TRAVIS_BRANCH="${TRAVIS_BRANCH:-}"
+DEPLOYMENT_GROUP_NAME="${DEPLOYMENT_GROUP_NAME:-}"
+
+## Detect if git directory or if Travis CI or if AWS CodeDeploy
+if [[ -n "${ENVTYPE:-}" ]]; then
+  ENVTYPE="$ENVTYPE"
+elif [[ -n "${GIT_BRANCH:-}" ]]; then
+  ENVTYPE="$GIT_BRANCH"
+elif [[ -n "${TRAVIS_BRANCH:-}" ]]; then
+  ENVTYPE="$TRAVIS_BRANCH"
+elif [[ -n "${CIRCLE_BRANCH:-}" ]]; then
+  ENVTYPE="$CIRCLE_BRANCH"
+elif [[ -n "${DEPLOYMENT_GROUP_NAME:-}" ]]; then
+  ENVTYPE="$DEPLOYMENT_GROUP_NAME"
+else
+  ENVTYPE=${ENVTYPE:-production}
+fi
+
+## Rename 'master' to 'production'
+if [[ "$ENVTYPE" == 'master' ]]; then
+  export ENVTYPE='production'
+fi
+
+# CI
+export CI=${CI:-false}
+export PR=false
+export BUILD=${GIT_SHA1:-0}
+if [[ ${CIRCLECI:-false} == true ]]; then
+  export PR=${CIRCLE_PR_NUMBER}
+  export BUILD=${CIRCLE_BUILD_NUM}
+  git config --global user.name "CircleCI"
+elif [[ ${TRAVIS:-false} == true ]]; then
+  export PR=${TRAVIS_PULL_REQUEST}
+  export BUILD=${TRAVIS_BUILD_NUMBER}
+  git config --global user.name "TravisCI"
+fi
+
+# Full version
+export FULL_VERSION=${VERSION}-${GIT_SHA1}
+
+# Puppet
+export PUPPET_MASTER="${PUPPET_MASTER:-puppet.ghn.me}"
+
+# Trusted IPs
+export TRUSTED_IPS="${TRUSTED_IPS:-"$(vgs_get_external_ip)/32"}"
+
+# Logging
+export LOG_SERVER="${LOG_SERVER:-}"
+export LOG_PORT="${LOG_PORT:-}"
+
+# Slack Incoming Web Hook URL
+export SLACK_CHANNEL="${SLACK_CHANNEL:-general}"
+export SLACK_USER="${SLACK_USER:-Bot}"
+export SLACK_WEBHOOK="${SLACK_WEBHOOK:-'https://hooks.slack.com/services/ChangeMe'}"
+
+# AWS
+export AWS_ACCOUNT_NUMBER="${AWS_ACCOUNT_NUMBER:-}"
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+
+# AWS S3
+export AWS_ASSETS_BUCKET="${AWS_ASSETS_BUCKET:-$PROJECT_NAME}"
+export AWS_ASSETS_KEY_PREFIX="${PROJECT_NAME}/${ENVTYPE}"
+export AWS_ASSETS_S3="s3://${AWS_ASSETS_BUCKET}/${AWS_ASSETS_KEY_PREFIX}"
+export PP_HIERADATA_S3="s3://${AWS_ASSETS_BUCKET}/hieradata"
+export PP_VCRT_S3="s3://${AWS_ASSETS_BUCKET}/vcrt"
+export DOTENV_S3="${AWS_ASSETS_S3}/.env"
+
+# APP Files
+export APP_ARCHIVE="${PROJECT_NAME}-${FULL_VERSION}.tgz"
+export APP_ARCHIVE_LATEST="${PROJECT_NAME}.tgz"
+export APP_ARCHIVE_S3_KEY="${AWS_ASSETS_KEY_PREFIX}/app/${APP_ARCHIVE}"
+export APP_ARCHIVE_S3="s3://${AWS_ASSETS_BUCKET}/${APP_ARCHIVE_S3_KEY}"
+export APP_ARCHIVE_S3_KEY_LATEST="${AWS_ASSETS_KEY_PREFIX}/app/${APP_ARCHIVE_LATEST}"
+export APP_ARCHIVE_S3_LATEST="s3://${AWS_ASSETS_BUCKET}/${APP_ARCHIVE_S3_KEY_LATEST}"
+
+# AWS EC2
+export AWS_EC2_KEY="${AWS_EC2_KEY:-key}"
+export AWS_EC2_IMAGE_PREFIX="${AWS_EC2_IMAGE_PREFIX:-AMI}"
+export AWS_EC2_IMAGE_DESCRIPTION="${AWS_EC2_IMAGE_DESCRIPTION:-AMI}"
+export AWS_EC2_INSTANCE_TYPE="${AWS_EC2_INSTANCE_TYPE:-t2.micro}"
+
+# AWS TAGs
+export AWS_TAG_GROUP="${AWS_TAG_GROUP:-MyGroup}"
+export AWS_TAG_ROLE="${AWS_TAG_ROLE:-MyRole}"
+
+# AWS RDS
+export AWS_RDS_DB_ENGINE="${AWS_RDS_DB_ENGINE:-MySQL}"
+export AWS_RDS_DB_NAME="${AWS_RDS_DB_NAME:-db}"
+export AWS_RDS_DB_USER="${AWS_RDS_DB_USER:-admin}"
+export AWS_RDS_DB_PASS="${AWS_RDS_DB_PASS:-ChangeMe}"
+
+# AWS SNS
+export AWS_SNS_NOTIFICATIONS="${AWS_SNS_NOTIFICATIONS:-"arn:aws:sns:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_NUMBER}:NotifyMe"}"
+
+# AWS SSL
+export AWS_SSL_ARN="${AWS_SSL_ARN:-}"
+
+# CloudFormation
+export AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
+export AWS_CFN_STACKS_S3="${AWS_ASSETS_S3}/cfn"
+export AWS_CFN_STACK_NAME='VGH'
+export AWS_CFN_STACK_BODY="${AWS_CFN_STACKS_PATH}/${AWS_CFN_STACK_NAME}.json"
+export AWS_CFN_CMD_ARGS="--stack-name ${AWS_CFN_STACK_NAME} --template-body file://${AWS_CFN_STACK_BODY}"
+
+# AWS CodeDeploy
+export AWS_CD_APP_NAME="$PROJECT_NAME"
+export AWS_CD_BUCKET="$AWS_ASSETS_BUCKET"
+export AWS_CD_BUNDLE_TYPE='tgz'
+export AWS_CD_ARCHIVE="${AWS_CD_APP_NAME}-${FULL_VERSION}.${AWS_CD_BUNDLE_TYPE}"
+export AWS_CD_S3_KEY_PREFIX="${AWS_ASSETS_KEY_PREFIX}/deploy"
+export AWS_CD_S3_KEY="${AWS_CD_S3_KEY_PREFIX}/${AWS_CD_ARCHIVE}"
+export AWS_CD_S3="s3://${AWS_CD_BUCKET}/${AWS_CD_S3_KEY}"
+export AWS_CD_S3_LATEST="s3://${AWS_CD_BUCKET}/${AWS_CD_S3_KEY_PREFIX}/latest.tgz"
+export AWS_CD_ARCHIVE_PATH="${TMPDIR}/${AWS_CD_ARCHIVE}"
+export AWS_CD_GROUP_NAME="${ENVTYPE}"
+export AWS_CD_CONFIG='CodeDeployDefault.OneAtATime'
+
+# AWS Lambda
+export AWS_LAMBDAS_PATH="${APPDIR}/lambdas"
+export AWS_LAMBDAS_S3="${AWS_ASSETS_S3}/lambdas"

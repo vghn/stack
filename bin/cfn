@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# AWS CloudFormation tasks
+
+# Load environment
+# shellcheck disable=1090
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd -P)/envrc"
+
+# CLI Arguments
+CFN_CMD="${1:-}"
+CFN_STACK_ALIAS="${2:-}"
+
+# Process stacks
+cfn_process_stacks "$CFN_STACK_ALIAS" "$CFN_CMD"
+
+# Process arguments
+case "$CFN_CMD" in
+  create)
+    cfn_check_stack_name
+    cfn_create_stack
+    cfn_wait_for_stack
+    ;;
+  update)
+    cfn_check_stack_name
+    cfn_update_stack
+    cfn_wait_for_stack
+    ;;
+  delete)
+    cfn_check_stack_name
+    cfn_delete_stack
+    cfn_wait_for_stack
+    ;;
+  validate)
+    if [[ -n "$CFN_STACK_ALIAS" ]]; then
+      cfn_validate_stack
+    else
+      cfn_validate_stacks
+    fi
+    ;;
+  upload)
+    cfn_upload_templates
+    ;;
+  *)
+    e_error "USAGE: ${BASH_SOURCE[0]} [COMMAND] [STACK]"
+    e_error "COMMANDS: create | update | delete | validate | upload"
+    e_error "STACKS: vgh"
+    e_abort 'Please consult the README'
+    ;;
+esac

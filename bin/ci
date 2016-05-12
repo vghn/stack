@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Continuous Integration / Continuous Deployment tasks
+
+# Load environment
+# shellcheck disable=1090
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd -P)/envrc"
+
+# Process arguments
+case "${1:-}" in
+  install)
+    ensure_awscli && get_dotenv
+    ;;
+  test)
+    cfn_validate_stacks
+    ;;
+  deploy)
+    if [[ "$PR" == false ]]; then
+      app_upload
+      cfn_upload_templates
+      if [[ "$ENVTYPE" == production ]]; then
+        cfn_process_stacks vgh update && cfn_update_stack
+      fi
+    else
+      echo 'Deployment is not allowed from pull requests' >&2
+    fi
+    ;;
+  *)
+    e_abort "USAGE: ${BASH_SOURCE[0]} [install | test | deploy]"
+    ;;
+esac

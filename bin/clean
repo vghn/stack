@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Clean-up tasks
+
+# Load environment
+# shellcheck disable=1090
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd -P)/envrc"
+
+# How many archives to keep
+export KEEP=10
+
+# Process arguments
+case "${1:-}" in
+  all)
+    vgs_aws_ec2_images_purge "${AWS_EC2_IMAGE_PREFIX}_*"
+    aws_s3_purge_deployments
+    ;;
+  ami)
+    vgs_aws_ec2_images_purge "${AWS_EC2_IMAGE_PREFIX}_*"
+    ;;
+  deployments)
+    aws_s3_purge_deployments
+    ;;
+  *)
+    e_abort "USAGE: ${BASH_SOURCE[0]} [all | ami | deployments]"
+    ;;
+esac
