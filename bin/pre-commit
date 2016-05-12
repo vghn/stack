@@ -6,12 +6,6 @@
 #
 # Install:
 #  /path/to/repo/.git/hooks/pre-commit
-#
-# Authors:
-#  Vlad Ghinea
-#  Ronny Roethof
-#  Mattias Geniar <m@ttias.be>
-#  Rob Nelson <rnelson0@gmail.com>
 
 # Load environment
 # shellcheck disable=1090
