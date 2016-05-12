@@ -24,7 +24,7 @@ done
 
 # Load private environment
 # shellcheck disable=1090
-. "$DOTENV"
+. "$DOTENV" || { ensure_awscli && get_dotenv && . "$DOTENV" ;} || true
 
 # shellcheck disable=1090,1091
 . /opt/vgs/load 2>/dev/null || . ~/vgs/load 2>/dev/null || ensure_vgs || true

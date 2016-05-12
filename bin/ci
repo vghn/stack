@@ -8,7 +8,7 @@
 # Process arguments
 case "${1:-}" in
   install)
-    ensure_awscli && get_dotenv
+    e_info 'Already installed during "envrc" loading'
     ;;
   test)
     cfn_validate_stacks
