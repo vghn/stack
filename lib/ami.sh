@@ -38,10 +38,14 @@ if ! command -v pip >/dev/null 2>&1; then
   apt-get -qy install python-pip < /dev/null
 fi
 
-# Install AWS CLI
+echo 'Installing AWS CLI'
 pip install --upgrade pip setuptools awscli
 
-# Set-up Hiera
+echo 'Installing VGS library'
+mkdir -p /opt/vgs && wget -qO- https://s3.amazonaws.com/vghn/vgs.tgz | \
+  tar xz --no-same-owner -C /opt/vgs
+
+echo 'Set-up Hiera'
 mkdir -p /etc/puppetlabs/code
 wget -qO /etc/puppetlabs/code/hiera.yaml "\${RAWREPO}/\${ENVTYPE}/hiera.yaml"
 
