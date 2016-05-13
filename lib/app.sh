@@ -8,7 +8,7 @@ app_package_files(){
   # Only pack essential files
   e_info "Creating application archive (${app_archive_path})"
   if ! tar cvzf "$app_archive_path" \
-    bin/ lib/ .env envrc \
+    bin/ cfn/ lib/ .env envrc \
     CHANGELOG.md LICENSE README.md VERSION;
   then
     e_abort "Could not create ${app_archive_path}"
