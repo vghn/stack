@@ -137,8 +137,9 @@ export AWS_SSL_ARN="${AWS_SSL_ARN:-}"
 # CloudFormation
 export AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
 export AWS_CFN_STACKS_S3="${AWS_ASSETS_S3}/cfn"
+# CloudFormation Main Stack
 export AWS_CFN_STACK_NAME='VGH'
-export AWS_CFN_STACK_BODY="${AWS_CFN_STACKS_PATH}/${AWS_CFN_STACK_NAME}.json"
+export AWS_CFN_STACK_BODY="${AWS_CFN_STACKS_PATH}/vgh.json"
 export AWS_CFN_CMD_ARGS="--stack-name ${AWS_CFN_STACK_NAME} --template-body file://${AWS_CFN_STACK_BODY}"
 
 # AWS CodeDeploy

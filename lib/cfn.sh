@@ -4,7 +4,7 @@
 # Creates a new stack
 cfn_create_stack(){
   e_info 'Creating stack'
-  eval "aws cloudformation create-stack ${AWS_CFN_CMD_ARGS}"
+  eval "aws cloudformation create-stack ${AWS_CFN_CMD_ARGS:?}"
 }
 
 # Update an existing stack
@@ -22,7 +22,7 @@ cfn_delete_stack(){
 
 # Validate stack
 cfn_validate_stack(){
-  local body="${1:?}"
+  local body="${1:-$AWS_CFN_STACK_BODY}"
   e_info "Validating ${body}"
   aws cloudformation validate-template \
     --output table \
@@ -100,7 +100,7 @@ cfn_process_stacks(){
       P="$P ParameterKey=IAMTemplateKey,ParameterValue=iam.json"
       P="$P ParameterKey=RDSTemplateKey,ParameterValue=rds.json"
       T="   Key=Group,Value=${AWS_TAG_GROUP}"
-      export CFN_CMD_ARGS="--stack-name ${AWS_CFN_STACK_NAME} --template-body file://${AWS_CFN_STACK_BODY} ${ARGS} --parameters ${P} --tags ${T}"
+      export AWS_CFN_CMD_ARGS="--stack-name ${AWS_CFN_STACK_NAME} --template-body file://${AWS_CFN_STACK_BODY} ${ARGS} --parameters ${P} --tags ${T}"
       ;;
     *)
       ;;
