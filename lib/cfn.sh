@@ -81,6 +81,7 @@ cfn_process_stacks(){
       P="$P ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}"
       P="$P ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}"
       P="$P ParameterKey=AssetsKeyPrefix,ParameterValue=${AWS_ASSETS_KEY_PREFIX}"
+      P="$P ParameterKey=ProjectName,ParameterValue=${PROJECT_NAME}"
       P="$P ParameterKey=PuppetMaster,ParameterValue=${PUPPET_MASTER}"
       P="$P ParameterKey=CASSLS3Path,ParameterValue=${PP_VCRT_S3}"
       P="$P ParameterKey=HieraDataS3Path,ParameterValue=${PP_HIERADATA_S3}"

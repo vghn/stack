@@ -16,6 +16,7 @@ export PP_ROLE=zeus
 export PP_SERVER=puppet.ghn.me
 export PP_HIERADATA_S3=${PP_HIERADATA_S3}
 export PP_PROJECT=${PROJECT_NAME}
+export PP_CERTNAME="\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
 export ENVTYPE=${ENVTYPE}
 export SLACK_WEBHOOK=${SLACK_WEBHOOK}
 export SLACK_CHANNEL=${SLACK_CHANNEL}
