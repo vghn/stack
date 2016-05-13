@@ -81,7 +81,7 @@ export FULL_VERSION=${VERSION}-${GIT_SHA1}
 export PUPPET_MASTER="${PUPPET_MASTER:-puppet.ghn.me}"
 
 # Trusted IPs
-export TRUSTED_IPS="${TRUSTED_IPS:-"$(vgs_get_external_ip)/32"}"
+export TRUSTED_IPS="${TRUSTED_IPS:-}"
 
 # Logging
 export LOG_SERVER="${LOG_SERVER:-}"

@@ -32,7 +32,7 @@ cfn_validate_stack(){
 # Validate all stacks
 cfn_validate_stacks(){
   for stack in ${AWS_CFN_STACKS_PATH:?}/*.json; do
-    validate_stack "$stack"
+    cfn_validate_stack "$stack"
   done
 }
 
@@ -87,7 +87,7 @@ cfn_process_stacks(){
       P="$P ParameterKey=ZeusAMIId,ParameterValue=$(vgs_aws_ec2_get_latest_ami_id "$AWS_EC2_IMAGE_PREFIX")"
       P="$P ParameterKey=ZeusDesiredCapacity,ParameterValue=$(get_asg_desired_capacity)"
       P="$P ParameterKey=PuppetServerDesiredCount,ParameterValue=$(get_ecs_service_desired_running_count)"
-      P="$P 'ParameterKey=SSHLocations,ParameterValue=\"${TRUSTED_IPS}\"'"
+      P="$P 'ParameterKey=SSHLocations,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       P="$P ParameterKey=DBEngine,ParameterValue=${AWS_RDS_DB_ENGINE}"
       P="$P ParameterKey=DBName,ParameterValue=${AWS_RDS_DB_NAME}"
       P="$P ParameterKey=DBUser,ParameterValue=${AWS_RDS_DB_USER}"
