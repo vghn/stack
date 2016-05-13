@@ -8,7 +8,15 @@
 # Process arguments
 case "${1:-}" in
   install)
-    e_info 'Already installed during "envrc" loading'
+    echo 'Installing VGS library'
+    mkdir -p ~/vgs
+    wget -qO- https://s3.amazonaws.com/vghn/vgs.tgz | tar xz -C ~/vgs
+
+    echo 'Ensure latest Python PIP and AWS-CLI'
+    pip install --user --upgrade pip awscli
+
+    echo 'Get .env'
+    aws s3 cp "$DOTENV_S3" "${APPDIR}/.env" || true
     ;;
   test)
     cfn_validate_stacks

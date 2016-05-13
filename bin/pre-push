@@ -8,7 +8,8 @@
 
 # Hooks
 e_header 'GIT Pre-Push:'
-upload_dotenv
+e_info 'Upload .env'
+aws s3 cp "${APPDIR}/.env" "$DOTENV_S3" || true
 
 # Git Push
 e_header 'GIT Push:'

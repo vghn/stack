@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 # AWS tasks
 
+# Ensure AWSCLI
+ensure_awscli(){
+  if ! command -v aws >/dev/null 2>&1; then
+    echo 'Ensure latest Python PIP and AWS-CLI'
+    pip install --user --upgrade pip awscli
+  fi
+}
+
 # Returns the desired capacity for the specified AutoScaling Group
 get_asg_desired_capacity(){
   local asg count
