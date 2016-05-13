@@ -31,7 +31,7 @@ case "$CFN_CMD" in
     ;;
   validate)
     if [[ -n "$CFN_STACK_ALIAS" ]]; then
-      cfn_validate_stack
+      cfn_validate_stack "$AWS_CFN_STACK_BODY"
     else
       cfn_validate_stacks
     fi

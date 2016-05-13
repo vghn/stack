@@ -22,7 +22,7 @@ cfn_delete_stack(){
 
 # Validate stack
 cfn_validate_stack(){
-  local body="${AWS_CFN_STACK_BODY:?}"
+  local body="${1:?}"
   e_info "Validating ${body}"
   aws cloudformation validate-template \
     --output table \
