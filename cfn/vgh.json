@@ -155,7 +155,7 @@
           {"Fn::GetAtt": ["VPC", "Outputs.Subnet4"]}
         ],
         "MinSize": "0",
-        "MaxSize": "1",
+        "MaxSize": "2",
         "DesiredCapacity": {"Ref": "ZeusDesiredCapacity"},
         "HealthCheckType": "ELB",
         "HealthCheckGracePeriod": "600",
