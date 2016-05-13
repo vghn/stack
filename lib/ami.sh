@@ -52,7 +52,7 @@ wget -qO- "\${RAWREPO}/\${ENVTYPE}/bootstrap" | bash
 echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_ami
 
 echo 'Power Off AMI'
-poweroff
+sleep 10; poweroff
 USERDATA
 
   echo "$file"
