@@ -292,7 +292,7 @@
             "Name": "PuppetServer",
             "Image": "vladgh/puppetserver:latest",
             "Cpu": "512",
-            "Memory": "512",
+            "Memory": "896",
             "Essential": "true",
             "PortMappings": [
               {"ContainerPort": "8140", "HostPort": "8140"}
