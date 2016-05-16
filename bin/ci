@@ -9,8 +9,8 @@
 case "${1:-}" in
   install)
     echo 'Installing VGS library'
-    mkdir -p ~/vgs
-    wget -qO- https://s3.amazonaws.com/vghn/vgs.tgz | tar xz -C ~/vgs
+    mkdir -p ~/vgs && wget -qO- https://s3.amazonaws.com/vghn/vgs.tgz | \
+      tar xz --no-same-owner -C ~/vgs
 
     echo 'Ensure latest Python PIP and AWS-CLI'
     pip install --user --upgrade pip awscli

@@ -3,7 +3,7 @@
 
 generate_user_data(){
   local file="${TMPDIR}/${FUNCNAME[0]}"
-cat <<USERDATA > $file
+cat <<USERDATA > "$file"
 #!/usr/bin/env bash
 set -euo pipefail
 IFS=\$'\\n\\t'
@@ -22,7 +22,7 @@ export SLACK_WEBHOOK=${SLACK_WEBHOOK}
 export SLACK_CHANNEL=${SLACK_CHANNEL}
 export SLACK_USER=${SLACK_USER}
 export HOME=/root
-export RAWREPO=https://raw.githubusercontent.com/vghn/puppet
+export BUILD_DIR="${TMPDIR}/ami_build"
 
 echo 'Upgrade system'
 apt-get -qy update < /dev/null
@@ -38,15 +38,18 @@ if ! command -v pip >/dev/null 2>&1; then
   apt-get -qy install python-pip < /dev/null
 fi
 
-# Install AWS CLI
+echo 'Installing AWS CLI'
 pip install --upgrade pip setuptools awscli
 
-# Set-up Hiera
-mkdir -p /etc/puppetlabs/code
-wget -qO /etc/puppetlabs/code/hiera.yaml "\${RAWREPO}/\${ENVTYPE}/hiera.yaml"
+echo 'Installing VGS library'
+mkdir -p /opt/vgs && wget -qO- https://s3.amazonaws.com/vghn/vgs.tgz | \
+  tar xz --no-same-owner -C /opt/vgs
+
+echo 'Get puppet control repo'
+git clone https://github.com/vladgh/puppet.git "\$BUILD_DIR"
 
 echo 'Bootstrap Puppet'
-wget -qO- "\${RAWREPO}/\${ENVTYPE}/bootstrap" | bash
+bash "\${BUILD_DIR}/bootstrap"
 
 # Report status
 echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_ami

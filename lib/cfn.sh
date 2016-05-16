@@ -4,18 +4,18 @@
 # Creates a new stack
 cfn_create_stack(){
   e_info 'Creating stack'
-  eval "aws cloudformation create-stack ${AWS_CFN_CMD_ARGS:?}"
+  eval "aws cloudformation create-stack ${AWS_CFN_CMD_ARGS}"
 }
 
 # Update an existing stack
 cfn_update_stack(){
   e_info 'Updating stack'
-  eval "aws cloudformation update-stack ${AWS_CFN_CMD_ARGS:?}"
+  eval "aws cloudformation update-stack ${AWS_CFN_CMD_ARGS}"
 }
 
 # Deletes an existing stack
 cfn_delete_stack(){
-  local name="${AWS_CFN_STACK_NAME:?}"
+  local name="${AWS_CFN_STACK_NAME}"
   e_warn "Deleting stack ${name}"
   eval "aws cloudformation delete-stack --stack-name ${name}"
 }
@@ -31,14 +31,14 @@ cfn_validate_stack(){
 
 # Validate all stacks
 cfn_validate_stacks(){
-  for stack in ${AWS_CFN_STACKS_PATH:?}/*.json; do
+  for stack in ${AWS_CFN_STACKS_PATH}/*.json; do
     cfn_validate_stack "$stack"
   done
 }
 
 # Wait for stack to finish
 cfn_wait_for_stack(){
-  local name="${AWS_CFN_STACK_NAME:?}"
+  local name="${AWS_CFN_STACK_NAME}"
   if ! vgs_aws_cfn_wait "$name"; then
     e_abort "FATAL: The stack ${name} failed"
   fi
@@ -46,8 +46,8 @@ cfn_wait_for_stack(){
 
 # Upload CloudFormation templates to S3
 cfn_upload_templates(){
-  local src="${AWS_CFN_STACKS_PATH:?}/"
-  local dst="${AWS_CFN_STACKS_S3:?}/"
+  local src="${AWS_CFN_STACKS_PATH}/"
+  local dst="${AWS_CFN_STACKS_S3}/"
   if aws s3 sync "$src" "$dst" --delete; then
     e_info "Synced ${src} to ${dst}"
   else
