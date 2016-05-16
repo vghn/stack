@@ -33,6 +33,11 @@ if ! command -v wget >/dev/null 2>&1; then
   apt-get -qy install wget < /dev/null
 fi
 
+if ! command -v git >/dev/null 2>&1; then
+  echo 'Installing Git'
+  apt-get -qy install git < /dev/null
+fi
+
 if ! command -v pip >/dev/null 2>&1; then
   echo 'Installing pip'
   apt-get -qy install python-pip < /dev/null
