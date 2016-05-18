@@ -242,33 +242,6 @@
           "echo 'Run puppet agent for the first time'\n",
           "/opt/puppetlabs/bin/puppet agent --test --logdest syslog || true\n",
 
-          "echo 'Start the logging agent'\n",
-          "docker run --name logging-agent",
-          "  --restart unless-stopped -d",
-          "  --hostname logging-agent",
-          "  -v /var/run/docker.sock:/var/run/docker.sock",
-          "  gliderlabs/logspout",
-          "  syslog://", {"Ref": "LogServer"}, ":", {"Ref": "LogPort"}, "\n",
-
-          "echo 'Start the ECS agent'\n",
-          "mkdir -p /var/lib/ecs/data; mkdir -p /var/log/ecs\n",
-          "docker run --name ecs-agent",
-          "  --privileged",
-          "  --restart on-failure:10 -d",
-          "  -v /var/run/docker.sock:/var/run/docker.sock",
-          "  -v /var/log/ecs/:/log:Z",
-          "  -v /var/lib/ecs/data:/data:Z",
-          "  -v /var/lib/docker:/var/lib/docker",
-          "  -v /sys/fs/cgroup:/sys/fs/cgroup:ro",
-          "  -v /run/runc:/var/lib/docker/execdriver/native:ro",
-          "  -p 51678:51678",
-          "  -e ECS_LOGFILE=/log/ecs-agent.log",
-          "  -e ECS_LOGLEVEL=info",
-          "  -e ECS_DATADIR=/data",
-          "  -e ECS_CLUSTER=", {"Ref": "ECSCluster"},
-          "  --hostname ecs-agent",
-          "  amazon/amazon-ecs-agent:latest\n",
-
           "echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_cfn"
         ]]}}
       }
