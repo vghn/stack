@@ -242,16 +242,6 @@
           "echo 'Run puppet agent for the first time'\n",
           "/opt/puppetlabs/bin/puppet agent --test --logdest syslog || true\n",
 
-          "echo 'Start the certificates sync agent'\n",
-          "mkdir -p /etc/puppetlabs/vcrt && chown -R 999:999 /etc/puppetlabs/vcrt\n",
-          "docker run --name vcrt-sync-agent",
-          "  --restart unless-stopped -d",
-          "  --hostname vcrt-sync-agent",
-          "  --user 999:999",
-          "  -v /etc/puppetlabs/vcrt:/watch",
-          "  vladgh/s3sync:latest",
-          "  ", {"Ref": "CASSLS3Path"}, "\n",
-
           "echo 'Start the logging agent'\n",
           "docker run --name logging-agent",
           "  --restart unless-stopped -d",
@@ -324,7 +314,7 @@
             "Host": {"SourcePath": "/etc/puppetlabs/code"}
           },{
             "Name": "PuppetCA",
-            "Host": {"SourcePath": "/etc/puppetlabs/vcrt"}
+            "Host": {"SourcePath": {"Fn::Join": ["", ["/mnt/s3_", {"Ref": "AssetsBucket"}, "/vcrt"]]}}
           },{
             "Name": "PuppetCSR",
             "Host": {"SourcePath": "/etc/puppetlabs/csr"}
