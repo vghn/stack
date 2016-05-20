@@ -200,27 +200,15 @@
           "echo 'Configure Hiera'\n",
           "cp /etc/puppetlabs/code/environments/", {"Ref": "EnvType"}, "/hiera.yaml /etc/puppetlabs/puppet/hiera.yaml\n",
 
-          "echo 'Set puppet configuration'\n",
-          "/opt/puppetlabs/bin/puppet config set certname \"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\" --section main\n",
-          "/opt/puppetlabs/bin/puppet config set server ", {"Ref": "PuppetMaster"}, " --section main\n",
-          "/opt/puppetlabs/bin/puppet config set environment ", {"Ref": "EnvType"}, " --section main\n",
-
-          "echo 'Remove old puppet certificates'\n",
-          "rm -fr /etc/puppetlabs/puppet/ssl\n",
-
-          "echo 'Create new csr attributes file'\n",
-          "cat << EOF > /etc/puppetlabs/puppet/csr_attributes.yaml\n",
-          "---\n",
-          "extension_requests:\n",
-          "  pp_role: zeus\n",
-          "  pp_project: vpm\n",
-          "  pp_instance_id: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)\n",
-          "  pp_image_name: $(curl -s http://169.254.169.254/latest/meta-data/ami-id)\n",
-          "EOF\n",
-          "chmod 600 /etc/puppetlabs/puppet/csr_attributes.yaml\n",
-
-          "echo 'Run puppet agent for the first time'\n",
-          "/opt/puppetlabs/bin/puppet agent --test --logdest syslog || true\n",
+          "echo 'Re-bootstrap'\n",
+          "export PP_SERVER=", {"Ref": "PuppetMaster"}, "\n",
+          "export PP_ROLE=zeus\n",
+          "export PP_PROJECT=vpm\n",
+          "export PP_AGENT_CERT_REGEN=true\n",
+          "export PP_CERTNAME=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"\n",
+          "export ENVTYPE=", {"Ref": "EnvType"}, "\n",
+          "export HOME=/root\n",
+          "bash \"/etc/puppetlabs/code/environments/${ENVTYPE}/bootstrap\"\n",
 
           "echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_cfn"
         ]]}}
