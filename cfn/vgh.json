@@ -218,7 +218,7 @@
           "/opt/puppetlabs/puppet/bin/r10k deploy environment --puppetfile --verbose\n",
 
           "echo 'Configure Hiera'\n",
-          "cp /etc/puppetlabs/code/environments/", {"Ref": "EnvType"}, "/hiera.yaml /etc/puppetlabs/code/hiera.yaml\n",
+          "cp /etc/puppetlabs/code/environments/", {"Ref": "EnvType"}, "/hiera.yaml /etc/puppetlabs/puppet/hiera.yaml\n",
 
           "echo 'Set puppet configuration'\n",
           "/opt/puppetlabs/bin/puppet config set certname \"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\" --section main\n",
