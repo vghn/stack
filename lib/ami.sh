@@ -128,7 +128,7 @@ ami_create(){
 
   create_image && tag_image
   e_info 'Waiting for image to be available'
-  aws ec2 wait image-available --image-ids "$image_id"
+  aws ec2 wait image-available --image-ids "$image_id" || clean_up
 
   clean_up
 }
