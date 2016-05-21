@@ -1,3 +1,11 @@
+## Version 0.0.3 / 2016-05-21
+  * Run the ECS Agent during instance start-up ([Vlad - bc4c458](https://github.com/vghn/puppet_stk/commit/bc4c4587e74592f29529aa863e802a84d4d34ad8))
+  * Add swap space on image, and fix python https ([Vlad - ea65d0c](https://github.com/vghn/puppet_stk/commit/ea65d0c016c0592a5a37854e7f0a4614c79dd1c6))
+  * Increase memory allocation for Puppet Server ([Vlad - 836ff3c](https://github.com/vghn/puppet_stk/commit/836ff3cdae1e214616d356084b8e3d9434d0861c))
+  * Add libffi to fix python https ([Vlad - 0089820](https://github.com/vghn/puppet_stk/commit/0089820899525ae0944744019d37e0fd56f784ab))
+  * Add libssl to fix python https ([Vlad - d2590a3](https://github.com/vghn/puppet_stk/commit/d2590a368209eff01303e331c81cc2c7ec2e8b2b))
+  * Terminate instance even if image is not available ([Vlad - e26a8aa](https://github.com/vghn/puppet_stk/commit/e26a8aae5551d3e280453dbc591de9cedd6baeb9))
+
 ## Version 0.0.2 / 2016-05-20
   * Travis should not build release branches ([Vlad - 5d3b87a](https://github.com/vghn/puppet_stk/commit/5d3b87a1f750bb7d74d3827189139bb10a58c791))
   * Mount the new path for hiera.yaml config ([Vlad - 05ec471](https://github.com/vghn/puppet_stk/commit/05ec471aa9cd12be589a14bdf72ae299eace85b8))
