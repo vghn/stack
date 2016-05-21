@@ -32,7 +32,7 @@ done
 # Version
 export VERSION_FILE="${APPDIR}/VERSION"
 export CHANGELOG_FILE="${APPDIR}/CHANGELOG.md"
-export VERSION; VERSION=$(cat "$VERSION_FILE")
+export VERSION; VERSION=$(cat "$VERSION_FILE" || echo '0.0.0')
 
 # Detect environment
 GIT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo '')
