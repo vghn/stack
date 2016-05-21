@@ -1,3 +1,7 @@
+## Version 0.0.2 / 2016-05-20
+  * Travis should not build release branches ([Vlad - 5d3b87a](https://github.com/vghn/puppet_stk/commit/5d3b87a1f750bb7d74d3827189139bb10a58c791))
+  * Mount the new path for hiera.yaml config ([Vlad - 05ec471](https://github.com/vghn/puppet_stk/commit/05ec471aa9cd12be589a14bdf72ae299eace85b8))
+
 ## Version 0.0.1 / 2016-05-20
   * Initial commit ([Vlad - caa59d3](https://github.com/vghn/puppet_stk/commit/caa59d332b3c87287f43c8ee9c9c10c600d9566a))
   * Initial import ([Vlad - bf27724](https://github.com/vghn/puppet_stk/commit/bf277243c7844342794eab3857bd9279310c3785))
@@ -28,5 +32,3 @@
   * Clean-up CloudFormation parameters ([Vlad - f80f7f5](https://github.com/vghn/puppet_stk/commit/f80f7f5c5b185d9d01598cd65a55917b85b7974f))
   * Use the upstream bootstrap script in user data ([Vlad - 281b6e0](https://github.com/vghn/puppet_stk/commit/281b6e0d5efa13b1c2ba62a9eedfedfec19448db))
   * Version should default to 0.0.0 if missing ([Vlad - 316bfbe](https://github.com/vghn/puppet_stk/commit/316bfbe7cb5f389f533b3aab0342a133cdc254ab))
-
-
