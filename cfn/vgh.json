@@ -244,7 +244,7 @@
             "Name": "PuppetServer",
             "Image": "vladgh/puppetserver:latest",
             "Cpu": "512",
-            "Memory": "640",
+            "Memory": "768",
             "Essential": "true",
             "PortMappings": [
               {"ContainerPort": "8140", "HostPort": "8140"}
@@ -266,7 +266,7 @@
               }
             ],
             "Environment": [
-              {"Name": "JAVA_ARGS", "Value": "-Xms512m -Xmx512m"}
+              {"Name": "JAVA_ARGS", "Value": "-Xms768m -Xmx768m"}
             ]
           }
         ],
