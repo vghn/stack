@@ -237,6 +237,9 @@
                 "SourceVolume": "PuppetServerCode",
                 "ContainerPath": "/etc/puppetlabs/code"
               },{
+                "SourceVolume": "PuppetHieraCFG",
+                "ContainerPath": "/etc/puppetlabs/puppet/hiera.yaml"
+              },{
                 "SourceVolume": "PuppetCA",
                 "ContainerPath": "/etc/puppetlabs/puppet/ssl"
               },{
@@ -253,6 +256,9 @@
           {
             "Name": "PuppetServerCode",
             "Host": {"SourcePath": "/etc/puppetlabs/code"}
+          },{
+            "Name": "PuppetHieraCFG",
+            "Host": {"SourcePath": "/etc/puppetlabs/puppet/hiera.yaml"}
           },{
             "Name": "PuppetCA",
             "Host": {"SourcePath": {"Fn::Join": ["", ["/mnt/s3_", {"Ref": "AssetsBucket"}, "/vcrt"]]}}
