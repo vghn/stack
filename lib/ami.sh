@@ -52,7 +52,7 @@ echo "\${SWAP}  swap  swap  defaults  0  0" >> /etc/fstab
 # Fix for Ubuntu Trusty
 # https://urllib3.readthedocs.io/en/latest/security.html#insecureplatformwarning
 echo 'Upgrade python https'
-apt-get -qy install python-dev libffi-dev < /dev/null
+apt-get -qy install python-dev libffi-dev libssl-dev < /dev/null
 pip install --upgrade ndg-httpsclient
 
 echo 'Installing AWS CLI'
