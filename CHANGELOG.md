@@ -1,3 +1,6 @@
+## Version 0.0.4 / 2016-05-21
+  * Mount assets bucket during instance start-up ([Vlad - 332da0d](https://github.com/vghn/puppet_stk/commit/332da0dd4a57506e59cab2c3b433e996511ba8b5))
+
 ## Version 0.0.3 / 2016-05-21
   * Run the ECS Agent during instance start-up ([Vlad - bc4c458](https://github.com/vghn/puppet_stk/commit/bc4c4587e74592f29529aa863e802a84d4d34ad8))
   * Add swap space on image, and fix python https ([Vlad - ea65d0c](https://github.com/vghn/puppet_stk/commit/ea65d0c016c0592a5a37854e7f0a4614c79dd1c6))
