@@ -43,6 +43,18 @@ if ! command -v pip >/dev/null 2>&1; then
   apt-get -qy install python-pip < /dev/null
 fi
 
+echo 'Adding swap space'
+SWAP=/var/swap.space
+/bin/dd if=/dev/zero of=\${SWAP} bs=1M count=1024
+/sbin/mkswap \${SWAP} && /sbin/swapon \${SWAP}
+echo "\${SWAP}  swap  swap  defaults  0  0" >> /etc/fstab
+
+# Fix for Ubuntu Trusty
+# https://urllib3.readthedocs.io/en/latest/security.html#insecureplatformwarning
+echo 'Upgrade python https'
+apt-get -qy install python-dev libffi-dev libssl-dev < /dev/null
+pip install --upgrade ndg-httpsclient
+
 echo 'Installing AWS CLI'
 pip install --upgrade pip setuptools awscli
 
@@ -116,7 +128,7 @@ ami_create(){
 
   create_image && tag_image
   e_info 'Waiting for image to be available'
-  aws ec2 wait image-available --image-ids "$image_id"
+  aws ec2 wait image-available --image-ids "$image_id" || clean_up
 
   clean_up
 }
