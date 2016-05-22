@@ -88,7 +88,7 @@
       }
     },
 
-    "CodeDeployRole": {
+    "CodeDeployServiceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -137,13 +137,13 @@
       "Description": "The Instance Profile",
       "Value": {"Ref": "InstanceProfile" }
     },
-    "InstanceProfileName": {
-      "Description": "The instance profile name",
-      "Value": {"Ref": "InstanceProfile" }
+    "InstanceRole": {
+      "Description": "The instance role name",
+      "Value": {"Ref": "InstanceRole" }
     },
     "CodeDeployServiceRole": {
       "Description": "The CodeDeploy service role ARN",
-      "Value": {"Fn::GetAtt": ["CodeDeployRole", "Arn"]}
+      "Value": {"Fn::GetAtt": ["CodeDeployServiceRole", "Arn"]}
     },
     "ECSServiceRole": {
       "Description": "The ECS execution role ARN",
