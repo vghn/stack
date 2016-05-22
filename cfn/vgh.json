@@ -368,19 +368,6 @@
     "LoadBalancerURL": {
       "Description": "URL - The Load Balancer Public DNS",
       "Value": {"Fn::Join": ["", ["https://", {"Fn::GetAtt": ["ELB", "DNSName"]}]]}
-    },
-    "ECSCluster": {
-      "Value": {"Ref": "ECSCluster"}
-    },
-    "ECSTaskDefinition": {
-      "Value": {"Ref": "ECSTaskDefinition"}
-    },
-    "ECSService": {
-      "Value": {"Ref": "ECSService"}
-    },
-    "ECSServiceRole": {
-      "Description": "The ECS service role ARN",
-      "Value": {"Fn::GetAtt": ["IAM", "Outputs.ECSServiceRole"]}
     }
   }
 }
