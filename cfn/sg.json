@@ -63,16 +63,16 @@
         "VpcId": {"Ref": "VPCId"}
       }
     },
-    "DBSecurityGroupAllowInstance": {
+    "DBSecurityGroupAllowInstancetoPostgreSQL": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": {"Fn::GetAtt": ["DBSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "3306", "ToPort": "3306", "SourceSecurityGroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}
+        "GroupId": {"Fn::GetAtt": ["DBSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "SourceSecurityGroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}
       }
     },
-    "DBSecurityGroupAllowSSH1": {
+    "DBSecurityGroupAllowSSH1toPostgreSQL": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": {"Fn::GetAtt": ["DBSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "3306", "ToPort": "3306", "CidrIp": { "Fn::Select" : [ "0", {"Ref": "SSHLocations"} ] }
+        "GroupId": {"Fn::GetAtt": ["DBSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "CidrIp": { "Fn::Select" : [ "0", {"Ref": "SSHLocations"} ] }
       }
     }
   },
