@@ -12,7 +12,7 @@ ensure_awscli(){
 # Returns the desired capacity for the specified AutoScaling Group
 get_asg_desired_capacity(){
   local asg count
-  asg="$(vgs_aws_cfn_get_output VGH ZeusASGName)"
+  asg="$(vgs_aws_cfn_get_resource VGH Zeus)"
   count="$(aws autoscaling describe-auto-scaling-groups \
     --auto-scaling-group-names "$asg" \
     --query "AutoScalingGroups[0].DesiredCapacity" \
@@ -23,8 +23,8 @@ get_asg_desired_capacity(){
 # Returns the desired running count for the specified ECS Service
 get_ecs_service_desired_running_count(){
   local cluster service count
-  cluster="$(vgs_aws_cfn_get_output VGH ECSCluster)"
-  service="$(vgs_aws_cfn_get_output VGH ECSService)"
+  cluster="$(vgs_aws_cfn_get_resource VGH ECSCluster)"
+  service="$(vgs_aws_cfn_get_resource VGH ECSService)"
   count="$(aws ecs describe-services \
     --cluster "$cluster" \
     --services "$service" \
