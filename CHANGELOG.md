@@ -1,3 +1,6 @@
+## Version 0.0.5 / 2016-05-21
+  * Fix IAM roles ([Vlad - b1a5c0a](https://github.com/vghn/puppet_stk/commit/b1a5c0a045dc88280ac3f461d6f455a6fcdb9280))
+
 ## Version 0.0.4 / 2016-05-21
   * Mount assets bucket during instance start-up ([Vlad - 332da0d](https://github.com/vghn/puppet_stk/commit/332da0dd4a57506e59cab2c3b433e996511ba8b5))
 
