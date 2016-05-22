@@ -1,3 +1,6 @@
+## Version 0.0.6 / 2016-05-22
+  * Open RDS Security Group ([Vlad - 014d409](https://github.com/vghn/puppet_stk/commit/014d409af036fcba7eacbdfb43deb12cd9383e44))
+
 ## Version 0.0.5 / 2016-05-21
   * Fix IAM roles ([Vlad - b1a5c0a](https://github.com/vghn/puppet_stk/commit/b1a5c0a045dc88280ac3f461d6f455a6fcdb9280))
 
