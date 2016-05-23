@@ -11,7 +11,7 @@ case "${1:-}" in
     ami_create
     ;;
   clean)
-    vgs_aws_ec2_images_purge "${AWS_EC2_IMAGE_PREFIX}_*"
+    ami_clean
     ;;
   *)
     e_abort "USAGE: ${BASH_SOURCE[0]} [create | clean]"

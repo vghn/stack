@@ -11,11 +11,11 @@ export KEEP=10
 # Process arguments
 case "${1:-}" in
   all)
-    vgs_aws_ec2_images_purge "${AWS_EC2_IMAGE_PREFIX}_*"
+    ami_clean
     aws_s3_purge_deployments
     ;;
   ami)
-    vgs_aws_ec2_images_purge "${AWS_EC2_IMAGE_PREFIX}_*"
+    ami_clean
     ;;
   deployments)
     aws_s3_purge_deployments
