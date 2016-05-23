@@ -1,3 +1,8 @@
+## Version 0.0.7 / 2016-05-22
+  * Clean-up CloudFormation outputs ([Vlad - 6790a02](https://github.com/vghn/puppet_stk/commit/6790a02418da8bc81f91c36f4ac575d3ed1968e5))
+  * Fix the desired count queries ([Vlad - ea0ff65](https://github.com/vghn/puppet_stk/commit/ea0ff6533bfccf4b13f9110517ab259ed0523937))
+  * Do not fail if bootstrap errors out ([Vlad - ebef2f8](https://github.com/vghn/puppet_stk/commit/ebef2f8c18ef3961361e4b9ba7ffa13dd75ba456))
+
 ## Version 0.0.6 / 2016-05-22
   * Open RDS Security Group ([Vlad - 014d409](https://github.com/vghn/puppet_stk/commit/014d409af036fcba7eacbdfb43deb12cd9383e44))
 
