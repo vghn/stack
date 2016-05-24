@@ -1,3 +1,8 @@
+## Version 0.0.8 / 2016-05-24
+  * Clean-up scripts ([Vlad - 13c674e](https://github.com/vghn/puppet_stk/commit/13c674eb6bfd471133dc1ce34e68a0a35f7d35f0))
+  * Add a project tag to the CloudFormation stack ([Vlad - 3f6f0f4](https://github.com/vghn/puppet_stk/commit/3f6f0f4ce85a6ed9b8f0bda92b76c03e610423d5))
+  * Manage swap in Puppet ([Vlad - 48477de](https://github.com/vghn/puppet_stk/commit/48477de83324519494087d01ea3fd2d952ec8fdf))
+
 ## Version 0.0.7 / 2016-05-22
   * Clean-up CloudFormation outputs ([Vlad - 6790a02](https://github.com/vghn/puppet_stk/commit/6790a02418da8bc81f91c36f4ac575d3ed1968e5))
   * Fix the desired count queries ([Vlad - ea0ff65](https://github.com/vghn/puppet_stk/commit/ea0ff6533bfccf4b13f9110517ab259ed0523937))
