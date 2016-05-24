@@ -43,12 +43,6 @@ if ! command -v pip >/dev/null 2>&1; then
   apt-get -qy install python-pip < /dev/null
 fi
 
-echo 'Adding swap space'
-SWAP=/var/swap.space
-/bin/dd if=/dev/zero of=\${SWAP} bs=1M count=1024
-/sbin/mkswap \${SWAP} && /sbin/swapon \${SWAP}
-echo "\${SWAP}  swap  swap  defaults  0  0" >> /etc/fstab
-
 # Fix for Ubuntu Trusty
 # https://urllib3.readthedocs.io/en/latest/security.html#insecureplatformwarning
 echo 'Upgrade python https'
