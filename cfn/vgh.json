@@ -205,7 +205,7 @@
           "mkdir -p /opt/vpm/s3 && mount -a -o nonempty\n",
 
           "echo 'Get puppet control repo'\n",
-          "cd /opt/vpm/repo && git fetch --all && git pull --all\n",
+          "cd /opt/vpm/puppet && git fetch --all && git pull --all\n",
           "[[ \"$ENVTYPE\" == 'production' ]] || git checkout \"$ENVTYPE\"\n",
 
           "echo 'Re-bootstrap'\n",
