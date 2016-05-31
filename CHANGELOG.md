@@ -1,3 +1,7 @@
+## Version 0.0.10 / 2016-05-31
+  * Fix repo path ([Vlad - f47deab](https://github.com/vghn/puppet_stk/commit/f47deab514b979992cd84e65923eeb17cac1db67))
+  * Fix fstab mount point ([Vlad - f801f18](https://github.com/vghn/puppet_stk/commit/f801f18292233b9dc00d4215677493ddaea1675f))
+
 ## Version 0.0.9 / 2016-05-30
   * Sign releases ([Vlad - c3a5cf3](https://github.com/vghn/puppet_stk/commit/c3a5cf37ad1631971c5ad3c3f859bd96fadcb5db))
   * Clean-up environment ([Vlad - 2515270](https://github.com/vghn/puppet_stk/commit/25152703ba66549ce5696d3b00840fe06fe8215d))
