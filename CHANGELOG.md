@@ -1,3 +1,9 @@
+## Version 0.0.9 / 2016-05-30
+  * Sign releases ([Vlad - c3a5cf3](https://github.com/vghn/puppet_stk/commit/c3a5cf37ad1631971c5ad3c3f859bd96fadcb5db))
+  * Clean-up environment ([Vlad - 2515270](https://github.com/vghn/puppet_stk/commit/25152703ba66549ce5696d3b00840fe06fe8215d))
+  * Clean-up cloudformation and ami user data ([Vlad - b4a03cf](https://github.com/vghn/puppet_stk/commit/b4a03cf57fe5b0bcd15e6fbd810c2fac324c3e11))
+  * Update defaults ([Vlad - bc5d145](https://github.com/vghn/puppet_stk/commit/bc5d1455b3c7a9140c8a15d4cc2991a2594f2846))
+
 ## Version 0.0.8 / 2016-05-24
   * Clean-up scripts ([Vlad - 13c674e](https://github.com/vghn/puppet_stk/commit/13c674eb6bfd471133dc1ce34e68a0a35f7d35f0))
   * Add a project tag to the CloudFormation stack ([Vlad - 3f6f0f4](https://github.com/vghn/puppet_stk/commit/3f6f0f4ce85a6ed9b8f0bda92b76c03e610423d5))

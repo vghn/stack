@@ -3,7 +3,9 @@
 
 # Purge old S3 keys (keep the 5 most recent)
 aws_s3_purge_deployments(){
-  for key in $(vgs_aws_s3_list_old_keys "$AWS_ASSETS_BUCKET" "${AWS_ASSETS_KEY_PREFIX}/app/${PROJECT_NAME}-" "$KEEP"); do
+  local keep=5
+
+  for key in $(vgs_aws_s3_list_old_keys "$AWS_ASSETS_BUCKET" "${AWS_ASSETS_KEY_PREFIX}/app/${PROJECT_NAME}-" "$keep"); do
     aws s3api delete-object \
       --bucket "$AWS_ASSETS_BUCKET" \
       --key "$key"
