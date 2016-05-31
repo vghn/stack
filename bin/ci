@@ -14,16 +14,12 @@ case "${1:-}" in
 
     echo 'Ensure latest Python PIP and AWS-CLI'
     pip install --user --upgrade pip awscli
-
-    echo 'Get .env'
-    aws s3 cp "$DOTENV_S3" "${APPDIR}/.env" || true
     ;;
   test)
     cfn_validate_stacks
     ;;
   deploy)
     if [[ "$PR" == false ]]; then
-      app_upload
       cfn_upload_templates
       if [[ "$ENVTYPE" == production ]]; then
         cfn_process_stacks vgh update && cfn_update_stack
