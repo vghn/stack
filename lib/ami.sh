@@ -12,61 +12,44 @@ IFS=\$'\\n\\t'
 echo 'IN_PROGRESS' | tee /var/lib/cloud/instance/status_ami
 
 # VARs
-export PP_ROLE=zeus
+export ENVTYPE=${ENVTYPE}
 export PP_SERVER=puppet.ghn.me
-export PP_HIERADATA_S3=${PP_HIERADATA_S3}
+export PP_ROLE=zeus
 export PP_PROJECT=${PROJECT_NAME}
 export PP_CERTNAME="\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
-export ENVTYPE=${ENVTYPE}
-export SLACK_WEBHOOK=${SLACK_WEBHOOK}
+export PP_RETRY_LOCAL=true
+export PP_HIERADATA_URL='$(vgs_aws_s3_generate_presigned_url "$AWS_ASSETS_BUCKET" "$PP_HIERADATA_KEY" 300)'
+export SLACK_WEBHOOK='${SLACK_WEBHOOK}'
 export SLACK_CHANNEL=${SLACK_CHANNEL}
 export SLACK_USER=${SLACK_USER}
 export HOME=/root
-export BUILD_DIR="${TMPDIR}/ami_build"
+export PUPPET_REPODIR=/opt/vpm/puppet
 
 echo 'Upgrade system'
 apt-get -qy update < /dev/null
 apt-get -qy dist-upgrade < /dev/null
 
-if ! command -v wget >/dev/null 2>&1; then
-  echo 'Installing WGet'
-  apt-get -qy install wget < /dev/null
-fi
+echo 'Installing essential packages'
+apt-get -qy install git < /dev/null
 
-if ! command -v git >/dev/null 2>&1; then
-  echo 'Installing Git'
-  apt-get -qy install git < /dev/null
-fi
-
-if ! command -v pip >/dev/null 2>&1; then
-  echo 'Installing pip'
-  apt-get -qy install python-pip < /dev/null
-fi
-
-# Fix for Ubuntu Trusty
-# https://urllib3.readthedocs.io/en/latest/security.html#insecureplatformwarning
-echo 'Upgrade python https'
-apt-get -qy install python-dev libffi-dev libssl-dev < /dev/null
-pip install --upgrade ndg-httpsclient
-
-echo 'Installing AWS CLI'
-pip install --upgrade pip setuptools awscli
-
-echo 'Installing VGS library'
-mkdir -p /opt/vgs && wget -qO- https://s3.amazonaws.com/vghn/vgs.tgz | \
-  tar xz --no-same-owner -C /opt/vgs
+echo 'Get VGS library'
+git clone https://github.com/vghn/vgs.git /opt/vgs
 
 echo 'Get puppet control repo'
-git clone https://github.com/vladgh/puppet.git "\$BUILD_DIR"
+git clone https://github.com/vladgh/puppet.git "\$PUPPET_REPODIR"
+
+echo 'Set working directory'
+cd "\$PUPPET_REPODIR" || exit
+[[ "\$ENVTYPE" == 'production' ]] || git checkout "\$ENVTYPE"
 
 echo 'Bootstrap Puppet'
-bash "\${BUILD_DIR}/bootstrap"
+bash bootstrap
 
 # Report status
 echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_ami
 
 echo 'Power Off AMI'
-sleep 10; poweroff
+sleep 15; poweroff
 USERDATA
 
   echo "$file"
