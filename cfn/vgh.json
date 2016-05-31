@@ -201,7 +201,7 @@
           "EOF\n",
 
           "echo 'Mount S3 Assets Bucket'\n",
-          "echo \"${AWS_DEFAULT_REGION}  /opt/vpm/s3  fuse.s3fs  _netdev,allow_other,use_rrs,use_cache=/tmp,retries=10,iam_role=${AWS_DEFAULT_REGION}  0  0\" >> /etc/fstab\n",
+          "echo \"${AWS_ASSETS_BUCKET}  /opt/vpm/s3  fuse.s3fs  _netdev,allow_other,use_rrs,use_cache=/tmp,retries=10,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
           "mkdir -p /opt/vpm/s3 && mount -a -o nonempty\n",
 
           "echo 'Get puppet control repo'\n",
