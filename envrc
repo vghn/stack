@@ -88,9 +88,9 @@ export LOG_SERVER="${LOG_SERVER:-}"
 export LOG_PORT="${LOG_PORT:-}"
 
 # Slack Incoming Web Hook URL
-export SLACK_CHANNEL="${SLACK_CHANNEL:-general}"
-export SLACK_USER="${SLACK_USER:-Bot}"
-export SLACK_WEBHOOK="${SLACK_WEBHOOK:-'https://hooks.slack.com/services/ChangeMe'}"
+export SLACK_CHANNEL="${SLACK_CHANNEL:-bots}"
+export SLACK_USER="${SLACK_USER:-PuppetMaster}"
+export SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
 
 # AWS
 export AWS_ACCOUNT_NUMBER="${AWS_ACCOUNT_NUMBER:-}"
@@ -100,9 +100,8 @@ export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 export AWS_ASSETS_BUCKET="${AWS_ASSETS_BUCKET:-$PROJECT_NAME}"
 export AWS_ASSETS_KEY_PREFIX="${PROJECT_NAME}/${ENVTYPE}"
 export AWS_ASSETS_S3="s3://${AWS_ASSETS_BUCKET}/${AWS_ASSETS_KEY_PREFIX}"
-export PP_HIERADATA_S3="s3://${AWS_ASSETS_BUCKET}/hieradata"
-export PP_VCRT_S3="s3://${AWS_ASSETS_BUCKET}/vcrt"
-export DOTENV_S3="${AWS_ASSETS_S3}/.env"
+export PP_HIERADATA_KEY="hieradata/archives/hieradata-${ENVTYPE}.tgz"
+export PP_VCRT_S3="s3://${AWS_ASSETS_BUCKET}/certificates"
 
 # APP Files
 export APP_ARCHIVE="${PROJECT_NAME}-${FULL_VERSION}.tgz"
@@ -114,8 +113,8 @@ export APP_ARCHIVE_S3_LATEST="s3://${AWS_ASSETS_BUCKET}/${APP_ARCHIVE_S3_KEY_LAT
 
 # AWS EC2
 export AWS_EC2_KEY="${AWS_EC2_KEY:-key}"
-export AWS_EC2_IMAGE_PREFIX="${AWS_EC2_IMAGE_PREFIX:-AMI}"
-export AWS_EC2_IMAGE_DESCRIPTION="${AWS_EC2_IMAGE_DESCRIPTION:-AMI}"
+export AWS_EC2_IMAGE_PREFIX="${AWS_EC2_IMAGE_PREFIX:-VGH_ZEUS_AMI}"
+export AWS_EC2_IMAGE_DESCRIPTION="${AWS_EC2_IMAGE_DESCRIPTION:-'VGH Puppet Image'}"
 export AWS_EC2_INSTANCE_TYPE="${AWS_EC2_INSTANCE_TYPE:-t2.micro}"
 
 # AWS TAGs
@@ -124,7 +123,7 @@ export AWS_TAG_GROUP="${AWS_TAG_GROUP:-MyGroup}"
 export AWS_TAG_ROLE="${AWS_TAG_ROLE:-MyRole}"
 
 # AWS RDS
-export AWS_RDS_DB_ENGINE="${AWS_RDS_DB_ENGINE:-MySQL}"
+export AWS_RDS_DB_ENGINE="${AWS_RDS_DB_ENGINE:-postgres}"
 export AWS_RDS_DB_NAME="${AWS_RDS_DB_NAME:-db}"
 export AWS_RDS_DB_USER="${AWS_RDS_DB_USER:-admin}"
 export AWS_RDS_DB_PASS="${AWS_RDS_DB_PASS:-ChangeMe}"
@@ -137,7 +136,8 @@ export AWS_SSL_ARN="${AWS_SSL_ARN:-}"
 
 # CloudFormation
 export AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
-export AWS_CFN_STACKS_S3="${AWS_ASSETS_S3}/cfn"
+export AWS_CFN_STACKS_S3="s3://${AWS_ASSETS_BUCKET}/cloudformation/environments/${ENVTYPE}"
+export AWS_CFN_STACKS_URL="https://s3.amazonaws.com/${AWS_ASSETS_BUCKET}/cloudformation/environments/${ENVTYPE}"
 # CloudFormation Main Stack
 export AWS_CFN_STACK_NAME='VGH'
 export AWS_CFN_STACK_BODY="${AWS_CFN_STACKS_PATH}/vgh.json"
