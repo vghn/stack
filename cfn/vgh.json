@@ -206,13 +206,13 @@
           "mkdir -p /opt/vpm/certificates && mount -a -o nonempty\n",
 
           "echo 'Refresh VGS repo'\n",
-          "cd /opt/vgs && git fetch --all && git pull --all\n",
+          "cd /opt/vgs && git pull --all\n",
 
           "echo 'Refresh Puppet stack repo'\n",
-          "cd /opt/vpm/puppet_stk && git fetch --all && git pull --all\n",
+          "cd /opt/vpm/puppet_stk && git pull --all\n",
 
           "echo 'Refresh Puppet control repo'\n",
-          "cd /opt/vpm/puppet && git fetch --all && git pull --all\n",
+          "cd /opt/vpm/puppet && git pull --all\n",
 
           "echo 'Re-bootstrap'\n",
           "bash /opt/vpm/puppet/bootstrap || true\n",
