@@ -41,8 +41,8 @@ TRAVIS_BRANCH="${TRAVIS_BRANCH:-}"
 DEPLOYMENT_GROUP_NAME="${DEPLOYMENT_GROUP_NAME:-}"
 
 ## Detect if git directory or if Travis CI or if AWS CodeDeploy
-if [[ -n "${ENVIRONMENT:-}" ]]; then
-  ENVTYPE="$ENVIRONMENT"
+if [[ -n "${ENVTYPE:-}" ]]; then
+  ENVTYPE="$ENVTYPE"
 elif [[ -n "${GIT_BRANCH:-}" ]]; then
   ENVTYPE="$GIT_BRANCH"
 elif [[ -n "${TRAVIS_BRANCH:-}" ]]; then
