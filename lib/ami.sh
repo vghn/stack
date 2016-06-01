@@ -28,7 +28,7 @@ export HOME=/root
 
 echo 'Upgrade system'
 apt-get -qy update < /dev/null
-apt-get -qy dist-upgrade < /dev/null
+apt-get -qy upgrade < /dev/null
 
 echo 'Installing essential packages'
 apt-get -qy install git < /dev/null
