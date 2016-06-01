@@ -44,10 +44,10 @@ echo 'Get VGS library'
 git clone -b "\$VGS_GIT_BRANCH" https://github.com/vghn/vgs.git /opt/vgs
 
 echo 'Get puppet stack repo'
-git clone -b "\$STK_GIT_BRANCH" https://github.com/vladgh/puppet_stk.git /opt/vpm/puppet_stk
+git clone -b "\$STK_GIT_BRANCH" https://github.com/vghn/puppet_stk.git /opt/vpm/puppet_stk
 
 echo 'Get puppet control repo'
-git clone -b "\$PP_GIT_BRANCH" https://github.com/vladgh/puppet.git /opt/vpm/puppet
+git clone -b "\$PP_GIT_BRANCH" https://github.com/vghn/puppet.git /opt/vpm/puppet
 
 echo 'Bootstrap Puppet'
 bash /opt/vpm/puppet/bootstrap
