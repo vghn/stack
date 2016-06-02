@@ -114,10 +114,10 @@
           {"LoadBalancerPort": "8140", "Protocol": "TCP", "InstancePort": "8140", "InstanceProtocol": "TCP"}
         ],
         "HealthCheck": {
-          "Target": "HTTPS:8140/puppet-ca/v1/certificate/ca",
+          "Target": "TCP:8140",
           "HealthyThreshold": "2",
-          "UnhealthyThreshold": "6",
-          "Interval": "10",
+          "UnhealthyThreshold": "12",
+          "Interval": "5",
           "Timeout": "5"
         },
         "ConnectionDrainingPolicy": {"Enabled": "true", "Timeout": "60"}
@@ -206,8 +206,14 @@
           "EOF\n",
 
           "echo 'Mount S3 Certificates Bucket'\n",
-          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certificates  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
-          "mkdir -p /opt/vpm/certificates && mount -a\n",
+          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certs  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
+          "mkdir -p /opt/vpm/certs && mount -a\n",
+
+          "if mountpoint -q /opt/vpm/certs; then\n",
+          "  echo 'Certificates path seems to be mounted ok'\n",
+          "else\n",
+          "  echo 'Certificates path does not seem to be mounted' >&2; exit 1\n",
+          "fi\n",
 
           "echo 'Refresh VGS repo'\n",
           "cd /opt/vgs && git pull --all\n",
@@ -217,6 +223,12 @@
 
           "echo 'Refresh Puppet control repo'\n",
           "cd /opt/vpm/puppet && git pull --all\n",
+
+          "echo 'Refresh Docker images'\n",
+          "docker pull vladgh/puppetserver\n",
+          "docker pull vladgh/r10k\n",
+          "docker pull gliderlabs/logspout\n",
+          "docker pull amazon/amazon-ecs-agent:latest\n",
 
           "echo 'Re-bootstrap'\n",
           "bash /opt/vpm/puppet/bootstrap || true\n",
@@ -266,6 +278,10 @@
               {"ContainerPort": "8140", "HostPort": "8140"}
             ],
             "Hostname": "puppet.ghn.me",
+            "Environment": [
+              {"Name": "AUTOSIGN", "Value": "/etc/puppetlabs/csr/sign"},
+              {"Name": "JAVA_ARGS", "Value": "-Xms768m -Xmx768m"}
+            ],
             "MountPoints": [
               {
                 "SourceVolume": "PuppetCode",
@@ -280,9 +296,6 @@
                 "SourceVolume": "PuppetCSRSign",
                 "ContainerPath": "/etc/puppetlabs/csr/sign"
               }
-            ],
-            "Environment": [
-              {"Name": "JAVA_ARGS", "Value": "-Xms768m -Xmx768m"}
             ]
           }
         ],
@@ -292,7 +305,7 @@
             "Host": {"SourcePath": "/opt/vpm/code"}
           },{
             "Name": "PuppetCA",
-            "Host": {"SourcePath": "/opt/vpm/certificates"}
+            "Host": {"SourcePath": "/opt/vpm/certs/ssl"}
           },{
             "Name": "PuppetHiera",
             "Host": {"SourcePath": "/opt/vpm/puppet/hiera.yaml"}
