@@ -1,3 +1,6 @@
+## Version 0.0.13 / 2016-06-02
+  * Fix load balancer's health check ([Vlad - 148bf61](https://github.com/vghn/puppet_stk/commit/148bf61ec7e78dcf485f1ba249252b253b64a773))
+
 ## Version 0.0.12 / 2016-06-02
   * Fix puppet certificates ownership ([Vlad - e6b0645](https://github.com/vghn/puppet_stk/commit/e6b06456c1430efbbc186edfefe50afc4a24b41c))
   * Improve load balancer's health check ([Vlad - 7fe1c1b](https://github.com/vghn/puppet_stk/commit/7fe1c1b12915f2f14581382917e792a90f63cefe))
