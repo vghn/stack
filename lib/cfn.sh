@@ -80,6 +80,7 @@ cfn_process_stacks(){
       P="     ParameterKey=EnvType,ParameterValue=${ENVTYPE}"
       P="${P} ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}"
       P="${P} ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}"
+      P="${P} ParameterKey=PuppetCertificatesBucket,ParameterValue=${AWS_PUPPET_CERTIFICATES_BUCKET}"
       P="${P} ParameterKey=PuppetMaster,ParameterValue=${PUPPET_MASTER}"
       P="${P} ParameterKey=ZeusAMIId,ParameterValue=$(vgs_aws_ec2_get_latest_ami_id "$AWS_EC2_IMAGE_PREFIX")"
       P="${P} ParameterKey=ZeusDesiredCapacity,ParameterValue=$(get_asg_desired_capacity)"

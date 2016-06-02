@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Clean-up tasks
+#
+# USAGE: ${BASH_SOURCE[0]} [all | ami]
 
 # Load environment
 # shellcheck disable=1090
@@ -8,12 +10,12 @@
 # Process arguments
 case "${1:-}" in
   all)
-    ami_clean
+    clean_all
     ;;
   ami)
     ami_clean
     ;;
   *)
-    e_abort "USAGE: ${BASH_SOURCE[0]} [all | ami]"
+    clean_all
     ;;
 esac

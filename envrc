@@ -54,6 +54,7 @@ elif [[ -n "${DEPLOYMENT_GROUP_NAME:-}" ]]; then
 else
   ENVTYPE=${ENVTYPE:-production}
 fi
+export ENVTYPE
 
 ## Rename 'master' to 'production'
 if [[ "$ENVTYPE" == 'master' ]]; then
@@ -98,10 +99,11 @@ export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 
 # AWS S3
 export AWS_ASSETS_BUCKET="${AWS_ASSETS_BUCKET:-$PROJECT_NAME}"
+export AWS_PUPPET_CERTIFICATES_BUCKET="${AWS_PUPPET_CERTIFICATES_BUCKET:-${AWS_ASSETS_BUCKET}-crt}"
 export AWS_ASSETS_KEY_PREFIX="${PROJECT_NAME}/${ENVTYPE}"
 export AWS_ASSETS_S3="s3://${AWS_ASSETS_BUCKET}/${AWS_ASSETS_KEY_PREFIX}"
-export PP_HIERADATA_KEY="hieradata/archives/hieradata-${ENVTYPE}.tgz"
-export PP_VCRT_S3="s3://${AWS_ASSETS_BUCKET}/certificates"
+export PP_HIERADATA_KEY="hieradata/${ENVTYPE}.tgz"
+export PP_VCRT_S3="s3://${AWS_PUPPET_CERTIFICATES_BUCKET}"
 
 # APP Files
 export APP_ARCHIVE="${PROJECT_NAME}-${FULL_VERSION}.tgz"
@@ -136,8 +138,9 @@ export AWS_SSL_ARN="${AWS_SSL_ARN:-}"
 
 # CloudFormation
 export AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
-export AWS_CFN_STACKS_S3="s3://${AWS_ASSETS_BUCKET}/cloudformation/environments/${ENVTYPE}"
-export AWS_CFN_STACKS_URL="https://s3.amazonaws.com/${AWS_ASSETS_BUCKET}/cloudformation/environments/${ENVTYPE}"
+export AWS_CFN_STACKS_S3="s3://${AWS_ASSETS_BUCKET}/cloudformation/${ENVTYPE}"
+export AWS_CFN_STACKS_URL="https://s3.amazonaws.com/${AWS_ASSETS_BUCKET}/cloudformation/${ENVTYPE}"
+
 # CloudFormation Main Stack
 export AWS_CFN_STACK_NAME='VGH'
 export AWS_CFN_STACK_BODY="${AWS_CFN_STACKS_PATH}/vgh.json"

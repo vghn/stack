@@ -15,6 +15,10 @@
       "Type": "String",
       "Description": "The S3 bucket containing the assets"
     },
+    "PuppetCertificatesBucket": {
+      "Type": "String",
+      "Description": "The S3 bucket containing the SSL certificates for Puppet"
+    },
     "PuppetMaster": {
       "Type": "String",
       "Description": "The address of the Puppet Master server"
@@ -176,6 +180,7 @@
           "export AWS_STACK_NAME=", {"Ref": "AWS::StackName"}, "\n",
           "export AWS_DEFAULT_REGION=", {"Ref": "AWS::Region"}, "\n",
           "export AWS_ASSETS_BUCKET=", {"Ref": "AssetsBucket"}, "\n",
+          "export AWS_CERTS_BUCKET=", {"Ref": "AssetsBucket"}, "-crt\n",
           "export AWS_ECS_CLUSTER=", {"Ref": "ECSCluster"}, "\n",
           "export AWS_IAM_INSTANCE_ROLE=", {"Fn::GetAtt": ["IAM", "Outputs.InstanceRole"]}, "\n",
           "export AWS_RDS_ENDPOINT=", {"Fn::GetAtt": ["RDS", "Outputs.DBEndpoint"]}, "\n",
@@ -200,16 +205,28 @@
           "aws_cfn_rds_db_endpoint: ${AWS_DEFAULT_REGION}\n",
           "EOF\n",
 
-          "echo 'Mount S3 Assets Bucket'\n",
-          "echo \"${AWS_ASSETS_BUCKET}  /opt/vpm/s3  fuse.s3fs  _netdev,allow_other,use_rrs,use_cache=/tmp,retries=10,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
-          "mkdir -p /opt/vpm/s3 && mount -a -o nonempty\n",
+          "echo 'Mount S3 Certificates Bucket'\n",
+          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certificates  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
+          "mkdir -p /opt/vpm/certificates && mount -a\n",
 
-          "echo 'Get puppet control repo'\n",
-          "cd /opt/vpm/puppet && git fetch --all && git pull --all\n",
-          "[[ \"$ENVTYPE\" == 'production' ]] || git checkout \"$ENVTYPE\"\n",
+          "echo 'Refresh VGS repo'\n",
+          "cd /opt/vgs && git pull --all\n",
+
+          "echo 'Refresh Puppet stack repo'\n",
+          "cd /opt/vpm/puppet_stk && git pull --all\n",
+
+          "echo 'Refresh Puppet control repo'\n",
+          "cd /opt/vpm/puppet && git pull --all\n",
 
           "echo 'Re-bootstrap'\n",
-          "bash bootstrap || true\n",
+          "bash /opt/vpm/puppet/bootstrap || true\n",
+
+          "echo 'Deploy R10K environment'\n",
+          "docker run --rm --name r10k-agent",
+          " -v /opt/vpm/puppet/r10k.yaml:/etc/puppetlabs/r10k/r10k.yaml:ro",
+          " -v /opt/vpm/puppet/bin/r10k-post-run:/etc/puppetlabs/r10k/post-run.sh:ro",
+          " -v /opt/vpm/code/environments:/etc/puppetlabs/code/environments",
+          " vladgh/r10k deploy environment --puppetfile --verbose\n",
 
           "echo 'Start the ECS agent'\n",
           "docker run --name ecs-agent",
@@ -219,8 +236,6 @@
           "  -v /var/log/ecs/:/log:Z",
           "  -v /var/lib/ecs/data:/data:Z",
           "  -v /var/lib/docker:/var/lib/docker",
-          "  -v /sys/fs/cgroup:/sys/fs/cgroup:ro",
-          "  -v /run/runc:/var/lib/docker/execdriver/native:ro",
           "  -p 51678:51678",
           "  -e ECS_LOGFILE=/log/ecs-agent.log",
           "  -e ECS_LOGLEVEL=info",
@@ -256,17 +271,11 @@
                 "SourceVolume": "PuppetCode",
                 "ContainerPath": "/etc/puppetlabs/code"
               },{
-                "SourceVolume": "PuppetHieraData",
-                "ContainerPath": "/etc/puppetlabs/hieradata"
-              },{
                 "SourceVolume": "PuppetCA",
                 "ContainerPath": "/etc/puppetlabs/puppet/ssl"
               },{
                 "SourceVolume": "PuppetHiera",
                 "ContainerPath": "/etc/puppetlabs/puppet/hiera.yaml"
-              },{
-                "SourceVolume": "PuppetR10K",
-                "ContainerPath": "/etc/puppetlabs/r10k/r10k.yaml"
               },{
                 "SourceVolume": "PuppetCSRSign",
                 "ContainerPath": "/etc/puppetlabs/csr/sign"
@@ -282,17 +291,11 @@
             "Name": "PuppetCode",
             "Host": {"SourcePath": "/opt/vpm/code"}
           },{
-            "Name": "PuppetHieraData",
-            "Host": {"SourcePath": "/opt/vpm/s3/hieradata"}
-          },{
             "Name": "PuppetCA",
-            "Host": {"SourcePath": "/opt/vpm/s3/certificates"}
+            "Host": {"SourcePath": "/opt/vpm/certificates"}
           },{
             "Name": "PuppetHiera",
             "Host": {"SourcePath": "/opt/vpm/puppet/hiera.yaml"}
-          },{
-            "Name": "PuppetR10K",
-            "Host": {"SourcePath": "/opt/vpm/puppet/r10k.yaml"}
           },{
             "Name": "PuppetCSRSign",
             "Host": {"SourcePath": "/opt/vpm/puppet/bin/sign"}
@@ -345,7 +348,8 @@
       "Properties": {
         "TemplateURL": {"Ref": "IAMTemplateURL"},
         "Parameters": {
-          "AssetsBucket": {"Ref": "AssetsBucket"}
+          "AssetsBucket": {"Ref": "AssetsBucket"},
+          "PuppetCertificatesBucket": {"Ref": "PuppetCertificatesBucket"}
         }
       }
     },

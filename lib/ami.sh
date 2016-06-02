@@ -19,31 +19,38 @@ export PP_PROJECT=${PROJECT_NAME}
 export PP_CERTNAME="\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
 export PP_RETRY_LOCAL=true
 export PP_HIERADATA_URL='$(vgs_aws_s3_generate_presigned_url "$AWS_ASSETS_BUCKET" "$PP_HIERADATA_KEY" 300)'
+export PP_GIT_BRANCH=${PP_GIT_BRANCH:-production}
+export VGS_GIT_BRANCH=${VGS_GIT_BRANCH:-master}
 export SLACK_WEBHOOK='${SLACK_WEBHOOK}'
 export SLACK_CHANNEL=${SLACK_CHANNEL}
 export SLACK_USER=${SLACK_USER}
 export HOME=/root
-export PUPPET_REPODIR=/opt/vpm/puppet
 
 echo 'Upgrade system'
 apt-get -qy update < /dev/null
-apt-get -qy dist-upgrade < /dev/null
+apt-get -qy upgrade < /dev/null
 
 echo 'Installing essential packages'
 apt-get -qy install git < /dev/null
 
+# Git branch
+if [[ "\$ENVTYPE" == 'production' ]]; then
+  export STK_GIT_BRANCH=master
+else
+  export STK_GIT_BRANCH="\$ENVTYPE"
+fi
+
 echo 'Get VGS library'
-git clone https://github.com/vghn/vgs.git /opt/vgs
+git clone -b "\$VGS_GIT_BRANCH" https://github.com/vghn/vgs.git /opt/vgs
+
+echo 'Get puppet stack repo'
+git clone -b "\$STK_GIT_BRANCH" https://github.com/vghn/puppet_stk.git /opt/vpm/puppet_stk
 
 echo 'Get puppet control repo'
-git clone https://github.com/vladgh/puppet.git "\$PUPPET_REPODIR"
-
-echo 'Set working directory'
-cd "\$PUPPET_REPODIR" || exit
-[[ "\$ENVTYPE" == 'production' ]] || git checkout "\$ENVTYPE"
+git clone -b "\$PP_GIT_BRANCH" https://github.com/vghn/puppet.git /opt/vpm/puppet
 
 echo 'Bootstrap Puppet'
-bash bootstrap
+bash /opt/vpm/puppet/bootstrap
 
 # Report status
 echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_ami

@@ -18,3 +18,7 @@ aws_s3_purge_deployments(){
 ami_clean(){
   vgs_aws_ec2_images_purge "${AWS_EC2_IMAGE_PREFIX}_*" "'$(vgh_aws_cfn_list_images_in_use "$AWS_CFN_STACK_NAME")'"
 }
+
+clean_all(){
+  ami_clean
+}
