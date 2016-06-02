@@ -5,6 +5,10 @@
     "AssetsBucket": {
       "Type": "String",
       "Description": "The S3 bucket containing the assets"
+    },
+    "PuppetCertificatesBucket": {
+      "Type": "String",
+      "Description": "The S3 bucket containing the SSL certificates for Puppet"
     }
   },
 
@@ -52,8 +56,7 @@
                   ],
                   "Resource": "*",
                   "Effect": "Allow"
-                },
-                {
+                },{
                   "Sid": "AllowLogging",
                   "Effect": "Allow",
                   "Action": [
@@ -65,20 +68,26 @@
                     "Resource": [
                       "arn:aws:logs:*:*:*"
                   ]
-                },
-                {
+                },{
                   "Sid": "AllowS3ListAllBucket",
                   "Effect": "Allow",
                   "Action": "s3:ListAllMyBuckets",
                   "Resource": "arn:aws:s3:::*"
-                },
-                {
-                  "Sid": "AllowS3AccessBucket",
+                },{
+                  "Sid": "AllowS3AccessToAssetsBucket",
                   "Effect": "Allow",
                   "Action": "*",
                   "Resource": [
                     {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}]]},
                     {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}, "/*"]]}
+                  ]
+                },{
+                  "Sid": "AllowS3AccessToPuppetCertificatesBucket",
+                  "Effect": "Allow",
+                  "Action": "*",
+                  "Resource": [
+                    {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "PuppetCertificatesBucket"}]]},
+                    {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "PuppetCertificatesBucket"}, "/*"]]}
                   ]
                 }
               ]

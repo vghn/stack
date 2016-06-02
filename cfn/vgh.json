@@ -15,6 +15,10 @@
       "Type": "String",
       "Description": "The S3 bucket containing the assets"
     },
+    "PuppetCertificatesBucket": {
+      "Type": "String",
+      "Description": "The S3 bucket containing the SSL certificates for Puppet"
+    },
     "PuppetMaster": {
       "Type": "String",
       "Description": "The address of the Puppet Master server"
@@ -202,8 +206,8 @@
           "EOF\n",
 
           "echo 'Mount S3 Certificates Bucket'\n",
-          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certificates  fuse.s3fs  _netdev,allow_other,use_rrs,use_cache=/tmp,retries=10,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
-          "mkdir -p /opt/vpm/certificates && mount -a -o nonempty\n",
+          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certificates  fuse.s3fs  _netdev,nosuid,nodev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
+          "mkdir -p /opt/vpm/certificates && mount -a\n",
 
           "echo 'Refresh VGS repo'\n",
           "cd /opt/vgs && git pull --all\n",
@@ -344,7 +348,8 @@
       "Properties": {
         "TemplateURL": {"Ref": "IAMTemplateURL"},
         "Parameters": {
-          "AssetsBucket": {"Ref": "AssetsBucket"}
+          "AssetsBucket": {"Ref": "AssetsBucket"},
+          "PuppetCertificatesBucket": {"Ref": "PuppetCertificatesBucket"}
         }
       }
     },
