@@ -225,7 +225,7 @@
           "cd /opt/vpm/puppet && git pull --all\n",
 
           "echo 'Refresh Docker images'\n",
-          "docker pull vladgh/puppetserver\n",
+          "docker pull vladgh/puppetserver:aws\n",
           "docker pull vladgh/r10k\n",
           "docker pull gliderlabs/logspout\n",
           "docker pull amazon/amazon-ecs-agent:latest\n",
@@ -270,7 +270,7 @@
         "ContainerDefinitions": [
           {
             "Name": "PuppetServer",
-            "Image": "vladgh/puppetserver:latest",
+            "Image": "vladgh/puppetserver:aws",
             "Cpu": "512",
             "Memory": "768",
             "Essential": "true",
