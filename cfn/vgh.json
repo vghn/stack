@@ -209,6 +209,9 @@
           "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certificates  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
           "mkdir -p /opt/vpm/certificates && mount -a\n",
 
+          "mountpoint -q /opt/vpm/certificates || ",
+          "{ echo 'Certificates path is not mounted' >&2; exit 1 ;}\n",
+
           "echo 'Refresh VGS repo'\n",
           "cd /opt/vgs && git pull --all\n",
 
@@ -217,6 +220,12 @@
 
           "echo 'Refresh Puppet control repo'\n",
           "cd /opt/vpm/puppet && git pull --all\n",
+
+          "echo 'Refresh Docker images'\n",
+          "docker pull vladgh/puppetserver\n",
+          "docker pull vladgh/r10k\n",
+          "docker pull gliderlabs/logspout\n",
+          "docker pull amazon/amazon-ecs-agent:latest\n",
 
           "echo 'Re-bootstrap'\n",
           "bash /opt/vpm/puppet/bootstrap || true\n",
@@ -266,6 +275,10 @@
               {"ContainerPort": "8140", "HostPort": "8140"}
             ],
             "Hostname": "puppet.ghn.me",
+            "Environment": [
+              {"Name": "AUTOSIGN", "Value": "/etc/puppetlabs/csr/sign"},
+              {"Name": "JAVA_ARGS", "Value": "-Xms768m -Xmx768m"}
+            ],
             "MountPoints": [
               {
                 "SourceVolume": "PuppetCode",
@@ -280,9 +293,6 @@
                 "SourceVolume": "PuppetCSRSign",
                 "ContainerPath": "/etc/puppetlabs/csr/sign"
               }
-            ],
-            "Environment": [
-              {"Name": "JAVA_ARGS", "Value": "-Xms768m -Xmx768m"}
             ]
           }
         ],
