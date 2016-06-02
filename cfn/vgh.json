@@ -217,6 +217,13 @@
           "echo 'Re-bootstrap'\n",
           "bash /opt/vpm/puppet/bootstrap || true\n",
 
+          "echo 'Deploy R10K environment'\n",
+          "docker run --rm",
+          " -v /opt/vpm/puppet/r10k.yaml:/etc/puppetlabs/r10k/r10k.yaml:ro",
+          " -v /opt/vpm/puppet/bin/r10k-post-run:/etc/puppetlabs/r10k/post-run.sh:ro",
+          " -v /opt/vpm/code/environments:/etc/puppetlabs/code/environments",
+          " vladgh/r10k deploy environment --puppetfile --verbose\n",
+
           "echo 'Start the ECS agent'\n",
           "docker run --name ecs-agent",
           "  --privileged",
@@ -266,12 +273,6 @@
                 "SourceVolume": "PuppetHiera",
                 "ContainerPath": "/etc/puppetlabs/puppet/hiera.yaml"
               },{
-                "SourceVolume": "PuppetR10K",
-                "ContainerPath": "/etc/puppetlabs/r10k/r10k.yaml"
-              },{
-                "SourceVolume": "PuppetR10KPostRun",
-                "ContainerPath": "/etc/puppetlabs/r10k/post-run.sh"
-              },{
                 "SourceVolume": "PuppetCSRSign",
                 "ContainerPath": "/etc/puppetlabs/csr/sign"
               }
@@ -291,12 +292,6 @@
           },{
             "Name": "PuppetHiera",
             "Host": {"SourcePath": "/opt/vpm/puppet/hiera.yaml"}
-          },{
-            "Name": "PuppetR10K",
-            "Host": {"SourcePath": "/opt/vpm/puppet/r10k.yaml"}
-          },{
-            "Name": "PuppetR10KPostRun",
-            "Host": {"SourcePath": "/opt/vpm/puppet/bin/r10k-post-run"}
           },{
             "Name": "PuppetCSRSign",
             "Host": {"SourcePath": "/opt/vpm/puppet/bin/sign"}
