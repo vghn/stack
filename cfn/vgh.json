@@ -209,8 +209,11 @@
           "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certs  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
           "mkdir -p /opt/vpm/certs && mount -a\n",
 
-          "mountpoint -q /opt/vpm/certs || ",
-          "{ echo 'Certificates path is not mounted' >&2; exit 1 ;}\n",
+          "if mountpoint -q /opt/vpm/certs; then\n",
+          "  echo 'Certificates path seems to be mounted ok'\n",
+          "else\n",
+          "  echo 'Certificates path does not seem to be mounted' >&2; exit 1\n",
+          "fi\n",
 
           "echo 'Refresh VGS repo'\n",
           "cd /opt/vgs && git pull --all\n",
