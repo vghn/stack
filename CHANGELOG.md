@@ -1,3 +1,6 @@
+## Version 0.0.14 / 2016-06-02
+  * Fix load balancer's health check ([Vlad - 7a81e04](https://github.com/vghn/puppet_stk/commit/7a81e04d95416e204cb52941169a73648c020d41))
+
 ## Version 0.0.13 / 2016-06-02
   * Fix load balancer's health check ([Vlad - 148bf61](https://github.com/vghn/puppet_stk/commit/148bf61ec7e78dcf485f1ba249252b253b64a773))
 
