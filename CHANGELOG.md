@@ -1,3 +1,8 @@
+## Version 0.0.12 / 2016-06-02
+  * Fix puppet certificates ownership ([Vlad - e6b0645](https://github.com/vghn/puppet_stk/commit/e6b06456c1430efbbc186edfefe50afc4a24b41c))
+  * Improve load balancer's health check ([Vlad - 7fe1c1b](https://github.com/vghn/puppet_stk/commit/7fe1c1b12915f2f14581382917e792a90f63cefe))
+  * Improve user data ([Vlad - 4e78cbb](https://github.com/vghn/puppet_stk/commit/4e78cbb20b189b51b898aa1fc84bcfa25001f7cd)), ([Vlad - a1d2121](https://github.com/vghn/puppet_stk/commit/a1d21212040c3f7dddfbcd5c051e6563ca6250b8))
+
 ## Version 0.0.11 / 2016-06-02
   * Improve AMI user data ([Vlad - 958f94c](https://github.com/vghn/puppet_stk/commit/958f94ce88126410d962aa8a218bd2355207d56b))
   * Change paths ([Vlad - 774378f](https://github.com/vghn/puppet_stk/commit/774378f081e080ff4caf5fc7510c2088027af105))
