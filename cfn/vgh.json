@@ -116,9 +116,9 @@
         "HealthCheck": {
           "Target": "TCP:8140",
           "HealthyThreshold": "2",
-          "UnhealthyThreshold": "12",
-          "Interval": "5",
-          "Timeout": "5"
+          "UnhealthyThreshold": "6",
+          "Interval": "10",
+          "Timeout": "10"
         },
         "ConnectionDrainingPolicy": {"Enabled": "true", "Timeout": "60"}
       }
