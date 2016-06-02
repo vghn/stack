@@ -206,10 +206,10 @@
           "EOF\n",
 
           "echo 'Mount S3 Certificates Bucket'\n",
-          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certificates  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
-          "mkdir -p /opt/vpm/certificates && mount -a\n",
+          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certs  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
+          "mkdir -p /opt/vpm/certs && mount -a\n",
 
-          "mountpoint -q /opt/vpm/certificates || ",
+          "mountpoint -q /opt/vpm/certs || ",
           "{ echo 'Certificates path is not mounted' >&2; exit 1 ;}\n",
 
           "echo 'Refresh VGS repo'\n",
@@ -302,7 +302,7 @@
             "Host": {"SourcePath": "/opt/vpm/code"}
           },{
             "Name": "PuppetCA",
-            "Host": {"SourcePath": "/opt/vpm/certificates"}
+            "Host": {"SourcePath": "/opt/vpm/certs/ssl"}
           },{
             "Name": "PuppetHiera",
             "Host": {"SourcePath": "/opt/vpm/puppet/hiera.yaml"}
