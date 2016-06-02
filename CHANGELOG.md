@@ -1,3 +1,17 @@
+## Version 0.0.11 / 2016-06-02
+  * Improve AMI user data ([Vlad - 958f94c](https://github.com/vghn/puppet_stk/commit/958f94ce88126410d962aa8a218bd2355207d56b))
+  * Change paths ([Vlad - 774378f](https://github.com/vghn/puppet_stk/commit/774378f081e080ff4caf5fc7510c2088027af105))
+  * Fix environment detection ([Vlad - e577032](https://github.com/vghn/puppet_stk/commit/e577032a50de71c9651c3f863fe12e5c645d91df))
+  * Fix github repos paths ([Vlad - 0fd3112](https://github.com/vghn/puppet_stk/commit/0fd3112b46bd7d98817a84b93f83c3618211b8aa))
+  * Use ENVTYPE to declare the environment ([Vlad - 8403095](https://github.com/vghn/puppet_stk/commit/8403095613113898cf80e518259864c3647473f2))
+  * bin/clean should default to all ([Vlad - 8bfb4cf](https://github.com/vghn/puppet_stk/commit/8bfb4cf6dab501c3e8235f3c151d0e1d9b08425a))
+  * Fix repo refreshing ([Vlad - 1ac2034](https://github.com/vghn/puppet_stk/commit/1ac20349f1c694e190c8debf9a481b14238641c8))
+  * Do not upgrade kernel in AMI ([Vlad - 4778d43](https://github.com/vghn/puppet_stk/commit/4778d432ae2e8b32ca5d7ee482955885c108014b))
+  * Separate R10K from PuppetServer ([Vlad - f77c0ce](https://github.com/vghn/puppet_stk/commit/f77c0ce6307799f83c9cf111352e25be28dd4c8e))
+  * Name the R10K container ([Vlad - 4bf443b](https://github.com/vghn/puppet_stk/commit/4bf443b1ca4493ead8042e2e4c01011e095ec275))
+  * Add IAM permission for the Puppet SSL bucket ([Vlad - 0595402](https://github.com/vghn/puppet_stk/commit/0595402273988c59d912ad0a002a57007093998e))
+  * Fix mount options for S3FS ([Vlad - 377f282](https://github.com/vghn/puppet_stk/commit/377f2828b3c4e5cecaefdf49c69e1e2a961627bb))
+
 ## Version 0.0.10 / 2016-05-31
   * Fix repo path ([Vlad - f47deab](https://github.com/vghn/puppet_stk/commit/f47deab514b979992cd84e65923eeb17cac1db67))
   * Fix fstab mount point ([Vlad - f801f18](https://github.com/vghn/puppet_stk/commit/f801f18292233b9dc00d4215677493ddaea1675f))
