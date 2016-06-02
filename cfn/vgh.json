@@ -114,10 +114,10 @@
           {"LoadBalancerPort": "8140", "Protocol": "TCP", "InstancePort": "8140", "InstanceProtocol": "TCP"}
         ],
         "HealthCheck": {
-          "Target": "HTTPS:8140/puppet-ca/v1/certificate/ca",
+          "Target": "TCP:8140",
           "HealthyThreshold": "2",
-          "UnhealthyThreshold": "6",
-          "Interval": "10",
+          "UnhealthyThreshold": "12",
+          "Interval": "5",
           "Timeout": "5"
         },
         "ConnectionDrainingPolicy": {"Enabled": "true", "Timeout": "60"}
