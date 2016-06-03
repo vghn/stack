@@ -52,6 +52,9 @@ git clone -b "\$PP_GIT_BRANCH" https://github.com/vghn/puppet.git /opt/vpm/puppe
 echo 'Bootstrap Puppet'
 bash /opt/vpm/puppet/bootstrap
 
+echo 'Creating Docker environment'
+docker-compose --project-name vpm --file /opt/vpm/docker-compose.yaml up -d
+
 # Report status
 echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_ami
 
