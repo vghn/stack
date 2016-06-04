@@ -50,10 +50,11 @@ echo 'Get puppet control repo'
 git clone -b "\$PP_GIT_BRANCH" https://github.com/vghn/puppet.git /opt/vpm/puppet
 
 echo 'Bootstrap Puppet'
-bash /opt/vpm/puppet/bootstrap
+/opt/vpm/puppet/bootstrap
 
-echo 'Creating Docker environment'
-docker-compose --project-name vpm --file /opt/vpm/docker-compose.yaml up -d
+/opt/vpm/scripts/start-logging-container
+
+/opt/vpm/scripts/r10k-deploy
 
 # Report status
 echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_ami
