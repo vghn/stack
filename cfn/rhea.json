@@ -1,0 +1,128 @@
+{
+  "Description": "VGH Puppet Master of Masters v0.0.1",
+
+  "Parameters": {
+    "EnvType": {
+      "Description": "Environment type",
+      "Type": "String",
+      "Default": "production"
+    },
+    "AMIId": {
+      "Type": "AWS::EC2::Image::Id",
+      "Description": "The AMI Id for the EC2 instance"
+    },
+    "InstanceType": {
+      "Description": "The instance type for the EC2 instance",
+      "Type": "String",
+      "Default": "t2.micro"
+    },
+    "KeyName": {
+      "Description": "The name of the key pair used to log into the EC2 instance via SSH",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "SecurityGroup": {
+      "Description": "The security group for the EC2 instance",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "Subnet": {
+      "Description": "The subnet the EC2 instance is launched into",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "IamInstanceProfile": {
+      "Description": "The Instance Profile",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "Rhea": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {"Ref": "AMIId"},
+        "InstanceType": {"Ref": "InstanceType"},
+        "KeyName": {"Ref": "KeyName"},
+        "NetworkInterfaces" : [{
+          "GroupSet": [{"Ref": "SecurityGroup"}],
+          "SubnetId": {"Ref": "Subnet"},
+          "AssociatePublicIpAddress": "true",
+          "DeviceIndex": "0",
+          "DeleteOnTermination": "true"
+        }],
+        "IamInstanceProfile": {"Ref": "IamInstanceProfile"},
+        "Tags": [
+          {"Key": "Role", "Value": "rhea"},
+          {"Key": "Name", "Value": "Rhea"}
+        ],
+        "UserData": {"Fn::Base64": {"Fn::Join": ["", [
+          "#!/usr/bin/env bash\n",
+          "set -euo pipefail\n",
+          "IFS=$'\\n\\t'", "\n",
+          "echo 'IN_PROGRESS' | tee /var/lib/cloud/instance/status_cfn\n",
+
+          "export ENVTYPE=", {"Ref": "EnvType"}, "\n",
+          "export PP_SERVER=puppet.ghn.me\n",
+          "export PP_ROLE=rhea\n",
+          "export PP_PROJECT=vpm\n",
+          "export PP_CERTNAME=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"\n",
+          "export PATH=\"/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/usr/local/bin:${PATH}\"\n",
+
+          "apt-get -qy update\n",
+          "apt-get -qy upgrade\n",
+          "apt-get -qy install git\n",
+
+          "git clone https://github.com/vladgh/puppet.git /opt/vpm/puppet\n",
+          "/opt/vpm/puppet/bootstrap || true\n",
+
+          "modules=(\n",
+          "  puppetlabs-stdlib\n",
+          "  puppetlabs-apt\n",
+          "  puppetlabs-git\n",
+          "  garethr-docker\n",
+          ")\n",
+          "for mod in \"${modules[@]}\"; do puppet module install \"$mod\"; done\n",
+
+          "cat << EOP | puppet apply --verbose\n",
+          "  include ::git\n",
+          "  include ::docker\n",
+          "  class {'::docker::compose': version => '1.7.1'}\n",
+          "EOP\n",
+
+          "/opt/vpm/puppet/bin/run\n",
+
+          "echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_cfn"
+        ]]}}
+      }
+    },
+
+    "EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "InstanceId": {"Ref": "Rhea"},
+        "Domain": "vpc"
+      }
+    },
+
+    "RecoveryAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Recovering server when underlying hardware fails.",
+        "Namespace": "AWS/EC2" ,
+        "MetricName": "StatusCheckFailed_System",
+        "Statistic": "Minimum",
+        "Period": "60",
+        "EvaluationPeriods": "5",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Threshold": "0",
+        "AlarmActions": [{"Fn::Join": ["", ["arn:aws:automate:", {"Ref": "AWS::Region"}, ":ec2:recover"]]}],
+        "Dimensions": [{"Name": "InstanceId", "Value": {"Ref": "Rhea"}}]
+      }
+    }
+  },
+
+  "Outputs": {
+    "RheaIP": {
+      "Description": "The public IP address of Rhea",
+      "Value": {"Ref": "EIP"}
+    }
+  }
+}

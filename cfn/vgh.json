@@ -23,6 +23,10 @@
       "Type": "String",
       "Description": "The address of the Puppet Master server"
     },
+    "RheaAMIId": {
+      "Type": "AWS::EC2::Image::Id",
+      "Description": "The AMI Id for the Rhea EC2 instance"
+    },
     "ZeusAMIId": {
       "Type": "String",
       "Description": "The AMI Id for the Zeus ASG"
@@ -90,6 +94,10 @@
     "IAMTemplateURL": {
       "Type": "String",
       "Description": "The URL of the template for the IAM nested stack"
+    },
+    "RheaTemplateURL": {
+      "Type": "String",
+      "Description": "The URL of the template for the Puppet Master of Masters nested stack"
     },
     "RDSTemplateURL": {
       "Type": "String",
@@ -362,6 +370,21 @@
       }
     },
 
+    "RHEA": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": {"Ref": "RheaTemplateURL"},
+        "Parameters": {
+          "EnvType": {"Ref": "EnvType"},
+          "AMIId": {"Ref": "RheaAMIId"},
+          "KeyName": {"Ref": "KeyName"},
+          "SecurityGroup": {"Fn::GetAtt": ["SG", "Outputs.RheaSecurityGroup"]},
+          "Subnet": {"Fn::GetAtt": ["VPC", "Outputs.Subnet1"]},
+          "IamInstanceProfile": {"Fn::GetAtt": ["IAM", "Outputs.InstanceProfile"]}
+        }
+      }
+    },
+
     "RDS": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
@@ -388,6 +411,10 @@
     "LoadBalancerURL": {
       "Description": "URL - The Load Balancer Public DNS",
       "Value": {"Fn::Join": ["", ["https://", {"Fn::GetAtt": ["ELB", "DNSName"]}]]}
+    },
+    "PuppetMasterofMastersIP": {
+      "Description": "The public IP address for the Puppet Master of Masters",
+      "Value":{"Fn::GetAtt": ["RHEA", "Outputs.RheaIP"]}
     }
   }
 }

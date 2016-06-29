@@ -56,6 +56,31 @@
       }
     },
 
+    "RheaSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "MoM Firewall",
+        "VpcId": {"Ref": "VPCId"}
+      }
+    },
+    "RheaSecurityGroupAllowSelf": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "0", "ToPort": "65535", "SourceSecurityGroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}
+      }
+    },
+    "RheaSecurityGroupAllowPuppet": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "8140", "ToPort": "8140", "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "RheaSecurityGroupAllowSSH1": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": { "Fn::Select" : [ "0", {"Ref": "SSHLocations"} ] }
+      }
+    },
     "DBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -85,6 +110,10 @@
     "ELBSecurityGroup": {
       "Description": "The Elastic Load Balancer security group",
       "Value": {"Ref" : "ELBSecurityGroup"}
+    },
+    "RheaSecurityGroup": {
+      "Description": "Puppet Master of Masters security group",
+      "Value": {"Ref" : "RheaSecurityGroup"}
     },
     "DBSecurityGroup": {
       "Description": "The database security group",
