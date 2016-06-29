@@ -45,6 +45,11 @@
       "Type": "CommaDelimitedList",
       "Description": "The IP address ranges that can be used to SSH to the EC2 instances"
     },
+    "VolumeName": {
+      "Description": "The name to be used for the EFS volume",
+      "Type": "String",
+      "Default": "EFS"
+    },
     "DBEngine": {
       "Default": "mariadb",
       "Description": "MySQL engine",
@@ -90,6 +95,10 @@
     "SGTemplateURL": {
       "Type": "String",
       "Description": "The URL of the template for the SG nested stack"
+    },
+    "EFSTemplateURL": {
+      "Type": "String",
+      "Description": "The URL of the template for the EFS nested stack"
     },
     "IAMTemplateURL": {
       "Type": "String",
@@ -193,6 +202,8 @@
           "export AWS_ASSETS_BUCKET=", {"Ref": "AssetsBucket"}, "\n",
           "export AWS_CERTS_BUCKET=", {"Ref": "AssetsBucket"}, "-crt\n",
           "export AWS_ECS_CLUSTER=", {"Ref": "ECSCluster"}, "\n",
+          "export AWS_EFS_VOLUME=", {"Fn::GetAtt": ["EFS", "Outputs.EFS"]}, "\n",
+          "export AWS_EFS_MOUNT=\"${AWS_AVAILABILITY_ZONE}.${AWS_EFS_VOLUME}.efs.${AWS_DEFAULT_REGION}.amazonaws.com:/\"\n",
           "export AWS_IAM_INSTANCE_ROLE=", {"Fn::GetAtt": ["IAM", "Outputs.InstanceRole"]}, "\n",
           "export AWS_RDS_ENDPOINT=", {"Fn::GetAtt": ["RDS", "Outputs.DBEndpoint"]}, "\n",
           "export HOME=/root\n",
@@ -357,6 +368,21 @@
         "Parameters": {
           "VPCId": {"Fn::GetAtt": ["VPC", "Outputs.VPCId"]},
           "SSHLocations": {"Fn::Join": [",", {"Ref": "SSHLocations"}]}
+        }
+      }
+    },
+
+    "EFS": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": {"Ref": "EFSTemplateURL"},
+        "Parameters": {
+          "VolumeName": {"Ref": "VolumeName"},
+          "EFSSecurityGroup": {"Fn::GetAtt": ["SG", "Outputs.EFSSecurityGroup"]},
+          "Subnet1": {"Fn::GetAtt": ["VPC", "Outputs.Subnet1"]},
+          "Subnet2": {"Fn::GetAtt": ["VPC", "Outputs.Subnet2"]},
+          "Subnet3": {"Fn::GetAtt": ["VPC", "Outputs.Subnet3"]},
+          "Subnet4": {"Fn::GetAtt": ["VPC", "Outputs.Subnet4"]}
         }
       }
     },

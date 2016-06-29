@@ -1,0 +1,101 @@
+{
+  "Description": "VGH Puppet EFS v0.0.1",
+
+  "Parameters": {
+    "VolumeName": {
+      "Description": "The name to be used for the EFS volume",
+      "Type": "String",
+      "Default": "EFS"
+    },
+    "EFSSecurityGroup": {
+      "Description": "The security group for the EFS volume",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "Subnet1": {
+      "Description": "The 1st subnet for the EFS volume",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "Subnet2": {
+      "Description": "The 2nd subnet for the EFS volume",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "Subnet3": {
+      "Description": "The 3rd subnet for the EFS volume",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "Subnet4": {
+      "Description": "The 4th subnet for the EFS volume",
+      "Type": "AWS::EC2::Subnet::Id"
+    }
+  },
+
+  "Resources": {
+    "EFS": {
+      "Type": "AWS::EFS::FileSystem",
+      "Properties": {
+        "FileSystemTags": [
+          {"Key": "Name", "Value": {"Ref": "VolumeName"}}
+        ]
+      }
+    },
+
+    "MountTarget1": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": {"Ref": "EFS"},
+        "SubnetId": {"Ref": "Subnet1" },
+        "SecurityGroups": [{"Ref": "EFSSecurityGroup" }]
+      }
+    },
+
+    "MountTarget2": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": {"Ref": "EFS"},
+        "SubnetId": {"Ref": "Subnet2" },
+        "SecurityGroups": [{"Ref": "EFSSecurityGroup" }]
+      }
+    },
+
+    "MountTarget3": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": {"Ref": "EFS"},
+        "SubnetId": {"Ref": "Subnet3" },
+        "SecurityGroups": [{"Ref": "EFSSecurityGroup" }]
+      }
+    },
+
+    "MountTarget4": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": {"Ref": "EFS"},
+        "SubnetId": {"Ref": "Subnet4" },
+        "SecurityGroups": [{"Ref": "EFSSecurityGroup" }]
+      }
+    }
+  },
+
+  "Outputs": {
+    "EFS": {
+      "Description": "The ID of the EFS volume",
+      "Value": {"Ref": "EFS"}
+    },
+    "MountTarget1" : {
+      "Description" : "1st Mount target ID",
+      "Value" :  { "Ref" : "MountTarget1" }
+    },
+    "MountTarget2" : {
+      "Description" : "2nd Mount target ID",
+      "Value" :  { "Ref" : "MountTarget2" }
+    },
+    "MountTarget3" : {
+      "Description" : "3rd Mount target ID",
+      "Value" :  { "Ref" : "MountTarget3" }
+    },
+    "MountTarget4" : {
+      "Description" : "4th Mount target ID",
+      "Value" :  { "Ref" : "MountTarget4" }
+    }
+  }
+}
