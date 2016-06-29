@@ -28,7 +28,7 @@
       "Description": "The AMI Id for the Rhea EC2 instance"
     },
     "ZeusAMIId": {
-      "Type": "String",
+      "Type": "AWS::EC2::Image::Id",
       "Description": "The AMI Id for the Zeus ASG"
     },
     "ZeusDesiredCapacity": {
@@ -186,6 +186,8 @@
           "export PP_PROJECT=vpm\n",
           "export PP_AGENT_CERT_REGEN=true\n",
           "export PP_CERTNAME=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"\n",
+          "export AWS_PRIVATE_IP=\"$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\"\n",
+          "export AWS_AVAILABILITY_ZONE=\"$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\"\n",
           "export AWS_STACK_NAME=", {"Ref": "AWS::StackName"}, "\n",
           "export AWS_DEFAULT_REGION=", {"Ref": "AWS::Region"}, "\n",
           "export AWS_ASSETS_BUCKET=", {"Ref": "AssetsBucket"}, "\n",
@@ -397,7 +399,7 @@
             {"Fn::GetAtt": ["VPC", "Outputs.Subnet3"]},
             {"Fn::GetAtt": ["VPC", "Outputs.Subnet4"]}
           ]]},
-          "SecurityGroups": {"Fn::GetAtt": ["SG", "Outputs.DBSecurityGroup"]},
+          "SecurityGroupsIDs": {"Fn::GetAtt": ["SG", "Outputs.DBSecurityGroup"]},
           "DBEngine": {"Ref": "DBEngine"},
           "DBName": {"Ref": "DBName"},
           "DBUser": {"Ref": "DBUser"},

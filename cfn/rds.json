@@ -9,9 +9,9 @@
     },
     "SubnetIDs": {
       "Type": "List<AWS::EC2::Subnet::Id>",
-      "Description": "The list of subnet ids"
+      "Description": "A list of subnet ids"
     },
-    "SecurityGroups": {
+    "SecurityGroupsIDs": {
       "Type": "List<AWS::EC2::SecurityGroup::Id>",
       "Description": "A list of security group ids"
     },
@@ -60,11 +60,11 @@
         "MasterUsername": {"Ref": "DBUser"},
         "MasterUserPassword": {"Ref": "DBPassword"} ,
         "DBInstanceClass": "db.t2.micro",
+        "BackupRetentionPeriod": "3",
         "AllocatedStorage": "5",
         "StorageType": "gp2",
         "MultiAZ": "false",
-        "BackupRetentionPeriod": "7",
-        "VPCSecurityGroups": {"Ref": "SecurityGroups"},
+        "VPCSecurityGroups": {"Ref": "SecurityGroupsIDs"},
         "DBSubnetGroupName": {"Ref": "DBSubnetGroup"}
       },
       "DeletionPolicy": "Snapshot"

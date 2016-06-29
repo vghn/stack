@@ -95,6 +95,7 @@ cfn_process_stacks(){
       P="${P} ParameterKey=VPCTemplateURL,ParameterValue=${AWS_CFN_STACKS_URL}/vpc.json"
       P="${P} ParameterKey=SGTemplateURL,ParameterValue=${AWS_CFN_STACKS_URL}/sg.json"
       P="${P} ParameterKey=IAMTemplateURL,ParameterValue=${AWS_CFN_STACKS_URL}/iam.json"
+      P="${P} ParameterKey=RheaTemplateURL,ParameterValue=${AWS_CFN_STACKS_URL}/rhea.json"
       P="${P} ParameterKey=RDSTemplateURL,ParameterValue=${AWS_CFN_STACKS_URL}/rds.json"
       T="     Key=Group,Value=${AWS_TAG_GROUP}"
       T="${T} Key=Project,Value=${AWS_TAG_PROJECT}"
