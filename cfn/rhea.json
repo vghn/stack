@@ -11,6 +11,10 @@
       "Type": "AWS::EC2::Image::Id",
       "Description": "The AMI Id for the EC2 instance"
     },
+    "EFSID": {
+      "Type": "String",
+      "Description": "The ID of the EFS volume"
+    },
     "InstanceType": {
       "Description": "The instance type for the EC2 instance",
       "Type": "String",
@@ -60,15 +64,30 @@
           "echo 'IN_PROGRESS' | tee /var/lib/cloud/instance/status_cfn\n",
 
           "export ENVTYPE=", {"Ref": "EnvType"}, "\n",
+
           "export PP_SERVER=puppet.ghn.me\n",
           "export PP_ROLE=rhea\n",
           "export PP_PROJECT=vpm\n",
           "export PP_CERTNAME=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"\n",
+
+          "export AWS_AVAILABILITY_ZONE=\"$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\"\n",
+          "export AWS_DEFAULT_REGION=", {"Ref": "AWS::Region"}, "\n",
+          "export AWS_EFS_VOLUME=", {"Ref": "EFSID"}, "\n",
+          "export AWS_EFS_MOUNT=\"${AWS_AVAILABILITY_ZONE}.${AWS_EFS_VOLUME}.efs.${AWS_DEFAULT_REGION}.amazonaws.com:/\"\n",
+
           "export PATH=\"/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/usr/local/bin:${PATH}\"\n",
 
           "apt-get -qy update\n",
           "apt-get -qy upgrade\n",
           "apt-get -qy install git\n",
+
+          "echo 'Mount Elastic File System'\n",
+          "apt-get -qy install nfs-common\n",
+          "echo \"${AWS_EFS_MOUNT}  /data  nfs4  defaults  0  0\" >> /etc/fstab\n",
+          "mkdir -p /data && mount -a\n",
+
+          "echo 'Check mount point'\n",
+          "mountpoint -q /data || echo '/data does not seem to be mounted' >&2\n",
 
           "git clone https://github.com/vladgh/puppet.git /opt/vpm/puppet\n",
           "/opt/vpm/puppet/bootstrap || true\n",

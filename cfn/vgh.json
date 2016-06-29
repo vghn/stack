@@ -208,7 +208,6 @@
           "export AWS_RDS_ENDPOINT=", {"Fn::GetAtt": ["RDS", "Outputs.DBEndpoint"]}, "\n",
           "export HOME=/root\n",
 
-
           "echo 'Exit trap'\n",
           "signal_exit(){\n",
           "  /usr/local/bin/cfn-signal --exit-code ${1:-0}",
@@ -226,14 +225,15 @@
           "aws_cfn_rds_db_endpoint: ${AWS_DEFAULT_REGION}\n",
           "EOF\n",
 
-          "echo 'Mount S3 Certificates Bucket'\n",
-          "echo \"${AWS_CERTS_BUCKET}  /opt/vpm/certs  fuse.s3fs  _netdev,nonempty,allow_other,use_rrs,use_cache=/tmp,retries=5,iam_role=${AWS_IAM_INSTANCE_ROLE}  0  0\" >> /etc/fstab\n",
-          "mkdir -p /opt/vpm/certs && mount -a\n",
+          "echo 'Mount DATA Elastic File System'\n",
+          "echo \"${AWS_EFS_MOUNT}  /data  nfs4  defaults  0  0\" >> /etc/fstab\n",
+          "mkdir -p /data && mount -a\n",
 
-          "if mountpoint -q /opt/vpm/certs; then\n",
-          "  echo 'Certificates path seems to be mounted ok'\n",
+          "echo 'Check DATA mount point'\n",
+          "if mountpoint -q /data; then\n",
+          "  echo 'DATA seems to be mounted ok'\n",
           "else\n",
-          "  echo 'Certificates path does not seem to be mounted' >&2; exit 1\n",
+          "  echo 'DATA does not seem to be mounted' >&2; exit 1\n",
           "fi\n",
 
           "echo 'Refresh VGS repo'\n",
@@ -405,6 +405,7 @@
         "Parameters": {
           "EnvType": {"Ref": "EnvType"},
           "AMIId": {"Ref": "RheaAMIId"},
+          "EFSID": {"Fn::GetAtt": ["EFS", "Outputs.EFS"]},
           "KeyName": {"Ref": "KeyName"},
           "SecurityGroup": {"Fn::GetAtt": ["SG", "Outputs.RheaSecurityGroup"]},
           "Subnet": {"Fn::GetAtt": ["VPC", "Outputs.Subnet1"]},
