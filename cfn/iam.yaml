@@ -14,27 +14,7 @@ Resources:
     Type: AWS::IAM::User
     Properties:
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/AmazonSSMFullAccess
-      - arn:aws:iam::aws:policy/AWSCodeDeployFullAccess
-      Policies:
-      - PolicyName: CIPolicy
-        Version: '2012-10-17'
-        PolicyDocument:
-          Statement:
-          - Action: s3:ListAllMyBuckets
-            Effect: Allow
-            Resource: arn:aws:s3:::*
-            Sid: AllowListingBuckets
-          - Action:
-            - s3:ListBucket
-            - s3:GetBucketLocation
-            Effect: Allow
-            Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket]]
-            Sid: AllowListingAssetsBucket
-          - Action: s3:*
-            Effect: Allow
-            Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket, '/*']]
-            Sid: AllowFullAccessToAssets
+      - arn:aws:iam::aws:policy/PowerUserAccess
   CIAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
@@ -43,7 +23,8 @@ Resources:
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      Roles: !Ref InstanceRole
+      Roles:
+      - !Ref InstanceRole
       Path: /
   InstanceRole:
     Type: AWS::IAM::Role
