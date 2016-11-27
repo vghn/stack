@@ -9,9 +9,8 @@ export APPDIR TMPDIR NOW VERSION VERSION_FILE CHANGELOG_FILE
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
 NOW="$(date +"%Y%m%d_%H%M%S")"
-VERSION_FILE="${APPDIR}/VERSION"
 CHANGELOG_FILE="${APPDIR}/CHANGELOG.md"
-VERSION=$(cat "$VERSION_FILE" || echo '0.0.0')
+VERSION=$(git describe --always --tags)
 
 # Load private environment
 # shellcheck disable=1090
@@ -22,9 +21,9 @@ VERSION=$(cat "$VERSION_FILE" || echo '0.0.0')
 . /opt/vgs/load 2>/dev/null || . ~/vgs/load 2>/dev/null || true
 
 # Detect environment
+ENVTYPE="${ENVTYPE:-production}"
 detect_environment 2>/dev/null || true
 detect_ci_environment 2>/dev/null || true
-ENVTYPE="${ENVTYPE:-production}"
 
 # Load functions
 # shellcheck disable=1090
@@ -97,7 +96,7 @@ get_cfn_defaults(){
   case "$stack" in
     efs)
       export name='EFS'
-      export body="${AWS_CFN_STACKS_PATH}/efs.json"
+      export body="${AWS_CFN_STACKS_PATH}/efs.yaml"
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=VolumeName,ParameterValue=${PROJECT_NAME}'"
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
@@ -106,7 +105,7 @@ get_cfn_defaults(){
       ;;
     elb)
       export name='ELB'
-      export body="${AWS_CFN_STACKS_PATH}/elb.json"
+      export body="${AWS_CFN_STACKS_PATH}/elb.yaml"
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG ELBSecurityGroup)\"'"
@@ -114,13 +113,13 @@ get_cfn_defaults(){
       ;;
     iam)
       export name='IAM'
-      export body="${AWS_CFN_STACKS_PATH}/iam.json"
+      export body="${AWS_CFN_STACKS_PATH}/iam.yaml"
       A='--capabilities CAPABILITY_IAM'
       P="'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
     rds)
       export name='RDS'
-      export body="${AWS_CFN_STACKS_PATH}/rds.json"
+      export body="${AWS_CFN_STACKS_PATH}/rds.yaml"
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
@@ -131,7 +130,7 @@ get_cfn_defaults(){
       ;;
     rhea)
       export name='RHEA'
-      export body="${AWS_CFN_STACKS_PATH}/rhea.json"
+      export body="${AWS_CFN_STACKS_PATH}/rhea.yaml"
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=Version,ParameterValue=${VERSION}-${GIT_SHA1}'"
       P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
@@ -146,13 +145,13 @@ get_cfn_defaults(){
       ;;
     sg)
       export name='SG'
-      export body="${AWS_CFN_STACKS_PATH}/sg.json"
+      export body="${AWS_CFN_STACKS_PATH}/sg.yaml"
       P="     'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       P="${P} 'ParameterKey=SSHLocations,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     vpc)
       export name='VPC'
-      export body="${AWS_CFN_STACKS_PATH}/vpc.json"
+      export body="${AWS_CFN_STACKS_PATH}/vpc.yaml"
       P="     'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
       T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"

@@ -2,6 +2,6 @@
 .env
 
 # Other
-/tmp
-/*.log
-/.vagrant/
+*.log
+.vagrant/
+tmp/

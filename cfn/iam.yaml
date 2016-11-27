@@ -1,0 +1,141 @@
+Description: VGH IAM
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  AssetsBucket:
+    Description: The S3 bucket containing the assets
+    Type: String
+
+Resources:
+  CI:
+    Type: AWS::IAM::User
+    Properties:
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonSSMFullAccess
+      - arn:aws:iam::aws:policy/AWSCodeDeployFullAccess
+      Policies:
+      - PolicyName: CIPolicy
+        Version: '2012-10-17'
+        PolicyDocument:
+          Statement:
+          - Action: s3:ListAllMyBuckets
+            Effect: Allow
+            Resource: arn:aws:s3:::*
+            Sid: AllowListingBuckets
+          - Action:
+            - s3:ListBucket
+            - s3:GetBucketLocation
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket]]
+            Sid: AllowListingAssetsBucket
+          - Action: s3:*
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket, '/*']]
+            Sid: AllowFullAccessToAssets
+  CIAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref CI
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: !Ref InstanceRole
+      Path: /
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: /
+      Policies:
+      - PolicyName: InstancePolicies
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - ec2:Describe*
+            - autoscaling:Describe*
+            - autoscaling:EnterStandby
+            - autoscaling:ExitStandby
+            - elasticloadbalancing:ConfigureHealthCheck
+            - elasticloadbalancing:DescribeLoadBalancers
+            Effect: Allow
+            Resource: '*'
+            Sid: AllowScalingOperations
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource:
+            - arn:aws:logs:*:*:*
+            Sid: AllowLogging
+          - Action: s3:ListAllMyBuckets
+            Effect: Allow
+            Resource: arn:aws:s3:::*
+            Sid: AllowS3ListAllBucket
+          - Action: '*'
+            Effect: Allow
+            Resource:
+              - !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket]]
+              - !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket, '/*']]
+            Sid: AllowS3AccessToAssetsBucket
+
+  Rhea:
+    Type: AWS::IAM::User
+    Properties:
+      Policies:
+      - PolicyName: RheaPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action: s3:ListAllMyBuckets
+            Effect: Allow
+            Resource: arn:aws:s3:::*
+            Sid: AllowListingBuckets
+          - Action:
+            - s3:ListBucket
+            - s3:GetBucketLocation
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket]]
+            Sid: AllowListingAssetsBucket
+          - Action: s3:*
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket, '/*']]
+            Sid: AllowFullAccessToAssets
+  RheaAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref Rhea
+
+Outputs:
+  CIAccessKey:
+    Description: The CI Access Key
+    Value: !Ref CIAccessKey
+  CISecretKey:
+    Description: The CI Secret Key
+    Value: !GetAtt CIAccessKey.SecretAccessKey
+  InstanceProfile:
+    Description: The Instance Profile
+    Value: !Ref InstanceProfile
+  InstanceRole:
+    Description: The instance role name
+    Value: !Ref InstanceRole
+  RheaAccessKey:
+    Description: The Rhea Access Key
+    Value: !Ref RheaAccessKey
+  RheaSecretKey:
+    Description: The Rhea Secret Key
+    Value: !GetAtt RheaAccessKey.SecretAccessKey

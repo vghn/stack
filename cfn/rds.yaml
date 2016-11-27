@@ -1,0 +1,74 @@
+Description: VGH RDS
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  DBEngine:
+    AllowedValues:
+      - MySQL
+      - mariadb
+      - postgres
+    ConstraintDescription: Must select a valid database engine
+    Default: mariadb
+    Description: MySQL engine
+    Type: String
+  DBName:
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters (max 64)
+    Default: myDatabase
+    Description: MySQL database name
+    MaxLength: '64'
+    MinLength: '1'
+    Type: String
+  DBPassword:
+    ConstraintDescription: must be between 8 and 64 characters
+    Description: Password for MySQL database access
+    MaxLength: '64'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  DBUser:
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters (max 16)
+    Description: Username for MySQL database access
+    MaxLength: '16'
+    MinLength: '1'
+    NoEcho: 'true'
+    Type: String
+  SecurityGroupIDs:
+    Description: The list of security group ids
+    Type: List<AWS::EC2::SecurityGroup::Id>
+  SubnetIDs:
+    Description: The list of subnet ids
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+  DB:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      AllocatedStorage: '5'
+      BackupRetentionPeriod: '3'
+      DBInstanceClass: db.t2.micro
+      DBName: !Ref DBName
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      Engine: !Ref DBEngine
+      MasterUserPassword: !Ref DBPassword
+      MasterUsername: !Ref DBUser
+      MultiAZ: 'false'
+      StorageType: gp2
+      VPCSecurityGroups: !Ref SecurityGroupIDs
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: DB Subnet Group
+      SubnetIds: !Ref SubnetIDs
+
+Outputs:
+  DBEndpoint:
+    Description: The database endpoint
+    Value: !GetAtt DB.Endpoint.Address
