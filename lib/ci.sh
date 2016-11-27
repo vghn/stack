@@ -22,7 +22,10 @@ ci_install(){
 
 # CI Test
 ci_test(){
-  e_info 'Nothing yet'
+  e_info 'Validate CloudFormation templates'
+  find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
+    'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
+    -- {} \;
 }
 
 # CI Deploy
