@@ -14,10 +14,9 @@ ci_install(){
   echo 'Install AWS-CLI'
   pip install --user --upgrade awscli
 
-  if [ "$TRAVIS_PULL_REQUEST" = 'false' ]; then
-    echo 'Download .env'
-    download_env
-  fi
+  echo 'Install HashiCorp Packer'
+  curl -L -o packer.zip https://releases.hashicorp.com/packer/0.12.0/packer_0.12.0_linux_amd64.zip
+  unzip -d ~/bin packer.zip
 }
 
 # CI Test
@@ -26,6 +25,9 @@ ci_test(){
   find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
     'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
     -- {} \;
+
+  e_info 'Validate AMIs'
+  eval "${APPDIR}/bin/ami" validate
 }
 
 # CI Deploy
