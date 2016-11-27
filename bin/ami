@@ -6,14 +6,4 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd -P)/envrc"
 
 # Process arguments
-case "${1:-}" in
-  create)
-    ami_create
-    ;;
-  clean)
-    ami_clean
-    ;;
-  *)
-    e_abort "USAGE: ${BASH_SOURCE[0]} [create | clean]"
-    ;;
-esac
+ami_process "${@}"

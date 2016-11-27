@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Continuous Integration / Continuous Deployment tasks
+# CI/CD Tasks
 
 # Load environment
 # shellcheck disable=1090
@@ -8,25 +8,13 @@
 # Process arguments
 case "${1:-}" in
   install)
-    echo 'Installing VGS library'
-    mkdir -p ~/vgs && wget -qO- https://s3.amazonaws.com/vghn/vgs.tgz | \
-      tar xz --no-same-owner -C ~/vgs
-
-    echo 'Ensure latest Python PIP and AWS-CLI'
-    pip install --user --upgrade pip awscli
+    ci_install
     ;;
   test)
-    cfn_validate_stacks
+    ci_test
     ;;
   deploy)
-    if [[ "$PR" == false ]]; then
-      cfn_upload_templates
-      if [[ "$ENVTYPE" == production ]]; then
-        cfn_process_stacks vgh update && cfn_update_stack
-      fi
-    else
-      echo 'Deployment is not allowed from pull requests' >&2
-    fi
+    ci_deploy
     ;;
   *)
     e_abort "USAGE: ${BASH_SOURCE[0]} [install | test | deploy]"

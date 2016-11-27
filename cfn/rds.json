@@ -1,19 +1,19 @@
 {
-  "Description": "VGH Puppet RDS v0.0.1",
+  "Description": "VGH RDS v0.0.1",
 
   "Parameters": {
     "EnvType": {
       "Type": "String",
-      "Description": "Environment type",
+      "Description": "The environment type",
       "Default": "production"
     },
     "SubnetIDs": {
       "Type": "List<AWS::EC2::Subnet::Id>",
-      "Description": "A list of subnet ids"
+      "Description": "The list of subnet ids"
     },
-    "SecurityGroupsIDs": {
+    "SecurityGroupIDs": {
       "Type": "List<AWS::EC2::SecurityGroup::Id>",
-      "Description": "A list of security group ids"
+      "Description": "The list of security group ids"
     },
     "DBEngine": {
       "Default": "mariadb",
@@ -29,7 +29,7 @@
       "MinLength": "1",
       "MaxLength": "64",
       "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters (max 64)"
     },
     "DBUser": {
       "NoEcho": "true",
@@ -38,16 +38,15 @@
       "MinLength": "1",
       "MaxLength": "16",
       "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters (max 16)"
     },
     "DBPassword": {
       "NoEcho": "true",
       "Description" : "Password for MySQL database access",
       "Type": "String",
       "MinLength": "8",
-      "MaxLength": "41",
-      "AllowedPattern" : "[a-zA-Z0-9]*",
-      "ConstraintDescription" : "must contain only alphanumeric characters."
+      "MaxLength": "64",
+      "ConstraintDescription" : "must be between 8 and 64 characters"
     }
   },
 
@@ -64,7 +63,7 @@
         "AllocatedStorage": "5",
         "StorageType": "gp2",
         "MultiAZ": "false",
-        "VPCSecurityGroups": {"Ref": "SecurityGroupsIDs"},
+        "VPCSecurityGroups": {"Ref": "SecurityGroupIDs"},
         "DBSubnetGroupName": {"Ref": "DBSubnetGroup"}
       },
       "DeletionPolicy": "Snapshot"

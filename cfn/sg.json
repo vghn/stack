@@ -1,8 +1,11 @@
 {
-  "Description": "VGH Puppet Security Groups v0.0.1",
+  "Description": "VGH SG v0.0.1",
 
   "Parameters": {
-    "VPCId": {"Type": "String", "Description": "The VPC ID"},
+    "VPCId": {
+      "Description": "The VPC ID",
+      "Type": "AWS::EC2::VPC::Id"
+    },
     "SSHLocations" : {
       "Type": "CommaDelimitedList",
       "Description" : "The IP address ranges that can be used to SSH to the EC2 instances"
@@ -10,32 +13,6 @@
   },
 
   "Resources": {
-    "InstanceSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "EC2 Instance Firewall",
-        "VpcId": {"Ref": "VPCId"}
-      }
-    },
-    "InstanceSecurityGroupAllowSelf": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "0", "ToPort": "65535", "SourceSecurityGroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}
-      }
-    },
-    "InstanceSecurityGroupAllowELB": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "0", "ToPort": "65535", "SourceSecurityGroupId": {"Fn::GetAtt": ["ELBSecurityGroup", "GroupId"]}
-      }
-    },
-    "InstanceSecurityGroupAllowSSH1": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": { "Fn::Select" : [ "0", {"Ref": "SSHLocations"} ] }
-      }
-    },
-
     "ELBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -59,46 +36,26 @@
     "RheaSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "MoM Firewall",
+        "GroupDescription": "Rhea Firewall",
         "VpcId": {"Ref": "VPCId"}
       }
     },
     "RheaSecurityGroupAllowSelf": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "0", "ToPort": "65535", "SourceSecurityGroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}
+        "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "0", "ToPort": "65535", "SourceSecurityGroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}
       }
     },
-    "RheaSecurityGroupAllowPuppet": {
+    "RheaSecurityGroupAllowELB": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "8140", "ToPort": "8140", "CidrIp": "0.0.0.0/0"
+        "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "0", "ToPort": "65535", "SourceSecurityGroupId": {"Fn::GetAtt": ["ELBSecurityGroup", "GroupId"]}
       }
     },
     "RheaSecurityGroupAllowSSH1": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": { "Fn::Select" : [ "0", {"Ref": "SSHLocations"} ] }
-      }
-    },
-
-    "EFSSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "EFS Firewall",
-        "VpcId": {"Ref": "VPCId"}
-      }
-    },
-    "EFSSecurityGroupAllowInstance": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {"Fn::GetAtt": ["EFSSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "2049", "ToPort": "2049", "SourceSecurityGroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}
-      }
-    },
-    "EFSSecurityGroupAllowRhea": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {"Fn::GetAtt": ["EFSSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "2049", "ToPort": "2049", "SourceSecurityGroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}
       }
     },
 
@@ -109,40 +66,50 @@
         "VpcId": {"Ref": "VPCId"}
       }
     },
-    "DBSecurityGroupAllowInstancetoPostgreSQL": {
+    "DBSecurityGroupAllowRheaAccesstoPostgreSQL": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": {"Fn::GetAtt": ["DBSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "SourceSecurityGroupId": {"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]}
+        "GroupId": {"Fn::GetAtt": ["DBSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "SourceSecurityGroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}
       }
     },
-    "DBSecurityGroupAllowSSH1toPostgreSQL": {
+    "DBSecurityGroupAllowSSH1AccesstoPostgreSQL": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {"Fn::GetAtt": ["DBSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "CidrIp": { "Fn::Select" : [ "0", {"Ref": "SSHLocations"} ] }
+      }
+    },
+
+    "EFSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "EFS Firewall",
+        "VpcId": {"Ref": "VPCId"}
+      }
+    },
+    "EFSSecurityGroupAllowRhea": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Fn::GetAtt": ["EFSSecurityGroup", "GroupId"]}, "IpProtocol": "tcp", "FromPort": "2049", "ToPort": "2049", "SourceSecurityGroupId": {"Fn::GetAtt": ["RheaSecurityGroup", "GroupId"]}
       }
     }
   },
 
   "Outputs": {
-    "InstanceSecurityGroup": {
-      "Description": "The Instance security group",
-      "Value": {"Ref" : "InstanceSecurityGroup"}
-    },
     "ELBSecurityGroup": {
       "Description": "The Elastic Load Balancer security group",
       "Value": {"Ref" : "ELBSecurityGroup"}
     },
-    "EFSSecurityGroup": {
-      "Description": "The Elastic File System security group",
-      "Value": {"Ref" : "EFSSecurityGroup"}
-    },
     "RheaSecurityGroup": {
-      "Description": "Puppet Master of Masters security group",
+      "Description": "The Puppet Master of Masters security group",
       "Value": {"Ref" : "RheaSecurityGroup"}
     },
     "DBSecurityGroup": {
-      "Description": "The database security group",
+      "Description": "The Relational Database Service security group",
       "Value": {"Ref" : "DBSecurityGroup"}
+    },
+    "EFSSecurityGroup": {
+      "Description": "The Elastic File System security group",
+      "Value": {"Ref" : "EFSSecurityGroup"}
     }
   }
 }

@@ -8,4 +8,4 @@
 vgs_release \
   --sign \
   --type "${1:-patch}" \
-  --github-url 'https://github.com/vghn/puppet_stk'
+  --github-url 'https://github.com/vghn/stk'

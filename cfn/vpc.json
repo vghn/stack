@@ -1,5 +1,14 @@
 {
-  "Description": "VGH Puppet VPC v0.0.1",
+  "Description": "VGH VPC v0.0.1",
+
+  "Parameters": {
+    "NumberOfAZs": {
+        "AllowedValues": ["2", "3", "4"],
+        "Default": "2",
+        "Description": "The number of Availability Zones to use in the VPC. This must match the number of zones in existing in the region.",
+        "Type": "String"
+    }
+  },
 
   "Mappings": {
     "CIDRs": {
@@ -20,13 +29,24 @@
     }
   },
 
+  "Conditions": {
+    "3AZCondition": {
+      "Fn::Or": [
+        {"Fn::Equals": [{"Ref": "NumberOfAZs"}, "3"]},
+        {"Condition": "4AZCondition"}
+      ]
+    },
+    "4AZCondition": {"Fn::Equals": [{"Ref": "NumberOfAZs"}, "4"]}
+  },
+
   "Resources": {
     "VPC": {
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "EnableDnsSupport": "true",
         "EnableDnsHostnames": "true",
-        "CidrBlock": {"Fn::FindInMap": ["CIDRs", "us-east-1", "VPC"]}
+        "CidrBlock": {"Fn::FindInMap": ["CIDRs", {"Ref": "AWS::Region"}, "VPC"]},
+        "Tags" : [{"Key": "VPC", "Value": "vgh"}]
       }
     },
 
@@ -34,36 +54,38 @@
       "Type": "AWS::EC2::Subnet",
       "DependsOn": "AttachGateway",
       "Properties": {
-        "AvailabilityZone": "us-east-1a",
+        "AvailabilityZone": {"Fn::Select": ["0", {"Fn::GetAZs": {"Ref": "AWS::Region"}}]},
         "VpcId": {"Ref": "VPC" },
-        "CidrBlock": {"Fn::FindInMap": ["CIDRs", "us-east-1", "Subnet1"]}
+        "CidrBlock": {"Fn::FindInMap": ["CIDRs", {"Ref": "AWS::Region"}, "Subnet1"]}
       }
     },
     "Subnet2": {
       "Type": "AWS::EC2::Subnet",
       "DependsOn": "AttachGateway",
       "Properties": {
-        "AvailabilityZone": "us-east-1c",
+        "AvailabilityZone": {"Fn::Select": ["1", {"Fn::GetAZs": {"Ref": "AWS::Region"}}]},
         "VpcId": {"Ref": "VPC" },
-        "CidrBlock": {"Fn::FindInMap": ["CIDRs", "us-east-1", "Subnet2"]}
+        "CidrBlock": {"Fn::FindInMap": ["CIDRs", {"Ref": "AWS::Region"}, "Subnet2"]}
       }
     },
     "Subnet3": {
+      "Condition": "3AZCondition",
       "Type": "AWS::EC2::Subnet",
       "DependsOn": "AttachGateway",
       "Properties": {
-        "AvailabilityZone": "us-east-1d",
+        "AvailabilityZone": {"Fn::Select": ["2", {"Fn::GetAZs": {"Ref": "AWS::Region"}}]},
         "VpcId": {"Ref": "VPC" },
-        "CidrBlock": {"Fn::FindInMap": ["CIDRs", "us-east-1", "Subnet3"]}
+        "CidrBlock": {"Fn::FindInMap": ["CIDRs", {"Ref": "AWS::Region"}, "Subnet3"]}
       }
     },
     "Subnet4": {
+      "Condition": "4AZCondition",
       "Type": "AWS::EC2::Subnet",
       "DependsOn": "AttachGateway",
       "Properties": {
-        "AvailabilityZone": "us-east-1e",
+        "AvailabilityZone": {"Fn::Select": ["3", {"Fn::GetAZs": {"Ref": "AWS::Region"}}]},
         "VpcId": {"Ref": "VPC" },
-        "CidrBlock": {"Fn::FindInMap": ["CIDRs", "us-east-1", "Subnet4"]}
+        "CidrBlock": {"Fn::FindInMap": ["CIDRs", {"Ref": "AWS::Region"}, "Subnet4"]}
       }
     },
 
@@ -108,6 +130,7 @@
       }
     },
     "Subnet3RouteTableAssociation": {
+      "Condition": "3AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": {"Ref": "Subnet3"},
@@ -115,6 +138,7 @@
       }
     },
     "Subnet4RouteTableAssociation": {
+      "Condition": "4AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": {"Ref": "Subnet4"},
@@ -143,6 +167,7 @@
       }
     },
     "Subnet3NetworkAclAssociation": {
+      "Condition": "3AZCondition",
       "Type": "AWS::EC2::SubnetNetworkAclAssociation",
       "Properties": {
         "SubnetId": {"Ref": "Subnet3"},
@@ -150,6 +175,7 @@
       }
     },
     "Subnet4NetworkAclAssociation": {
+      "Condition": "4AZCondition",
       "Type": "AWS::EC2::SubnetNetworkAclAssociation",
       "Properties": {
         "SubnetId": {"Ref": "Subnet4"},
@@ -183,9 +209,14 @@
 
   "Outputs": {
     "VPCId":   { "Description": "The VPC ID", "Value": {"Ref": "VPC"} },
-    "Subnet1": { "Description": "Subnet1 ID", "Value": {"Ref": "Subnet1"} },
-    "Subnet2": { "Description": "Subnet2 ID", "Value": {"Ref": "Subnet2"} },
-    "Subnet3": { "Description": "Subnet3 ID", "Value": {"Ref": "Subnet3"} },
-    "Subnet4": { "Description": "Subnet4 ID", "Value": {"Ref": "Subnet4"} }
+    "SubnetIDs": {
+      "Description": "Subnet IDs",
+      "Value": {"Fn::Join": [",", [
+        {"Ref": "Subnet1"},
+        {"Ref": "Subnet2"},
+        {"Fn::If": ["3AZCondition", {"Ref": "Subnet3"}, {"Ref" : "AWS::NoValue"}]},
+        {"Fn::If": ["4AZCondition", {"Ref": "Subnet4"}, {"Ref" : "AWS::NoValue"}]}
+      ]]}
+    }
   }
 }

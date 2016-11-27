@@ -1,14 +1,10 @@
 {
-  "Description": "VGH Puppet IAM v0.0.1",
+  "Description": "VGH IAM v0.0.1",
 
   "Parameters": {
     "AssetsBucket": {
       "Type": "String",
       "Description": "The S3 bucket containing the assets"
-    },
-    "PuppetCertificatesBucket": {
-      "Type": "String",
-      "Description": "The S3 bucket containing the SSL certificates for Puppet"
     }
   },
 
@@ -26,7 +22,7 @@
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Principal": { "Service": [ "ec2.amazonaws.com" ] },
+              "Principal": {"Service": ["ec2.amazonaws.com"]},
               "Effect": "Allow",
               "Action": "sts:AssumeRole"
             }
@@ -34,8 +30,6 @@
         },
         "Path": "/",
         "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/AWSCodeDeployReadOnlyAccess",
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role",
           "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
         ],
         "Policies":[
@@ -81,14 +75,6 @@
                     {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}]]},
                     {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}, "/*"]]}
                   ]
-                },{
-                  "Sid": "AllowS3AccessToPuppetCertificatesBucket",
-                  "Effect": "Allow",
-                  "Action": "*",
-                  "Resource": [
-                    {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "PuppetCertificatesBucket"}]]},
-                    {"Fn::Join" : ["", ["arn:aws:s3:::", {"Ref": "PuppetCertificatesBucket"}, "/*"]]}
-                  ]
                 }
               ]
             }
@@ -97,46 +83,93 @@
       }
     },
 
-    "CodeDeployServiceRole": {
-      "Type": "AWS::IAM::Role",
+    "CI": {
+      "Type": "AWS::IAM::User",
       "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Principal": {
-                "Service": [
-                  "codedeploy.us-east-1.amazonaws.com",
-                  "codedeploy.us-west-2.amazonaws.com",
-                  "codedeploy.us-west-1.amazonaws.com",
-                  "codedeploy.eu-west-1.amazonaws.com",
-                  "codedeploy.eu-central-1.amazonaws.com",
-                  "codedeploy.ap-southeast-1.amazonaws.com",
-                  "codedeploy.ap-southeast-2.amazonaws.com",
-                  "codedeploy.ap-northeast-1.amazonaws.com"
-                ]
-              },
-              "Effect": "Allow",
-              "Action": "sts:AssumeRole"
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
+          "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyName": "CIPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "AllowListingBuckets",
+                  "Effect": "Allow",
+                  "Action": "s3:ListAllMyBuckets",
+                  "Resource": "arn:aws:s3:::*"
+                },
+                {
+                  "Sid": "AllowListingAssetsBucket",
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation"
+                  ],
+                  "Resource": {"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}]]}
+                },
+                {
+                  "Sid": "AllowFullAccessToAssets",
+                  "Effect": "Allow",
+                  "Action": "s3:*",
+                  "Resource": {"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}, "/*"]]}
+                }
+              ]
             }
-          ]
-        },
-        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"],
-        "Path": "/"
+          }
+        ]
+      }
+    },
+    "CIAccessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {"Ref": "CI"}
       }
     },
 
-    "ECSServiceRole": {
-      "Type": "AWS::IAM::Role",
+    "Rhea": {
+      "Type": "AWS::IAM::User",
       "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {"Service": ["ecs.amazonaws.com"]},
-            "Action": ["sts:AssumeRole"]
-          }]
-        },
-        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"],
-        "Path": "/"
+        "Policies": [
+          {
+            "PolicyName": "RheaPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "AllowListingBuckets",
+                  "Effect": "Allow",
+                  "Action": "s3:ListAllMyBuckets",
+                  "Resource": "arn:aws:s3:::*"
+                },
+                {
+                  "Sid": "AllowListingAssetsBucket",
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation"
+                  ],
+                  "Resource": {"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}]]}
+                },
+                {
+                  "Sid": "AllowFullAccessToAssets",
+                  "Effect": "Allow",
+                  "Action": "s3:*",
+                  "Resource": {"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "AssetsBucket"}, "/*"]]}
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "RheaAccessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {"Ref": "Rhea"}
       }
     }
   },
@@ -150,13 +183,21 @@
       "Description": "The instance role name",
       "Value": {"Ref": "InstanceRole" }
     },
-    "CodeDeployServiceRole": {
-      "Description": "The CodeDeploy service role ARN",
-      "Value": {"Fn::GetAtt": ["CodeDeployServiceRole", "Arn"]}
+    "CIAccessKey": {
+      "Description": "The CI Access Key",
+      "Value": {"Ref": "CIAccessKey" }
     },
-    "ECSServiceRole": {
-      "Description": "The ECS execution role ARN",
-      "Value": {"Fn::GetAtt": ["ECSServiceRole", "Arn"]}
+    "CISecretKey": {
+      "Description": "The CI Secret Key",
+      "Value": {"Fn::GetAtt": [ "CIAccessKey", "SecretAccessKey" ]}
+    },
+    "RheaAccessKey": {
+      "Description": "The Rhea Access Key",
+      "Value": {"Ref": "RheaAccessKey" }
+    },
+    "RheaSecretKey": {
+      "Description": "The Rhea Secret Key",
+      "Value": {"Fn::GetAtt": [ "RheaAccessKey", "SecretAccessKey" ]}
     }
   }
 }

@@ -1,147 +1,257 @@
 {
-  "Description": "VGH Puppet Master of Masters v0.0.1",
+  "Description": "VGH RHEA v0.0.1",
 
   "Parameters": {
     "EnvType": {
-      "Description": "Environment type",
+      "Description": "The environment type",
       "Type": "String",
       "Default": "production"
     },
-    "AMIId": {
-      "Type": "AWS::EC2::Image::Id",
-      "Description": "The AMI Id for the EC2 instance"
-    },
-    "EFSID": {
+    "Version": {
+      "Description": "The version number",
       "Type": "String",
-      "Description": "The ID of the EFS volume"
+      "Default": "0.0.0"
+    },
+    "KeyName": {
+      "Description": "The name of the key pair used to log into the EC2 instance via SSH",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "ImageID": {
+      "Type": "AWS::EC2::Image::Id",
+      "Description": "The base image id"
     },
     "InstanceType": {
       "Description": "The instance type for the EC2 instance",
       "Type": "String",
       "Default": "t2.micro"
     },
-    "KeyName": {
-      "Description": "The name of the key pair used to log into the EC2 instance via SSH",
-      "Type": "AWS::EC2::KeyPair::KeyName"
-    },
-    "SecurityGroup": {
-      "Description": "The security group for the EC2 instance",
-      "Type": "AWS::EC2::SecurityGroup::Id"
-    },
-    "Subnet": {
-      "Description": "The subnet the EC2 instance is launched into",
-      "Type": "AWS::EC2::Subnet::Id"
-    },
     "IamInstanceProfile": {
-      "Description": "The Instance Profile",
+      "Description": "The instance profile",
+      "Type": "String"
+    },
+    "ElasticLoadBalancer": {
+      "Type": "String",
+      "Description": "The Elastic Load Balancer name"
+    },
+    "EFSVolumeID": {
+      "Type": "String",
+      "Description": "The id of the EFS volume"
+    },
+    "SubnetIDs": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Description": "The list of subnet ids"
+    },
+    "SecurityGroupIDs": {
+      "Type": "List<AWS::EC2::SecurityGroup::Id>",
+      "Description": "The list of security group ids"
+    },
+    "ControlRepoArchive": {
+      "Description": "The S3 path for the puppet control repository",
       "Type": "String"
     }
   },
 
   "Resources": {
-    "Rhea": {
-      "Type": "AWS::EC2::Instance",
+    "RheaASG": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "ImageId": {"Ref": "AMIId"},
+        "LaunchConfigurationName": {"Ref": "RheaLaunchConfig"},
+        "VPCZoneIdentifier": {"Ref": "SubnetIDs"},
+        "MinSize": "0",
+        "MaxSize": "1",
+        "DesiredCapacity": "1",
+        "HealthCheckType": "ELB",
+        "HealthCheckGracePeriod": "600",
+        "Cooldown": "600",
+        "LoadBalancerNames": [{"Ref": "ElasticLoadBalancer"}],
+        "TerminationPolicies": ["OldestInstance", "Default"],
+        "Tags": [
+          {"Key": "Role", "Value": "rhea", "PropagateAtLaunch": "true"},
+          {"Key": "Name", "Value": "Rhea", "PropagateAtLaunch": "true"}
+        ]
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MaxBatchSize": "1",
+          "MinInstancesInService": "0",
+          "MinSuccessfulInstancesPercent": "0",
+          "PauseTime": "PT10M",
+          "WaitOnResourceSignals": "true"
+        }
+      }
+    },
+
+    "RheaLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "Version": {"Ref": "Version"},
+
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "Common": ["WriteFacts"],
+            "Create": [{"ConfigSet": "Common"}, "ConfigureCF", "ConfigureNode", "StartVPM", "BootstrapNode"],
+            "Update": [{"ConfigSet": "Common"}, "StartVPM", "UpdateNode"]
+          },
+
+          "WriteFacts": {
+            "files": {
+              "/etc/puppetlabs/facter/facts.d/aws.env.yaml": {
+                "content": {"Fn::Join": ["", [
+                  "---\n",
+                  "vpm:\n",
+                  "  version: ", {"Ref": "Version"}, "\n",
+                  "  efs_volume_id: ", {"Ref": "EFSVolumeID"}
+                ]]},
+                "mode": "000400",
+                "owner": "root",
+                "group": "root"
+              }
+            }
+          },
+
+          "ConfigureCF": {
+            "files": {
+              "/etc/cfn/cfn-hup.conf": {
+                "content": {"Fn::Join": ["", [
+                  "[main]\n",
+                  "stack=", {"Ref": "AWS::StackId"}, "\n",
+                  "region=", {"Ref": "AWS::Region"}, "\n",
+                  "interval=1\n"
+                ]]},
+                "mode": "000400",
+                "owner": "root",
+                "group": "root"
+              },
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                "content": {"Fn::Join": ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.RheaLaunchConfig.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/usr/local/bin/cfn-init",
+                  "         --resource RheaLaunchConfig",
+                  "         --configsets Update",
+                  "         --stack ", {"Ref": "AWS::StackName"},
+                  "         --region ", {"Ref": "AWS::Region"}, "\n",
+                  "runas=root\n"
+                ]]}
+              }
+            },
+            "commands": {
+              "01-start-hup": {
+                "command": "/usr/local/bin/cfn-hup"
+              }
+            }
+          },
+
+          "ConfigureNode": {
+            "commands": {
+              "01_set_puppet_host": {
+                "command": "/opt/puppetlabs/bin/puppet resource host puppet ip=\"$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\""
+              },
+              "02_set_certname": {
+                "command": "/opt/puppetlabs/bin/puppet config set certname \"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\" --section main"
+              },
+              "03_patch_ssm_agent": {
+                "command": "systemctl enable amazon-ssm-agent.service && systemctl restart amazon-ssm-agent.service"
+              }
+            }
+          },
+
+          "StartVPM": {
+            "commands": {
+              "01_reset_repo": {
+                "cwd": "/opt/vpm",
+                "command": "git fetch --all && git reset --hard origin/production"
+              },
+              "02_pull_images": {
+                "cwd": "/opt/vpm",
+                "command": "docker-compose pull"
+              },
+              "03_build_images": {
+                "cwd": "/opt/vpm",
+                "command": "docker-compose build"
+              },
+              "04_start_vpm": {
+                "cwd": "/opt/vpm",
+                "command": "docker-compose up -d"
+              }
+            }
+          },
+
+          "BootstrapNode": {
+            "commands": {
+              "01_wait_for_puppet_server": {
+                "command": "until nc -z puppet 8140; do sleep 10; done; sleep 5"
+              },
+              "02_bootstrap_node": {
+                "env": {
+                  "PP_ROLE": "rhea",
+                  "PP_PROJECT": "vgh",
+                  "PP_APPLICATION": "vpm"
+                },
+                "command": "sudo -E /opt/vpm/bin/bootstrap"
+              }
+            }
+          },
+
+          "UpdateNode": {
+            "commands": {
+              "01_enter_standby": {
+                "command": "bash -c '. /opt/vgs/load; nc -z puppet 8140 || vgs_aws_ec2_autoscaling_enter_standby'"
+              },
+              "02_wait_for_puppet_server": {
+                "command": "until nc -z puppet 8140; do sleep 10; done; sleep 5"
+              },
+              "03_exit_standby": {
+                "command": "bash -c '. /opt/vgs/load; vgs_aws_ec2_autoscaling_exit_standby'"
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
         "InstanceType": {"Ref": "InstanceType"},
         "KeyName": {"Ref": "KeyName"},
-        "NetworkInterfaces" : [{
-          "GroupSet": [{"Ref": "SecurityGroup"}],
-          "SubnetId": {"Ref": "Subnet"},
-          "AssociatePublicIpAddress": "true",
-          "DeviceIndex": "0",
-          "DeleteOnTermination": "true"
-        }],
+        "AssociatePublicIpAddress": "true",
+        "ImageId": {"Ref": "ImageID"},
+        "SecurityGroups": {"Ref": "SecurityGroupIDs"},
         "IamInstanceProfile": {"Ref": "IamInstanceProfile"},
-        "Tags": [
-          {"Key": "Role", "Value": "rhea"},
-          {"Key": "Name", "Value": "Rhea"}
-        ],
-        "UserData": {"Fn::Base64": {"Fn::Join": ["", [
+        "UserData": {"Fn::Base64": {"Fn::Join": ["" , [
           "#!/usr/bin/env bash\n",
           "set -euo pipefail\n",
           "IFS=$'\\n\\t'", "\n",
+
           "echo 'IN_PROGRESS' | tee /var/lib/cloud/instance/status_cfn\n",
 
-          "export ENVTYPE=", {"Ref": "EnvType"}, "\n",
+          "signal_exit(){\n",
+          "  echo 'Signal CloudFormation'\n",
+          "  /usr/local/bin/cfn-signal --exit-code ${1:-0}",
+          "    --resource RheaASG",
+          "    --stack ", {"Ref": "AWS::StackName"},
+          "    --region ", {"Ref": "AWS::Region"},
+          " || true\n",
+          "}\n",
+          "trap 'signal_exit $?' EXIT INT TERM\n",
 
-          "export PP_SERVER=puppet.ghn.me\n",
-          "export PP_ROLE=rhea\n",
-          "export PP_PROJECT=vpm\n",
-          "export PP_CERTNAME=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"\n",
+          "echo 'Update APT'\n",
+          "while ! apt-get -qy update; do echo 'Waiting for APT'; sleep 1; done\n",
 
-          "export AWS_AVAILABILITY_ZONE=\"$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\"\n",
-          "export AWS_DEFAULT_REGION=", {"Ref": "AWS::Region"}, "\n",
-          "export AWS_EFS_VOLUME=", {"Ref": "EFSID"}, "\n",
-          "export AWS_EFS_MOUNT=\"${AWS_AVAILABILITY_ZONE}.${AWS_EFS_VOLUME}.efs.${AWS_DEFAULT_REGION}.amazonaws.com:/\"\n",
+          "echo 'Ensure Python PIP is installed'\n",
+          "command -v pip >/dev/null 2>&1 || apt-get -qy install python-pip\n",
 
-          "export PATH=\"/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/usr/local/bin:${PATH}\"\n",
+          "echo 'Ensure CloudFormation helper scripts are installed'\n",
+          "[[ -x /usr/local/bin/cfn-init ]] || pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
 
-          "apt-get -qy update\n",
-          "apt-get -qy upgrade\n",
-          "apt-get -qy install git\n",
-
-          "echo 'Mount Elastic File System'\n",
-          "apt-get -qy install nfs-common\n",
-          "echo \"${AWS_EFS_MOUNT}  /data  nfs4  defaults  0  0\" >> /etc/fstab\n",
-          "mkdir -p /data && mount -a\n",
-
-          "echo 'Check mount point'\n",
-          "mountpoint -q /data || echo '/data does not seem to be mounted' >&2\n",
-
-          "git clone https://github.com/vladgh/puppet.git /opt/vpm/puppet\n",
-          "/opt/vpm/puppet/bootstrap || true\n",
-
-          "modules=(\n",
-          "  puppetlabs-stdlib\n",
-          "  puppetlabs-apt\n",
-          "  puppetlabs-git\n",
-          "  garethr-docker\n",
-          ")\n",
-          "for mod in \"${modules[@]}\"; do puppet module install \"$mod\"; done\n",
-
-          "cat << EOP | puppet apply --verbose\n",
-          "  include ::git\n",
-          "  include ::docker\n",
-          "  class {'::docker::compose': version => '1.7.1'}\n",
-          "EOP\n",
-
-          "/opt/vpm/puppet/bin/run\n",
+          "echo 'Run CloudFormation Init'\n",
+          "/usr/local/bin/cfn-init",
+          "  --resource RheaLaunchConfig",
+          "  --configsets Create",
+          "  --stack ", {"Ref": "AWS::StackName"},
+          "  --region ", {"Ref": "AWS::Region"}, "\n",
 
           "echo 'SUCCEEDED' | tee /var/lib/cloud/instance/status_cfn"
         ]]}}
       }
-    },
-
-    "EIP": {
-      "Type": "AWS::EC2::EIP",
-      "Properties": {
-        "InstanceId": {"Ref": "Rhea"},
-        "Domain": "vpc"
-      }
-    },
-
-    "RecoveryAlarm": {
-      "Type": "AWS::CloudWatch::Alarm",
-      "Properties": {
-        "AlarmDescription": "Recovering server when underlying hardware fails.",
-        "Namespace": "AWS/EC2" ,
-        "MetricName": "StatusCheckFailed_System",
-        "Statistic": "Minimum",
-        "Period": "60",
-        "EvaluationPeriods": "5",
-        "ComparisonOperator": "GreaterThanThreshold",
-        "Threshold": "0",
-        "AlarmActions": [{"Fn::Join": ["", ["arn:aws:automate:", {"Ref": "AWS::Region"}, ":ec2:recover"]]}],
-        "Dimensions": [{"Name": "InstanceId", "Value": {"Ref": "Rhea"}}]
-      }
-    }
-  },
-
-  "Outputs": {
-    "RheaIP": {
-      "Description": "The public IP address of Rhea",
-      "Value": {"Ref": "EIP"}
     }
   }
 }

@@ -4,82 +4,38 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Project
-export PROJECT_NAME='vpm'
-export PROJECT_PATH='/opt'
-export PROJECT_DIR="${PROJECT_PATH}/${PROJECT_NAME}"
-
-# Paths
-export APPDIR TMPDIR PATH DOTENV
+# VARs
+export APPDIR TMPDIR NOW VERSION VERSION_FILE CHANGELOG_FILE
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
-PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/usr/local/bin:${PATH}"
+NOW="$(date +"%Y%m%d_%H%M%S")"
+VERSION_FILE="${APPDIR}/VERSION"
+CHANGELOG_FILE="${APPDIR}/CHANGELOG.md"
+VERSION=$(cat "$VERSION_FILE" || echo '0.0.0')
 
 # Load private environment
 # shellcheck disable=1090
 . "${APPDIR}/.env" 2>/dev/null || true
 
-# Load VGS library
+# Load VGS library (https://github.com/vghn/vgs)
 # shellcheck disable=1090,1091
 . /opt/vgs/load 2>/dev/null || . ~/vgs/load 2>/dev/null || true
 
-# Load functions
-for lib in ${APPDIR}/lib/*.sh; do
-  # shellcheck disable=1090
-  . "$lib"
-done
-
-# Version
-export VERSION_FILE="${APPDIR}/VERSION"
-export CHANGELOG_FILE="${APPDIR}/CHANGELOG.md"
-export VERSION; VERSION=$(cat "$VERSION_FILE" || echo '0.0.0')
-
 # Detect environment
-GIT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo '')
-GIT_SHA1=$(git rev-parse --short HEAD 2>/dev/null || echo '0')
-TRAVIS_BRANCH="${TRAVIS_BRANCH:-}"
-DEPLOYMENT_GROUP_NAME="${DEPLOYMENT_GROUP_NAME:-}"
+detect_environment 2>/dev/null || true
+detect_ci_environment 2>/dev/null || true
+ENVTYPE="${ENVTYPE:-production}"
 
-## Detect if git directory or if Travis CI or if AWS CodeDeploy
-if [[ -n "${ENVTYPE:-}" ]]; then
-  ENVTYPE="$ENVTYPE"
-elif [[ -n "${GIT_BRANCH:-}" ]]; then
-  ENVTYPE="$GIT_BRANCH"
-elif [[ -n "${TRAVIS_BRANCH:-}" ]]; then
-  ENVTYPE="$TRAVIS_BRANCH"
-elif [[ -n "${CIRCLE_BRANCH:-}" ]]; then
-  ENVTYPE="$CIRCLE_BRANCH"
-elif [[ -n "${DEPLOYMENT_GROUP_NAME:-}" ]]; then
-  ENVTYPE="$DEPLOYMENT_GROUP_NAME"
-else
-  ENVTYPE=${ENVTYPE:-production}
-fi
-export ENVTYPE
+# Load functions
+# shellcheck disable=1090
+for file in ${APPDIR}/lib/*.sh; do . "$file"; done
 
-## Rename 'master' to 'production'
-if [[ "$ENVTYPE" == 'master' ]]; then
-  export ENVTYPE='production'
-fi
-
-# CI
-export CI=${CI:-false}
-export PR=false
-export BUILD=${GIT_SHA1:-0}
-if [[ ${CIRCLECI:-false} == true ]]; then
-  export PR=${CIRCLE_PR_NUMBER}
-  export BUILD=${CIRCLE_BUILD_NUM}
-  git config --global user.name "CircleCI"
-elif [[ ${TRAVIS:-false} == true ]]; then
-  export PR=${TRAVIS_PULL_REQUEST}
-  export BUILD=${TRAVIS_BUILD_NUMBER}
-  git config --global user.name "TravisCI"
-fi
+# Project
+export GROUP_NAME="${GROUP_NAME:-vgh}"
+export PROJECT_NAME="${PROJECT_NAME:-vgh}"
 
 # Full version
 export FULL_VERSION=${VERSION}-${GIT_SHA1}
-
-# Puppet
-export PUPPET_MASTER="${PUPPET_MASTER:-puppet.ghn.me}"
 
 # Trusted IPs
 export TRUSTED_IPS="${TRUSTED_IPS:-}"
@@ -90,78 +46,121 @@ export LOG_PORT="${LOG_PORT:-}"
 
 # Slack Incoming Web Hook URL
 export SLACK_CHANNEL="${SLACK_CHANNEL:-bots}"
-export SLACK_USER="${SLACK_USER:-PuppetMaster}"
+export SLACK_USER="${SLACK_USER:-VGHStk}"
 export SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
 
 # AWS
 export AWS_ACCOUNT_NUMBER="${AWS_ACCOUNT_NUMBER:-}"
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
-
-# AWS S3
-export AWS_ASSETS_BUCKET="${AWS_ASSETS_BUCKET:-$PROJECT_NAME}"
-export AWS_PUPPET_CERTIFICATES_BUCKET="${AWS_PUPPET_CERTIFICATES_BUCKET:-${AWS_ASSETS_BUCKET}-crt}"
-export AWS_ASSETS_KEY_PREFIX="${PROJECT_NAME}/${ENVTYPE}"
-export AWS_ASSETS_S3="s3://${AWS_ASSETS_BUCKET}/${AWS_ASSETS_KEY_PREFIX}"
-export PP_HIERADATA_KEY="hieradata/${ENVTYPE}.tgz"
-export PP_VCRT_S3="s3://${AWS_PUPPET_CERTIFICATES_BUCKET}"
-
-# APP Files
-export APP_ARCHIVE="${PROJECT_NAME}-${FULL_VERSION}.tgz"
-export APP_ARCHIVE_LATEST="${PROJECT_NAME}.tgz"
-export APP_ARCHIVE_S3_KEY="${AWS_ASSETS_KEY_PREFIX}/app/${APP_ARCHIVE}"
-export APP_ARCHIVE_S3="s3://${AWS_ASSETS_BUCKET}/${APP_ARCHIVE_S3_KEY}"
-export APP_ARCHIVE_S3_KEY_LATEST="${AWS_ASSETS_KEY_PREFIX}/app/${APP_ARCHIVE_LATEST}"
-export APP_ARCHIVE_S3_LATEST="s3://${AWS_ASSETS_BUCKET}/${APP_ARCHIVE_S3_KEY_LATEST}"
-
-# AWS EC2
-export AWS_EC2_KEY="${AWS_EC2_KEY:-key}"
-export AWS_EC2_IMAGE_PREFIX="${AWS_EC2_IMAGE_PREFIX:-VGH_ZEUS_AMI}"
-export AWS_EC2_IMAGE_DESCRIPTION="${AWS_EC2_IMAGE_DESCRIPTION:-'VGH Puppet Image'}"
-export AWS_EC2_INSTANCE_TYPE="${AWS_EC2_INSTANCE_TYPE:-t2.micro}"
-
-# AWS TAGs
+export AWS_AZ_NUMBER="${AWS_AZ_NUMBER:-4}"
+export AWS_SNS_NOTIFICATIONS="${AWS_SNS_NOTIFICATIONS:-"arn:aws:sns:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_NUMBER}:-NotifyMe"}"
+export AWS_SSL_ARN="${AWS_SSL_ARN:-}"
+export AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
+export AWS_IAM_INSTANCE_PROFILE="${AWS_IAM_INSTANCE_PROFILE:-}"
+export AWS_AMI_PACKER="${APPDIR}/ami-packer.json"
+export AWS_TAG_GROUP="${AWS_TAG_GROUP:-$GROUP_NAME}"
 export AWS_TAG_PROJECT="${AWS_TAG_PROJECT:-$PROJECT_NAME}"
-export AWS_TAG_GROUP="${AWS_TAG_GROUP:-MyGroup}"
-export AWS_TAG_ROLE="${AWS_TAG_ROLE:-MyRole}"
-
-# AWS RDS
+export AWS_ASSETS_BUCKET="vladgh"
+export AWS_ENV_S3PATH="s3://${AWS_ASSETS_BUCKET}/env/stk.${ENVTYPE}"
 export AWS_RDS_DB_ENGINE="${AWS_RDS_DB_ENGINE:-postgres}"
 export AWS_RDS_DB_NAME="${AWS_RDS_DB_NAME:-db}"
 export AWS_RDS_DB_USER="${AWS_RDS_DB_USER:-admin}"
 export AWS_RDS_DB_PASS="${AWS_RDS_DB_PASS:-ChangeMe}"
 
-# AWS SNS
-export AWS_SNS_NOTIFICATIONS="${AWS_SNS_NOTIFICATIONS:-"arn:aws:sns:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_NUMBER}:-NotifyMe"}"
+# Puppet
+export PP_SERVER="${PP_SERVER:-puppet.ghn.me}"
+export PP_ARTIFACT="artifacts/vpm_${ENVTYPE}.tgz"
 
-# AWS EFS
-export AWS_EFS_VOLUME="${AWS_EFS_VOLUME:-EFS}"
+# AWS Image defaults
+ami_packer_process(){
+  local V
+  V="     -var 'base_ami=$(vgs_aws_ec2_get_ubuntu_base_image_id 'xenial-16.04')'"
+  V="${V} -var 'iam_instance_profile=$(vgs_aws_cfn_get_output IAM InstanceProfile)'"
+  export PACKER_VARS="${V}"
+}
 
-# AWS SSL
-export AWS_SSL_ARN="${AWS_SSL_ARN:-}"
+# AWS CloudFormation
+get_cfn_defaults(){
+  local stack A P T
+  stack="${1:-}"
 
-# CloudFormation
-export AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
-export AWS_CFN_STACKS_S3="s3://${AWS_ASSETS_BUCKET}/cloudformation/${ENVTYPE}"
-export AWS_CFN_STACKS_URL="https://s3.amazonaws.com/${AWS_ASSETS_BUCKET}/cloudformation/${ENVTYPE}"
+  export stacks='efs elb iam rds rhea sg vpc'
 
-# CloudFormation Main Stack
-export AWS_CFN_STACK_NAME='VGH'
-export AWS_CFN_STACK_BODY="${AWS_CFN_STACKS_PATH}/vgh.json"
-export AWS_CFN_CMD_ARGS="--stack-name ${AWS_CFN_STACK_NAME} --template-body file://${AWS_CFN_STACK_BODY}"
+  # Default command arguments
+  A=''
 
-# AWS CodeDeploy
-export AWS_CD_APP_NAME="$PROJECT_NAME"
-export AWS_CD_BUCKET="$AWS_ASSETS_BUCKET"
-export AWS_CD_BUNDLE_TYPE='tgz'
-export AWS_CD_ARCHIVE="${AWS_CD_APP_NAME}-${FULL_VERSION}.${AWS_CD_BUNDLE_TYPE}"
-export AWS_CD_S3_KEY_PREFIX="${AWS_ASSETS_KEY_PREFIX}/deploy"
-export AWS_CD_S3_KEY="${AWS_CD_S3_KEY_PREFIX}/${AWS_CD_ARCHIVE}"
-export AWS_CD_S3="s3://${AWS_CD_BUCKET}/${AWS_CD_S3_KEY}"
-export AWS_CD_S3_LATEST="s3://${AWS_CD_BUCKET}/${AWS_CD_S3_KEY_PREFIX}/latest.tgz"
-export AWS_CD_ARCHIVE_PATH="${TMPDIR}/${AWS_CD_ARCHIVE}"
-export AWS_CD_GROUP_NAME="${ENVTYPE}"
-export AWS_CD_CONFIG='CodeDeployDefault.OneAtATime'
+  # Common tags
+  T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
+  T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
 
-# AWS Lambda
-export AWS_LAMBDAS_PATH="${APPDIR}/lambdas"
-export AWS_LAMBDAS_S3="${AWS_ASSETS_S3}/lambdas"
+  # Stack defaults
+  case "$stack" in
+    efs)
+      export name='EFS'
+      export body="${AWS_CFN_STACKS_PATH}/efs.json"
+      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
+      P="${P} 'ParameterKey=VolumeName,ParameterValue=${PROJECT_NAME}'"
+      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG EFSSecurityGroup)\"'"
+      ;;
+    elb)
+      export name='ELB'
+      export body="${AWS_CFN_STACKS_PATH}/elb.json"
+      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG ELBSecurityGroup)\"'"
+      P="${P} 'ParameterKey=SSLCertificateId,ParameterValue=${AWS_SSL_ARN}'"
+      ;;
+    iam)
+      export name='IAM'
+      export body="${AWS_CFN_STACKS_PATH}/iam.json"
+      A='--capabilities CAPABILITY_IAM'
+      P="'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
+      ;;
+    rds)
+      export name='RDS'
+      export body="${AWS_CFN_STACKS_PATH}/rds.json"
+      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
+      P="${P} 'ParameterKey=DBEngine,ParameterValue=${AWS_RDS_DB_ENGINE}'"
+      P="${P} 'ParameterKey=DBName,ParameterValue=${AWS_RDS_DB_NAME}'"
+      P="${P} 'ParameterKey=DBUser,ParameterValue=${AWS_RDS_DB_USER}'"
+      P="${P} 'ParameterKey=DBPassword,ParameterValue=${AWS_RDS_DB_PASS}'"
+      ;;
+    rhea)
+      export name='RHEA'
+      export body="${AWS_CFN_STACKS_PATH}/rhea.json"
+      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
+      P="${P} 'ParameterKey=Version,ParameterValue=${VERSION}-${GIT_SHA1}'"
+      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
+      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_latest_ami_id VGH_RHEA)\"'"
+      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
+      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM InstanceProfile)\"'"
+      P="${P} 'ParameterKey=ElasticLoadBalancer,ParameterValue=\"$(vgs_aws_cfn_get_resource ELB ELB)\"'"
+      P="${P} 'ParameterKey=EFSVolumeID,ParameterValue=\"$(vgs_aws_cfn_get_output EFS VolumeID)\"'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG RheaSecurityGroup)\"'"
+      P="${P} 'ParameterKey=ControlRepoArchive,ParameterValue=s3://${AWS_ASSETS_BUCKET}/${PP_ARTIFACT}'"
+      ;;
+    sg)
+      export name='SG'
+      export body="${AWS_CFN_STACKS_PATH}/sg.json"
+      P="     'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      P="${P} 'ParameterKey=SSHLocations,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
+      ;;
+    vpc)
+      export name='VPC'
+      export body="${AWS_CFN_STACKS_PATH}/vpc.json"
+      P="     'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
+      T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
+      T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
+      ;;
+    *)
+      cfn_usage
+      ;;
+  esac
+
+  export cfn_cmd="--stack-name ${name} --template-body file://${body} ${A} --parameters ${P} --tags ${T}"
+}
