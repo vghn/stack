@@ -5,11 +5,10 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # VARs
-export APPDIR TMPDIR NOW VERSION VERSION_FILE CHANGELOG_FILE
+export APPDIR TMPDIR NOW VERSION
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
 NOW="$(date +"%Y%m%d_%H%M%S")"
-CHANGELOG_FILE="${APPDIR}/CHANGELOG.md"
 VERSION=$(git describe --always --tags)
 
 # Load private environment
@@ -21,9 +20,9 @@ VERSION=$(git describe --always --tags)
 . /opt/vgs/load 2>/dev/null || . ~/vgs/load 2>/dev/null || true
 
 # Detect environment
-ENVTYPE="${ENVTYPE:-production}"
 detect_environment 2>/dev/null || true
 detect_ci_environment 2>/dev/null || true
+ENVTYPE="${ENVTYPE:-production}"
 
 # Load functions
 # shellcheck disable=1090
@@ -32,9 +31,6 @@ for file in ${APPDIR}/lib/*.sh; do . "$file"; done
 # Project
 export GROUP_NAME="${GROUP_NAME:-vgh}"
 export PROJECT_NAME="${PROJECT_NAME:-vgh}"
-
-# Full version
-export FULL_VERSION=${VERSION}-${GIT_SHA1}
 
 # Trusted IPs
 export TRUSTED_IPS="${TRUSTED_IPS:-}"
