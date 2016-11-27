@@ -7,14 +7,17 @@ ci_install(){
   git clone https://github.com/vghn/vgs.git ~/vgs
 
   # Load VGS library (https://github.com/vghn/vgs)
+  echo 'Reload VGS library'
   # shellcheck disable=1090
   . ~/vgs/load 2>/dev/null || true
 
   echo 'Install AWS-CLI'
   pip install --user --upgrade awscli
 
-  echo 'Download .env'
-  download_env
+  if [ "$TRAVIS_PULL_REQUEST" = 'false' ]; then
+    echo 'Download .env'
+    download_env
+  fi
 }
 
 # CI Test
