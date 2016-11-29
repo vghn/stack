@@ -21,10 +21,14 @@ ci_install(){
 
 # CI Test
 ci_test(){
-  e_info 'Validate CloudFormation templates'
-  find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
-    'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
-    -- {} \;
+  if [[ "$TRAVIS_PULL_REQUEST" == 'true' ]]; then
+    e_warn 'CloudFormation templates are not validated in Pull Requests!' # Because it needs AWS Credentials
+  else
+    e_info 'Validate CloudFormation templates'
+    find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
+      'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
+      -- {} \;
+  fi
 
   e_info 'Validate AMIs'
   eval "${APPDIR}/bin/ami" validate
