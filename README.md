@@ -1,11 +1,11 @@
-# Puppet Master Stack
-  [![Build Status](https://travis-ci.org/vghn/puppet_stk.svg?branch=master)](https://travis-ci.org/vghn/puppet_stk)
+# VGH Stack
+  [![Build Status](https://travis-ci.org/vghn/stack.svg?branch=master)](https://travis-ci.org/vghn/stack)
 
 ## Development status ##
 This project is still in a prototype development stage.
 
 ## Overview
-Vlad's Puppet Master Stack.
+Vlad's Stack.
 
 ## Description
 ### bin/
@@ -14,12 +14,18 @@ Contains various executable scripts.
 ### cfn/
 Contains AWS CloudFormation templates.
 
+### hooks/
+Contains GIT repository hooks.
+
 ### lib/
 Contains various functions that can be sourced in other scripts.
 
 ### envrc
 This file contains global variables.
 **All variables declared here are public**
+
+### ami-packer.json
+This file contains the AWS AMI configurations.
 
 ## Contribute
 1. Open an issue to discuss proposed changes
