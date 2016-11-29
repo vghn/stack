@@ -88,9 +88,9 @@ Resources:
         BootstrapNode:
           commands:
             01_wait_for_puppet_server:
-              command: "until nc -z puppet 8140; do sleep 10; done; sleep 5"
+              command: 'until nc -z puppet 8140; do sleep 10; done; sleep 5'
             02_bootstrap_node:
-              command: "sudo -E /opt/vpm/bin/bootstrap"
+              command: 'sudo -E /opt/vpm/bin/bootstrap'
               env:
                 PP_APPLICATION: vpm
                 PP_PROJECT: vgh
@@ -98,7 +98,7 @@ Resources:
         ConfigureCF:
           commands:
             01-start-hup:
-              command: /usr/local/bin/cfn-hup
+              command: '/usr/local/bin/cfn-hup'
           files:
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
@@ -122,33 +122,31 @@ Resources:
         ConfigureNode:
           commands:
             01_set_puppet_host:
-              command: "/opt/puppetlabs/bin/puppet resource host puppet ip=\"$(curl
-                -s http://169.254.169.254/latest/meta-data/local-ipv4)\""
+              command: '/opt/puppetlabs/bin/puppet resource host puppet ip="$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)"'
             02_set_certname:
-              command: "/opt/puppetlabs/bin/puppet config set certname \"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\" --section main"
+              command: '/opt/puppetlabs/bin/puppet config set certname "$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" --section main'
             03_patch_ssm_agent:
-              command: "systemctl enable amazon-ssm-agent.service && systemctl restart
-                amazon-ssm-agent.service"
+              command: 'systemctl enable amazon-ssm-agent.service && systemctl restart amazon-ssm-agent.service'
         StartVPM:
           commands:
             01_reset_repo:
-              command: "git fetch --all && git reset --hard origin/production"
-              cwd: "/opt/vpm"
+              command: 'git fetch --all && git reset --hard origin/production'
+              cwd: '/opt/vpm'
             02_pull_images:
-              command: "docker-compose pull"
-              cwd: "/opt/vpm"
+              command: 'docker-compose pull'
+              cwd: '/opt/vpm'
             03_build_images:
-              command: "docker-compose build"
-              cwd: "/opt/vpm"
+              command: 'docker-compose build'
+              cwd: '/opt/vpm'
             04_start_vpm:
-              command: "docker-compose up -d"
-              cwd: "/opt/vpm"
+              command: 'docker-compose up -d'
+              cwd: '/opt/vpm'
         UpdateNode:
           commands:
             01_enter_standby:
               command: "bash -c '. /opt/vgs/load; nc -z puppet 8140 || vgs_aws_ec2_autoscaling_enter_standby'"
             02_wait_for_puppet_server:
-              command: "until nc -z puppet 8140; do sleep 10; done; sleep 5"
+              command: 'until nc -z puppet 8140; do sleep 10; done; sleep 5'
             03_exit_standby:
               command: "bash -c '. /opt/vgs/load; vgs_aws_ec2_autoscaling_exit_standby'"
         WriteFacts:
