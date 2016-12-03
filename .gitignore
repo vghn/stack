@@ -2,6 +2,10 @@
 .env
 
 # Other
-*.log
+.bundle/
 .vagrant/
+pkg/
 tmp/
+vendor/
+*.log
+Gemfile.lock

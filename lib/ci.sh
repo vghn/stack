@@ -21,7 +21,10 @@ ci_install(){
 
 # CI Test
 ci_test(){
-  if [[ "$TRAVIS_PULL_REQUEST" == 'true' ]]; then
+  e_info 'Validate BASH scripts'
+  find ./{bin,hooks,lib} -type f -exec shellcheck {} +
+
+  if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'true' ]]; then
     e_warn 'CloudFormation templates are not validated in Pull Requests!' # Because it needs AWS Credentials
   else
     e_info 'Validate CloudFormation templates'
