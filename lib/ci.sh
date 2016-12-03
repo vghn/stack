@@ -25,12 +25,12 @@ ci_test(){
   find ./{bin,hooks,lib} -type f -exec shellcheck {} +
 
   if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
-    e_warn 'CloudFormation templates are not validated in Pull Requests!' # Because it needs AWS Credentials
-  else
     e_info 'Validate CloudFormation templates'
     find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
       'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
       -- {} \;
+  else
+    e_warn 'CloudFormation templates are not validated in Pull Requests!' # Because it needs AWS Credentials
   fi
 
   e_info 'Validate AMIs'
@@ -39,7 +39,7 @@ ci_test(){
 
 # CI Deploy
 ci_deploy(){
-  if [ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]; then
+  if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     # Set-up SSH connection
     echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > ~/.ssh/deploy_rsa
     chmod 600 ~/.ssh/deploy_rsa
@@ -50,5 +50,7 @@ ci_deploy(){
     # Update docker-compose
     ( ssh ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - pull' ) < docker-compose.yml
     ( ssh ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - up -d' ) < docker-compose.yml
+  else
+    e_warn 'SSH deployment skipped for Pull Requests!'
   fi
 }
