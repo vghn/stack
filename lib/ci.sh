@@ -41,7 +41,6 @@ ci_test(){
 ci_deploy(){
   if [ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]; then
     # Set-up SSH connection
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
     echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > ~/.ssh/deploy_rsa
     chmod 600 ~/.ssh/deploy_rsa
     eval "$(ssh-agent -s)"
