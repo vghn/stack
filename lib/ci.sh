@@ -24,7 +24,7 @@ ci_test(){
   e_info 'Validate BASH scripts'
   find ./{bin,hooks,lib} -type f -exec shellcheck {} +
 
-  if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'true' ]]; then
+  if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     e_warn 'CloudFormation templates are not validated in Pull Requests!' # Because it needs AWS Credentials
   else
     e_info 'Validate CloudFormation templates'
@@ -39,5 +39,17 @@ ci_test(){
 
 # CI Deploy
 ci_deploy(){
-  e_info 'Nothing yet'
+  if [ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]; then
+    # Set-up SSH connection
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+    echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > ~/.ssh/deploy_rsa
+    chmod 600 ~/.ssh/deploy_rsa
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/deploy_rsa
+    ssh-keyscan -H puppet.ghn.me >> ~/.ssh/known_hosts
+
+    # Update docker-compose
+    ( ssh ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - pull' ) < docker-compose.yml
+    ( ssh ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - up -d' ) < docker-compose.yml
+  fi
 }
