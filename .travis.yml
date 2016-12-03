@@ -12,7 +12,12 @@ addons:
     - shellcheck
 install: bin/ci install
 script: bin/ci test
-after_success: bin/ci deploy
+deploy:
+  provider: script
+  script: bin/ci deploy
+  skip_cleanup: true
+  on:
+    all_branches: true
 cache:
   directories:
     - "$HOME/.cache/pip"
