@@ -1,6 +1,15 @@
+language: ruby
+rvm: 2.3.3
+sudo: false
 branches:
   except:
-    - /^v\d/
+  - "/^v\\d/"
+addons:
+  apt:
+    sources:
+    - debian-sid
+    packages:
+    - shellcheck
 install: bin/ci install
 script: bin/ci test
 after_success: bin/ci deploy
