@@ -24,14 +24,10 @@ ci_test(){
   e_info 'Validate BASH scripts'
   find ./{bin,hooks,lib} -type f -exec shellcheck {} +
 
-  if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
-    e_info 'Validate CloudFormation templates'
-    find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
-      'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
-      -- {} \;
-  else
-    e_warn 'CloudFormation templates are not validated in Pull Requests!' # Because it needs AWS Credentials
-  fi
+  e_info 'Validate CloudFormation templates'
+  find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
+    'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
+    -- {} \;
 
   e_info 'Validate AMIs'
   eval "${APPDIR}/bin/ami" validate
