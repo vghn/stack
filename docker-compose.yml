@@ -46,7 +46,7 @@ services:
     networks:
       - backend
   sync:
-    image: vladgh/vpm-sync:latest
+    image: vladgh/s3sync:stable
     hostname: ssl-sync-agent
     volumes_from:
       - data
