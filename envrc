@@ -26,7 +26,7 @@ ENVTYPE="${ENVTYPE:-production}"
 
 # Load functions
 # shellcheck disable=1090
-for file in ${APPDIR}/lib/*.sh; do . "$file"; done
+for file in ${APPDIR}/shlib/*.sh; do . "$file"; done
 
 # Project
 export GROUP_NAME="${GROUP_NAME:-vgh}"
