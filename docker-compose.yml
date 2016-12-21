@@ -11,7 +11,7 @@ services:
     volumes_from:
       - data
     environment:
-      CERT_FOLDER: '/etc/puppetlabs/vault/production/certs/'
+      CERT_FOLDER: '/etc/puppetlabs/secure/production/certs/'
     ports:
       - '443:443'
       - '8140:8140'
@@ -26,7 +26,7 @@ services:
       - data
     environment:
       AUTOSIGN: '/usr/local/bin/csr-sign'
-      AUTOSIGN_CFG: '/etc/puppetlabs/vault/production/csr.yaml'
+      AUTOSIGN_CFG: '/etc/puppetlabs/secure/production/csr.yaml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
       JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
@@ -41,7 +41,7 @@ services:
       - data
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: sh -c "until [ -s /etc/puppetlabs/vault/production/log.env ]; do echo 'Waiting for data'; sleep 5; done && set -a && . /etc/puppetlabs/vault/production/log.env && /bin/logspout syslog://$${LOG_SERVER_ADDRESS}:$${LOG_SERVER_PORT}"
+    entrypoint: sh -c "until [ -s /etc/puppetlabs/secure/production/log.env ]; do echo 'Waiting for data'; sleep 5; done && set -a && . /etc/puppetlabs/secure/production/log.env && /bin/logspout syslog://$${LOG_SERVER_ADDRESS}:$${LOG_SERVER_PORT}"
     restart: unless-stopped
     networks:
       - backend
@@ -50,7 +50,7 @@ services:
     hostname: ssl-sync-agent
     volumes_from:
       - data
-    entrypoint: sh -c "until [ -s /etc/puppetlabs/vault/production/sync.env ]; do echo 'Waiting for data'; sleep 5; done && set -a && . /etc/puppetlabs/vault/production/sync.env && /entrypoint.sh"
+    entrypoint: sh -c "until [ -s /etc/puppetlabs/secure/production/sync.env ]; do echo 'Waiting for data'; sleep 5; done && set -a && . /etc/puppetlabs/secure/production/sync.env && /entrypoint.sh"
     restart: unless-stopped
     networks:
       - backend
@@ -59,9 +59,9 @@ services:
     hostname: api
     environment:
       AWS_ASSETS_BUCKET: 'vladgh'
-      VAULT_S3PATH: 's3://vladgh/vault'
+      SECURE_S3PATH: 's3://vladgh/secure'
       HIERA_S3PATH: 's3://vladgh/hieradata'
-      DATA_CONFIG: '/etc/puppetlabs/vault/production/api.yaml'
+      DATA_CONFIG: '/etc/puppetlabs/secure/production/api.yaml'
       FORCE_SSL: 'true'
       VIRTUAL_HOST: 'https://*'
     volumes_from:
@@ -75,7 +75,7 @@ services:
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
-      - vault:/etc/puppetlabs/vault
+      - secure:/etc/puppetlabs/secure
       - hieradata:/etc/puppetlabs/hieradata
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
@@ -87,7 +87,7 @@ services:
 volumes:
   ssl:
   code:
-  vault:
+  secure:
   hieradata:
 
 networks:
