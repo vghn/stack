@@ -15,14 +15,14 @@ ci_install(){
   pip install --user --upgrade awscli
 
   echo 'Install HashiCorp Packer'
-  curl -L -o packer.zip https://releases.hashicorp.com/packer/0.12.0/packer_0.12.0_linux_amd64.zip
+  curl -L -o packer.zip https://releases.hashicorp.com/packer/0.12.1/packer_0.12.1_linux_amd64.zip
   unzip -d ~/bin packer.zip
 }
 
 # CI Test
 ci_test(){
   e_info 'Validate BASH scripts'
-  find ./{bin,hooks,shlib} -type f -exec shellcheck {} +
+  find ./{bin,shlib} -type f -exec shellcheck {} +
 
   e_info 'Validate CloudFormation templates'
   find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
