@@ -22,7 +22,7 @@ ci_install(){
 # CI Test
 ci_test(){
   e_info 'Validate BASH scripts'
-  find ./{bin,hooks,shlib} -type f -exec shellcheck {} +
+  find ./{bin,shlib} -type f -exec shellcheck {} +
 
   e_info 'Validate CloudFormation templates'
   find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
