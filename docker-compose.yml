@@ -61,7 +61,7 @@ services:
       AWS_ASSETS_BUCKET: 'vladgh'
       SECURE_S3PATH: 's3://vladgh/secure'
       HIERA_S3PATH: 's3://vladgh/hieradata'
-      DATA_CONFIG: '/etc/puppetlabs/secure/production/api.yaml'
+      API_CONFIG: '/etc/puppetlabs/secure/production/api.yaml'
       FORCE_SSL: 'true'
       VIRTUAL_HOST: 'https://*'
     volumes_from:
