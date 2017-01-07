@@ -5,6 +5,13 @@
 # shellcheck disable=1090
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd -P)/envrc"
 
+upload_env(){
+  e_info 'Upload .env'
+  if ! aws s3 cp "${APPDIR}/.env" "${AWS_ENV_S3PATH}" --quiet; then
+    e_abort "Could not upload ${APPDIR}/.env to ${AWS_ENV_S3PATH}"
+  fi
+}
+
 # Hooks
 e_header 'GIT Pre-Push:'
 upload_env
