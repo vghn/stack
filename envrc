@@ -24,10 +24,6 @@ detect_environment 2>/dev/null || true
 detect_ci_environment 2>/dev/null || true
 ENVTYPE="${ENVTYPE:-production}"
 
-# Load functions
-# shellcheck disable=1090
-for file in ${APPDIR}/shlib/*.sh; do . "$file"; done
-
 # Project
 export GROUP_NAME="${GROUP_NAME:-vgh}"
 export PROJECT_NAME="${PROJECT_NAME:-vgh}"
