@@ -1,5 +1,27 @@
 # Change Log
 
+## [v0.1.1](https://github.com/vghn/stack/tree/v0.1.1) (2017-01-07)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.1.0...v0.1.1)
+
+**Implemented enhancements:**
+
+- Consolidate rake tasks and bash scripts [\#16](https://github.com/vghn/stack/pull/16) ([vladgh](https://github.com/vladgh))
+- Use the Ruby version that is preinstalled on Travis [\#15](https://github.com/vghn/stack/pull/15) ([vladgh](https://github.com/vladgh))
+- Update LICENSE [\#14](https://github.com/vghn/stack/pull/14) ([vladgh](https://github.com/vladgh))
+- Clean-up docker-compose.yml [\#13](https://github.com/vghn/stack/pull/13) ([vladgh](https://github.com/vladgh))
+- Refactor [\#11](https://github.com/vghn/stack/pull/11) ([vladgh](https://github.com/vladgh))
+- Rename folder for sensitive files to `./secure` [\#10](https://github.com/vghn/stack/pull/10) ([vladgh](https://github.com/vladgh))
+- Separate BASH libraries from Ruby [\#9](https://github.com/vghn/stack/pull/9) ([vladgh](https://github.com/vladgh))
+- Replace sync image [\#8](https://github.com/vghn/stack/pull/8) ([vladgh](https://github.com/vladgh))
+- Improve Rakefile [\#6](https://github.com/vghn/stack/pull/6) ([vladgh](https://github.com/vladgh))
+
+**Fixed bugs:**
+
+- Bring back upload\_env function [\#17](https://github.com/vghn/stack/pull/17) ([vladgh](https://github.com/vladgh))
+- Rename DATA\_CONFIG to API\_CONFIG [\#12](https://github.com/vghn/stack/pull/12) ([vladgh](https://github.com/vladgh))
+- Move .env S3 path [\#7](https://github.com/vghn/stack/pull/7) ([vladgh](https://github.com/vladgh))
+- Use after\_success hook for deployment [\#5](https://github.com/vghn/stack/pull/5) ([vladgh](https://github.com/vladgh))
+
 ## [v0.1.0](https://github.com/vghn/stack/tree/v0.1.0) (2016-12-03)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.0.14...v0.1.0)
 
