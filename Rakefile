@@ -1,6 +1,10 @@
 # Configure the load path so all dependencies in your Gemfile can be required
 require 'bundler/setup'
 
+# VARs
+PROJECT = 'vpm'
+PUPPET_SERVER = 'puppet.ghn.me'
+
 # Semantic version (from git tags)
 VERSION = (`git describe --always --tags 2>/dev/null`.chomp || '0.0.0-0-0').freeze
 LEVELS  = [:major, :minor, :patch].freeze
@@ -138,6 +142,15 @@ namespace :release do
     end
   end
 end
+
+# Stack SSH commands
+namespace :stack do
+  desc 'Updates docker compose environment'
+  task :update do
+    sh "( ssh ubuntu@#{PUPPET_SERVER} 'docker-compose --project-name #{PROJECT} --file - pull' ) < docker-compose.yml && ( ssh ubuntu@#{PUPPET_SERVER} 'docker-compose --project-name #{PROJECT} --file - up -d' ) < docker-compose.yml"
+  end
+end
+
 
 # Display version
 desc 'Display version'
