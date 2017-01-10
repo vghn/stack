@@ -23,10 +23,10 @@ services:
     image: vladgh/vpm-api:latest
     hostname: api
     environment:
-      AWS_ASSETS_BUCKET: 'vladgh'
       SECURE_S3PATH: 's3://vladgh/secure'
       HIERA_S3PATH: 's3://vladgh/hieradata'
-      API_CONFIG: '/etc/puppetlabs/secure/production/api.yaml'
+      CONTROL_REPO: 'https://github.com/vghn/puppet.git'
+      API_CONFIG: '/etc/puppetlabs/secure/production/api.yml'
       VIRTUAL_HOST: 'https://*'
     volumes_from:
       - data
@@ -40,7 +40,7 @@ services:
       - data
     environment:
       AUTOSIGN: '/usr/local/bin/csr-sign'
-      AUTOSIGN_CFG: '/etc/puppetlabs/secure/production/csr.yaml'
+      AUTOSIGN_CFG: '/etc/puppetlabs/secure/production/csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
       JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
