@@ -1,3 +1,4 @@
+dist: trusty
 language: ruby
 rvm:
 - 2.2
@@ -9,8 +10,6 @@ addons:
     sources:
     - debian-sid
     packages:
-    - ca-certificates
-    - curl
     - shellcheck
 cache:
   directories:
