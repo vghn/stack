@@ -1,4 +1,6 @@
-language: bash
+language: ruby
+rvm:
+- 2.2
 branches:
   except:
   - "/^v\\d/"
@@ -10,7 +12,7 @@ addons:
     - shellcheck
 cache:
   directories:
-    - "$HOME/.cache/pip"
+  - "$HOME/.cache/pip"
 install: bin/ci install
 script: bin/ci test
 after_success: bin/ci deploy
