@@ -9,6 +9,8 @@ addons:
     sources:
     - debian-sid
     packages:
+    - ca-certificates
+    - curl
     - shellcheck
 cache:
   directories:
