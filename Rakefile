@@ -98,9 +98,13 @@ def changelog(config, release: nil)
   config.future_release     = "v#{release}" if release
 end
 
-require 'github_changelog_generator/task'
-GitHubChangelogGenerator::RakeTask.new(:unreleased) do |config|
-  changelog(config)
+begin
+  require 'github_changelog_generator/task'
+  GitHubChangelogGenerator::RakeTask.new(:unreleased) do |config|
+    changelog(config)
+  end
+rescue LoadError
+  nil # Might be in a group that is not installed
 end
 
 namespace :release do
@@ -151,6 +155,43 @@ namespace :stack do
   end
 end
 
+begin
+  require 'travis/auto_login'
+rescue LoadError
+  nil # Might be in a group that is not installed
+end
+
+def travis_slug
+  @travis_slug ||= `git config --get travis.slug`.chomp
+end
+
+def env_vars
+  @env_vars ||= Travis::Repository.find(travis_slug).env_vars
+end
+
+require 'dotenv'
+def dotenv
+  @dotenv ||= Dotenv.load
+end
+
+desc 'Sync environment with TravisCI'
+task :sync_travis_env do
+  puts "Hello #{Travis::User.current.name}!"
+
+  # Update environment variables
+  dotenv.each do |key, value|
+    info "Updating #{key}"
+    env_vars.upsert(key, value, public: false)
+  end
+
+  # Remove remote environment variables
+  env_vars.each do |var|
+    unless dotenv.keys.include?(var.name)
+      warn "Deleting #{var.name}"
+      var.delete
+    end
+  end
+end
 
 # Display version
 desc 'Display version'
