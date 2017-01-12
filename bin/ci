@@ -12,6 +12,9 @@ ci_install(){
   # shellcheck disable=1090
   . ~/vgs/load 2>/dev/null || true
 
+  echo 'Install gems'
+  bundle install --without development --path vendor/bundle
+
   echo 'Install AWS-CLI'
   pip install --user --upgrade awscli
 

@@ -11,6 +11,7 @@ addons:
     - shellcheck
 cache:
   directories:
+  - vendor/bundle
   - "$HOME/.cache/pip"
 install: bin/ci install
 script: bin/ci test
