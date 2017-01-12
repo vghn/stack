@@ -38,7 +38,7 @@ This file contains the AWS AMI configurations.
   # Create key
   ssh-keygen -t rsa -b 4096 -C 'travis' -f ~/.ssh/deploy_rsa
   # Set a secret environment variable in TravisCI
-  travis env set DEPLOY_RSA $(sudo base64 --wrap=0 ~/.ssh/deploy_rsa)
+  travis env set DEPLOY_RSA $(base64 --wrap=0 ~/.ssh/deploy_rsa)
   # Add to server's known keys
   cat ~/.ssh/deploy_rsa | ssh -i user@ssh.example.com 'cat >> .ssh/authorized_keys && echo "Key copied"'
   ```
