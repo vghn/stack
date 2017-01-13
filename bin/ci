@@ -39,7 +39,7 @@ ci_test(){
 
 # CI Deploy
 ci_deploy(){
-  if [[ "$ENVTYPE" == 'production' ]]; then
+  if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     # Set-up SSH connection
     echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > ~/.ssh/deploy_rsa
     chmod 600 ~/.ssh/deploy_rsa
