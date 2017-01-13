@@ -53,11 +53,13 @@ check_cloudformation_syntax(){
 
 check_packer_syntax(){
   e_info 'Checking if Packer syntax is valid'
-  if "${APPDIR}/bin/ami" validate; then
-    e_ok 'Packer syntax looks valid'
-  else
-    throw_error 'Packer syntax validation failed'
-  fi
+  for file in $(git diff --name-only --cached | grep -E '.\-packer\.json'); do
+    if "${APPDIR}/bin/ami" validate; then
+      e_ok 'Packer syntax looks valid'
+    else
+      throw_error 'Packer syntax validation failed'
+    fi
+  done
 }
 
 main(){
