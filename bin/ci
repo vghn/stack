@@ -39,7 +39,7 @@ ci_test(){
 
 # CI Deploy
 ci_deploy(){
-  if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
+  if [[ "$ENVTYPE" == 'production' ]]; then
     # Set-up SSH connection
     echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > ~/.ssh/deploy_rsa
     chmod 600 ~/.ssh/deploy_rsa
@@ -51,7 +51,7 @@ ci_deploy(){
     ( ssh ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - pull' ) < docker-compose.yml
     ( ssh ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - up -d' ) < docker-compose.yml
   else
-    e_warn 'SSH deployment skipped for Pull Requests!'
+    e_warn 'SSH deployment is only allowed in production!'
   fi
 }
 
