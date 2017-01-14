@@ -14,7 +14,7 @@ Resources:
     Type: AWS::IAM::User
     Properties:
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/PowerUserAccess
+      - arn:aws:iam::aws:policy/AdministratorAccess
   CIAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
