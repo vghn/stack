@@ -20,21 +20,24 @@ services:
       - frontend
       - backend
   api:
-    image: vladgh/vpm-api:latest
+    image: vladgh/vpm-api:0.1
     hostname: api
     environment:
+      API_CONFIG: '/etc/puppetlabs/secure/production/api.yml'
+      DATA_SERVICE: 'data'
       SECURE_S3PATH: 's3://vladgh/secure'
       HIERA_S3PATH: 's3://vladgh/hieradata'
       CONTROL_REPO: 'https://github.com/vghn/puppet.git'
-      API_CONFIG: '/etc/puppetlabs/secure/production/api.yml'
       VIRTUAL_HOST: 'https://*'
     volumes_from:
       - data
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     networks:
       - backend
   server:
-    image: vladgh/vpm-server:latest
+    image: vladgh/vpm-server:0.1
     hostname: puppet.ghn.me
     volumes_from:
       - data
@@ -68,6 +71,7 @@ services:
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/local
+      - /opt/puppetlabs/r10k/cache
     command: /bin/true
     networks:
       - backend
