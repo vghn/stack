@@ -20,7 +20,7 @@ services:
       - frontend
       - backend
   api:
-    image: vladgh/vpm-api:0.1
+    image: vladgh/vpm-api:latest
     hostname: api
     environment:
       API_CONFIG: '/etc/puppetlabs/secure/production/api.yml'
@@ -37,7 +37,7 @@ services:
     networks:
       - backend
   server:
-    image: vladgh/vpm-server:0.1
+    image: vladgh/vpm-server:latest
     hostname: puppet.ghn.me
     volumes_from:
       - data
@@ -71,7 +71,7 @@ services:
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/local
-      - /opt/puppetlabs/r10k/cache
+      - /var/cache/r10k
     command: /bin/true
     networks:
       - backend
