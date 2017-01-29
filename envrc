@@ -51,7 +51,6 @@ export AWS_IAM_INSTANCE_PROFILE="${AWS_IAM_INSTANCE_PROFILE:-}"
 export AWS_AMI_PACKER="${APPDIR}/ami-packer.json"
 export AWS_TAG_GROUP="${AWS_TAG_GROUP:-$GROUP_NAME}"
 export AWS_TAG_PROJECT="${AWS_TAG_PROJECT:-$PROJECT_NAME}"
-export AWS_ASSETS_BUCKET="vladgh"
 export AWS_RDS_DB_ENGINE="${AWS_RDS_DB_ENGINE:-postgres}"
 export AWS_RDS_DB_NAME="${AWS_RDS_DB_NAME:-db}"
 export AWS_RDS_DB_USER="${AWS_RDS_DB_USER:-admin}"
@@ -107,6 +106,7 @@ get_cfn_defaults(){
       export body="${AWS_CFN_STACKS_PATH}/iam.yaml"
       A='--capabilities CAPABILITY_IAM'
       P="'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
+      P="${P} 'ParameterKey=SecretsBucket,ParameterValue=${AWS_SECRETS_BUCKET}'"
       ;;
     rds)
       export name='RDS'
