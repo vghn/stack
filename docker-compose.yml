@@ -11,10 +11,11 @@ services:
     volumes_from:
       - data
     environment:
-      CERT_FOLDER: '/etc/puppetlabs/secure/production/certs/'
+      CERT_FOLDER: '/etc/vg-secrets/ssl'
     ports:
       - '443:443'
       - '8140:8140'
+    command: sh -c 'until ls -A /etc/vg-secrets/ssl >/dev/null 2>&1; do echo "Waiting for certificates"; sleep 5; done; sh -c "dockercloud-haproxy"'
     restart: unless-stopped
     networks:
       - frontend
@@ -23,16 +24,16 @@ services:
     image: vladgh/vpm-api:latest
     hostname: api
     environment:
-      API_CONFIG: '/etc/puppetlabs/secure/production/api.yml'
+      API_CONFIG: '/etc/vg-secrets/api.yml'
       DATA_SERVICE: 'data'
-      SECURE_S3PATH: 's3://vladgh/secure'
-      HIERA_S3PATH: 's3://vladgh/hieradata'
+      SECRETS_SERVICE: 'secrets'
       CONTROL_REPO: 'https://github.com/vghn/puppet.git'
       VIRTUAL_HOST: 'https://*'
     volumes_from:
       - data
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: sh -c 'until [ -s /etc/vg-secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $$RACK_ENV --port $$RACK_PORT"'
     restart: unless-stopped
     networks:
       - backend
@@ -43,36 +44,33 @@ services:
       - data
     environment:
       AUTOSIGN: '/usr/local/bin/csr-sign'
-      AUTOSIGN_CFG: '/etc/puppetlabs/secure/production/csr.yml'
+      AUTOSIGN_CFG: '/etc/vg-secrets/csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
       JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
-    entrypoint: sh -c "until [ -s /var/local/deployed_r10k ]; do echo 'Waiting for R10K'; sleep 5; done; /entrypoint.sh puppetserver foreground"
+    entrypoint: sh -c "until [ -s /etc/vg-secrets/csr.yml ] && [ -s /var/local/deployed_r10k ]; do echo 'Waiting for secrets and R10K'; sleep 5; done; /entrypoint.sh puppetserver foreground"
     restart: unless-stopped
     networks:
       - backend
-  sync:
-    image: vladgh/s3sync:stable
+  ssl:
+    image: vladgh/s3sync:latest
     hostname: ssl-sync-agent
     volumes_from:
       - data
-    entrypoint: sh -c "until [ -s /etc/puppetlabs/secure/production/sync.env ]; do echo 'Waiting for data'; sleep 5; done && set -a && . /etc/puppetlabs/secure/production/sync.env && /entrypoint.sh"
+    environment:
+      S3PATH: 's3://vladgh/ssl'
+      WATCHDIR: '/etc/puppetlabs/puppet/ssl'
     restart: unless-stopped
     networks:
       - backend
-  data:
-    image: alpine:latest
-    hostname: data
-    volumes:
-      - ssl:/etc/puppetlabs/puppet/ssl
-      - code:/etc/puppetlabs/code
-      - secure:/etc/puppetlabs/secure
-      - hieradata:/etc/puppetlabs/hieradata
-      - ~/.aws:/root/.aws:ro
-      - /etc/localtime:/etc/localtime:ro
-      - /var/local
-      - /var/cache/r10k
-    command: /bin/true
+  secrets:
+    image: vladgh/s3sync:latest
+    hostname: secrets-sync-agent
+    volumes_from:
+      - data
+    environment:
+      S3PATH: 's3://vg-secrets'
+      DESTINATION: '/etc/vg-secrets'
     networks:
       - backend
   log:
@@ -82,16 +80,31 @@ services:
       - data
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: sh -c "until [ -s /etc/puppetlabs/secure/production/log.env ]; do echo 'Waiting for data'; sleep 5; done && set -a && . /etc/puppetlabs/secure/production/log.env && /bin/logspout syslog://$${LOG_SERVER_ADDRESS}:$${LOG_SERVER_PORT}"
+    command: syslog+tls://logs4.papertrailapp.com:11854
     restart: unless-stopped
+    networks:
+      - backend
+  data:
+    image: alpine:latest
+    hostname: data
+    volumes:
+      - ssl:/etc/puppetlabs/puppet/ssl
+      - code:/etc/puppetlabs/code
+      - secrets:/etc/vg-secrets
+      - scripts/csr-sign:/usr/local/bin/csr-sign
+      - hiera.yaml:/etc/puppetlabs/puppet/hiera.yaml
+      - ~/.aws:/root/.aws:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /var/local
+      - /var/cache/r10k
+    command: /bin/true
     networks:
       - backend
 
 volumes:
   ssl:
   code:
-  secure:
-  hieradata:
+  secrets:
 
 networks:
   frontend:
