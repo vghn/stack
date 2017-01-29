@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
   lb:
@@ -6,10 +6,6 @@ services:
     links:
       - api
       - server
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    volumes_from:
-      - data
     environment:
       CERT_FOLDER: '/etc/vg-secrets/ssl'
     ports:
@@ -17,6 +13,10 @@ services:
       - '8140:8140'
     command: sh -c 'until ls -A /etc/vg-secrets/ssl >/dev/null 2>&1; do echo "Waiting for certificates"; sleep 5; done; sh -c "dockercloud-haproxy"'
     restart: unless-stopped
+    volumes:
+      - secrets:/etc/vg-secrets
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - frontend
       - backend
@@ -25,79 +25,80 @@ services:
     hostname: api
     environment:
       API_CONFIG: '/etc/vg-secrets/api.yml'
-      DATA_SERVICE: 'data'
-      SECRETS_SERVICE: 'secrets'
-      CONTROL_REPO: 'https://github.com/vghn/puppet.git'
+      SERVICE: 'secrets,r10k'
       VIRTUAL_HOST: 'https://*'
-    volumes_from:
-      - data
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: sh -c 'until [ -s /etc/vg-secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $$RACK_ENV --port $$RACK_PORT"'
     restart: unless-stopped
+    volumes:
+      - secrets:/etc/vg-secrets
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
   server:
     image: vladgh/vpm-server:latest
     hostname: puppet.ghn.me
-    volumes_from:
-      - data
     environment:
       AUTOSIGN: '/usr/local/bin/csr-sign'
       AUTOSIGN_CFG: '/etc/vg-secrets/csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
       JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
-    entrypoint: sh -c "until [ -s /etc/vg-secrets/csr.yml ] && [ -s /var/local/deployed_r10k ]; do echo 'Waiting for secrets and R10K'; sleep 5; done; /entrypoint.sh puppetserver foreground"
+    entrypoint: sh -c "until [ -s /etc/vg-secrets/csr.yml ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo 'Waiting for secrets and R10K'; sleep 5; done; /entrypoint.sh puppetserver foreground"
     restart: unless-stopped
+    volumes:
+      - ssl:/etc/puppetlabs/puppet/ssl
+      - secrets:/etc/vg-secrets
+      - code:/etc/puppetlabs/code
+      - ~/.aws:/root/.aws:ro
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
   ssl:
     image: vladgh/s3sync:latest
     hostname: ssl-sync-agent
-    volumes_from:
-      - data
     environment:
       S3PATH: 's3://vladgh/ssl'
       WATCHDIR: '/etc/puppetlabs/puppet/ssl'
     restart: unless-stopped
+    volumes:
+      - ssl:/etc/puppetlabs/puppet/ssl
+      - ~/.aws:/root/.aws:ro
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
   secrets:
     image: vladgh/s3sync:latest
     hostname: secrets-sync-agent
-    volumes_from:
-      - data
     environment:
       S3PATH: 's3://vg-secrets'
       DESTINATION: '/etc/vg-secrets'
+    volumes:
+      - secrets:/etc/vg-secrets
+      - ~/.aws:/root/.aws:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - backend
+  r10k:
+    image: vladgh/r10k:latest
+    hostname: r10k-agent
+    environment:
+      REMOTE: 'https://github.com/vghn/puppet.git'
+    command: 'r10k deploy environment --puppetfile'
+    volumes:
+      - code:/etc/puppetlabs/code
+      - /etc/localtime:/etc/localtime:ro
+      - /var/cache/r10k
     networks:
       - backend
   log:
     hostname: log-agent
     image: gliderlabs/logspout:latest
-    volumes_from:
-      - data
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     command: syslog+tls://logs4.papertrailapp.com:11854
     restart: unless-stopped
-    networks:
-      - backend
-  data:
-    image: alpine:latest
-    hostname: data
     volumes:
-      - ssl:/etc/puppetlabs/puppet/ssl
-      - code:/etc/puppetlabs/code
-      - secrets:/etc/vg-secrets
-      - ./scripts/csr-sign:/usr/local/bin/csr-sign:ro
-      - ./hiera.yaml:/etc/puppetlabs/puppet/hiera.yaml:ro
-      - ~/.aws:/root/.aws:ro
+      - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
-      - /var/local
-      - /var/cache/r10k
-    command: /bin/true
     networks:
       - backend
 
