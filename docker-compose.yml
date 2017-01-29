@@ -91,8 +91,8 @@ services:
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
       - secrets:/etc/vg-secrets
-      - scripts/csr-sign:/usr/local/bin/csr-sign
-      - hiera.yaml:/etc/puppetlabs/puppet/hiera.yaml
+      - ./scripts/csr-sign:/usr/local/bin/csr-sign:ro
+      - ./hiera.yaml:/etc/puppetlabs/puppet/hiera.yaml:ro
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/local
