@@ -8,9 +8,6 @@ Parameters:
   AssetsBucket:
     Description: The S3 bucket containing the assets
     Type: String
-  SecretsBucket:
-    Description: The S3 bucket containing the secrets
-    Type: String
 
 Resources:
   CI:
@@ -99,16 +96,6 @@ Resources:
             Effect: Allow
             Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket, '/*']]
             Sid: AllowFullAccessToAssetsBucket
-          - Action:
-            - s3:ListBucket
-            - s3:GetBucketLocation
-            Effect: Allow
-            Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucket]]
-            Sid: AllowListingSecretsBucket
-          - Action: s3:*
-            Effect: Allow
-            Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucket, '/*']]
-            Sid: AllowFullAccessToSecretsBucket
   RheaAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
