@@ -44,7 +44,6 @@ export SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
 export AWS_ACCOUNT_NUMBER="${AWS_ACCOUNT_NUMBER:-}"
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 export AWS_ASSETS_BUCKET="${AWS_ASSETS_BUCKET:-}"
-export AWS_SECRETS_BUCKET="${AWS_SECRETS_BUCKET:-}"
 export AWS_AZ_NUMBER="${AWS_AZ_NUMBER:-4}"
 export AWS_SNS_NOTIFICATIONS="${AWS_SNS_NOTIFICATIONS:-"arn:aws:sns:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_NUMBER}:-NotifyMe"}"
 export AWS_SSL_ARN="${AWS_SSL_ARN:-}"
@@ -108,7 +107,6 @@ get_cfn_defaults(){
       export body="${AWS_CFN_STACKS_PATH}/iam.yaml"
       A='--capabilities CAPABILITY_IAM'
       P="'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
-      P="${P} 'ParameterKey=SecretsBucket,ParameterValue=${AWS_SECRETS_BUCKET}'"
       ;;
     rds)
       export name='RDS'

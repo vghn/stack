@@ -7,14 +7,14 @@ services:
       - api
       - server
     environment:
-      CERT_FOLDER: '/etc/vg-secrets/ssl'
+      CERT_FOLDER: '/var/secrets/ssl'
     ports:
       - '443:443'
       - '8140:8140'
-    command: sh -c 'until ls -A /etc/vg-secrets/ssl >/dev/null 2>&1; do echo "Waiting for certificates"; sleep 5; done; sh -c "dockercloud-haproxy"'
+    command: sh -c 'until ls -A /var/secrets/ssl >/dev/null 2>&1; do echo "Waiting for certificates"; sleep 5; done; sh -c "dockercloud-haproxy"'
     restart: unless-stopped
     volumes:
-      - secrets:/etc/vg-secrets
+      - secrets:/var/secrets
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -24,13 +24,13 @@ services:
     image: vladgh/vpm-api:latest
     hostname: api
     environment:
-      API_CONFIG: '/etc/vg-secrets/api.yml'
+      API_CONFIG: '/var/secrets/api.yml'
       SERVICE: 'secrets,r10k'
       VIRTUAL_HOST: 'https://*'
-    entrypoint: sh -c 'until [ -s /etc/vg-secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $$RACK_ENV --port $$RACK_PORT"'
+    entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $$RACK_ENV --port $$RACK_PORT"'
     restart: unless-stopped
     volumes:
-      - secrets:/etc/vg-secrets
+      - secrets:/var/secrets
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -39,16 +39,16 @@ services:
     image: vladgh/vpm-server:latest
     hostname: puppet.ghn.me
     environment:
-      AUTOSIGN: '/usr/local/bin/csr-sign'
-      AUTOSIGN_CFG: '/etc/vg-secrets/csr.yml'
+      AUTOSIGN: '/var/secrets/csr/sign'
+      AUTOSIGN_CFG: '/var/secrets/csr/cfg.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
       JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
-    entrypoint: sh -c "until [ -s /etc/vg-secrets/csr.yml ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo 'Waiting for secrets and R10K'; sleep 5; done; /entrypoint.sh puppetserver foreground"
+      entrypoint: sh -c "until [ -s /var/secrets/csr.yml ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo 'Waiting for secrets and R10K'; sleep 5; done; /entrypoint.sh puppetserver foreground"
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
-      - secrets:/etc/vg-secrets
+      - secrets:/var/secrets
       - code:/etc/puppetlabs/code
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
@@ -71,10 +71,10 @@ services:
     image: vladgh/s3sync:latest
     hostname: secrets-sync-agent
     environment:
-      S3PATH: 's3://vg-secrets'
-      DESTINATION: '/etc/vg-secrets'
+      S3PATH: 's3://vladgh/secrets'
+      DESTINATION: '/var/secrets'
     volumes:
-      - secrets:/etc/vg-secrets
+      - secrets:/var/secrets
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
