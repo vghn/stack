@@ -27,7 +27,7 @@ services:
       API_CONFIG: '/var/secrets/api.yml'
       SERVICE: 'secrets,r10k'
       VIRTUAL_HOST: 'https://*'
-    entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $$RACK_ENV --port $$RACK_PORT"'
+    entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
     volumes:
       - secrets:/var/secrets
@@ -39,12 +39,11 @@ services:
     image: vladgh/vpm-server:latest
     hostname: puppet.ghn.me
     environment:
-      AUTOSIGN: '/var/secrets/csr/sign'
-      AUTOSIGN_CFG: '/var/secrets/csr/cfg.yml'
+      AUTOSIGN_CFG: '/var/secrets/csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
       JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
-      entrypoint: sh -c "until [ -s /var/secrets/csr.yml ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo 'Waiting for secrets and R10K'; sleep 5; done; /entrypoint.sh puppetserver foreground"
+      entrypoint: sh -c 'until [ -s $${AUTOSIGN_CFG} ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for secrets and R10K"; sleep 5; done; /entrypoint.sh puppetserver foreground'
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
