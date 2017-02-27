@@ -100,6 +100,19 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
+  backup:
+    image: vladgh/backup:latest
+    environment:
+      AWS_S3_BUCKET: 'vladgh'
+      AWS_S3_PREFIX: 'backup-rhea'
+      GPG_RECIPIENT: 'vlad@ghn.me'
+      GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
+    volumes:
+      - ssl:/backup/puppetca
+      - ~/.aws:/root/.aws:ro
+      - /etc/localtime:/etc/localtime:ro
+    command: cron
+    restart: unless-stopped
 
 volumes:
   ssl:
