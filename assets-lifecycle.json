@@ -1,0 +1,40 @@
+{
+  "Rules": [
+    {
+      "Status": "Enabled",
+      "Prefix": "backup-rhea/hourly/",
+      "Expiration": { "Days": 1 },
+      "ID": "Rhea Hourly Rotation"
+    },
+    {
+      "Status": "Enabled",
+      "Prefix": "backup-rhea/daily/",
+      "Expiration": { "Days": 7 },
+      "ID": "Rhea Daily Rotation"
+    },
+    {
+      "Status": "Enabled",
+      "Prefix": "backup-rhea/weekly/",
+      "Expiration": { "Days": 30 },
+      "ID": "Rhea Weekly Rotation"
+    },
+    {
+      "Status": "Enabled",
+      "Prefix": "backup-mini/hourly/",
+      "Expiration": { "Days": 1 },
+      "ID": "Mini Hourly Rotation"
+    },
+    {
+      "Status": "Enabled",
+      "Prefix": "backup-mini/daily/",
+      "Expiration": { "Days": 7 },
+      "ID": "Mini Daily Rotation"
+    },
+    {
+      "Status": "Enabled",
+      "Prefix": "backup-mini/weekly/",
+      "Expiration": { "Days": 30 },
+      "ID": "Mini Weekly Rotation"
+    }
+  ]
+}

@@ -25,7 +25,7 @@ services:
     hostname: api
     environment:
       API_CONFIG: '/var/secrets/api.yml'
-      SERVICE: 'secrets,r10k'
+      SERVICES: 'secrets,r10k'
       VIRTUAL_HOST: 'https://*'
     entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
