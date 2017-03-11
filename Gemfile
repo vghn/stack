@@ -1,7 +1,6 @@
 source ENV['GEM_SOURCE'] || 'https://rubygems.org'
 
 gem 'dotenv', require: false
-gem 'rainbow', require: false
 gem 'rake', require: false
 
 group :development do
