@@ -18,7 +18,7 @@ Tasks::TravisCI.new
 namespace :stack do
   desc 'Updates docker compose environment'
   task :update do
-    sh "( ssh vlad@#{PUPPET_SERVER} 'docker-compose --project-name #{PROJECT} --file - pull' ) < docker-compose.yml && ( ssh vlad@#{PUPPET_SERVER} 'docker-compose --project-name #{PROJECT} --file - up -d --remove-orphans' ) < docker-compose.yml"
+    sh "( ssh ubuntu@#{PUPPET_SERVER} 'docker-compose --project-name #{PROJECT} --file - pull' ) < docker-compose.yml && ( ssh ubuntu@#{PUPPET_SERVER} 'docker-compose --project-name #{PROJECT} --file - up -d --remove-orphans' ) < docker-compose.yml"
   end
 end
 
