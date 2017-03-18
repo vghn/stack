@@ -74,7 +74,10 @@ get_cfn_defaults(){
   local stack A P T
   stack="${1:-}"
 
-  export stacks='efs elb iam rds rhea sg vpc'
+  # Defaults
+  export AWS_PROFILE=${AWS_2017A_PROFILE}
+  export stacks='efs elb iam main rds rhea sg vpc'
+  export depends_on=
 
   # Default command arguments
   A=''
@@ -86,8 +89,9 @@ get_cfn_defaults(){
   # Stack defaults
   case "$stack" in
     efs)
-      export name='EFS'
-      export body="${AWS_CFN_STACKS_PATH}/efs.yaml"
+      name='EFS'
+      body="${AWS_CFN_STACKS_PATH}/efs.yaml"
+      depends_on='vpc,sg'
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=VolumeName,ParameterValue=${PROJECT_NAME}'"
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
@@ -95,22 +99,36 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG EFSSecurityGroup)\"'"
       ;;
     elb)
-      export name='ELB'
-      export body="${AWS_CFN_STACKS_PATH}/elb.yaml"
+      name='ELB'
+      body="${AWS_CFN_STACKS_PATH}/elb.yaml"
+      depends_on='vpc,sg'
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG ELBSecurityGroup)\"'"
       P="${P} 'ParameterKey=SSLCertificateId,ParameterValue=${AWS_SSL_ARN}'"
       ;;
     iam)
-      export name='IAM'
-      export body="${AWS_CFN_STACKS_PATH}/iam.yaml"
+      name='IAM'
+      body="${AWS_CFN_STACKS_PATH}/iam.yaml"
       A='--capabilities CAPABILITY_IAM'
       P="'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
+    main)
+      export AWS_PROFILE=${AWS_MAIN_PROFILE}
+      name='VGH'
+      body="${AWS_CFN_STACKS_PATH}/main.yaml"
+      depends_on='iam'
+      A='--capabilities CAPABILITY_NAMED_IAM'
+      P="     'ParameterKey=AssetsBucketName,ParameterValue=${AWS_MAIN_ASSETS_BUCKET}'"
+      P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_MAIN_BACKUP_BUCKET}'"
+      P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_MAIN_SECRETS_BUCKET}'"
+      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_MAIN_RHEA_USER}'"
+      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_MAIN_MINI_USER}'"
+      ;;
     rds)
-      export name='RDS'
-      export body="${AWS_CFN_STACKS_PATH}/rds.yaml"
+      name='RDS'
+      body="${AWS_CFN_STACKS_PATH}/rds.yaml"
+      depends_on='vpc,sg'
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
@@ -120,8 +138,9 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=DBPassword,ParameterValue=${AWS_RDS_DB_PASS}'"
       ;;
     rhea)
-      export name='RHEA'
-      export body="${AWS_CFN_STACKS_PATH}/rhea.yaml"
+      name='RHEA'
+      body="${AWS_CFN_STACKS_PATH}/rhea.yaml"
+      depends_on='vpc,sg,iam,elb'
       P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
       P="${P} 'ParameterKey=Version,ParameterValue=${VERSION}-${GIT_SHA1}'"
       P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
@@ -135,14 +154,15 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=ControlRepoArchive,ParameterValue=s3://${AWS_ASSETS_BUCKET}/${PP_ARTIFACT}'"
       ;;
     sg)
-      export name='SG'
-      export body="${AWS_CFN_STACKS_PATH}/sg.yaml"
+      name='SG'
+      body="${AWS_CFN_STACKS_PATH}/sg.yaml"
+      depends_on='vpc'
       P="     'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       P="${P} 'ParameterKey=SSHLocations,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     vpc)
-      export name='VPC'
-      export body="${AWS_CFN_STACKS_PATH}/vpc.yaml"
+      name='VPC'
+      body="${AWS_CFN_STACKS_PATH}/vpc.yaml"
       P="     'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
       T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
@@ -152,5 +172,6 @@ get_cfn_defaults(){
       ;;
   esac
 
+  export depends_on
   export cfn_cmd="--stack-name ${name} --template-body file://${body} ${A} --parameters ${P} --tags ${T}"
 }

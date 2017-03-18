@@ -1,0 +1,215 @@
+Description: VGH Main
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  AssetsBucketName:
+    Description: The S3 bucket containing the assets
+    Type: String
+  BackupBucketName:
+    Description: The S3 bucket containing the backups
+    Type: String
+  SecretsBucketName:
+    Description: The S3 bucket containing the secrets
+    Type: String
+  RheaUserName:
+    Description: Rhea user name
+    Type: String
+  MiniUserName:
+    Description: Mini user name
+    Type: String
+
+Resources:
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketName: !Ref AssetsBucketName
+  AssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: AssetsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowListing
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt [RheaUser, Arn]
+          Action:
+          - s3:ListBucket
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName]]
+        - Sid: AlowRhea
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt [RheaUser, Arn]
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          - s3:DeleteObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, '/*']]
+        - Sid: DenyUnEncryptedInflightOperations
+          Effect: Deny
+          Principal: "*"
+          Action: s3:*
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, '/*']]
+          Condition:
+            Bool:
+              aws:SecureTransport: false
+  BackupBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketName: !Ref BackupBucketName
+      LifecycleConfiguration:
+        Rules:
+        - Id: Rhea Hourly Rotation
+          Prefix: rhea/hourly/
+          Status: Enabled
+          ExpirationInDays: '1'
+        - Id: Rhea Daily Rotation
+          Prefix: rhea/daily/
+          Status: Enabled
+          ExpirationInDays: '7'
+        - Id: Rhea Weekly Rotation
+          Prefix: rhea/weekly/
+          Status: Enabled
+          ExpirationInDays: '30'
+        - Id: Mini Hourly Rotation
+          Prefix: mini/hourly/
+          Status: Enabled
+          ExpirationInDays: '1'
+        - Id: Mini Daily Rotation
+          Prefix: mini/daily/
+          Status: Enabled
+          ExpirationInDays: '7'
+        - Id: Mini Weekly Rotation
+          Prefix: mini/weekly/
+          Status: Enabled
+          ExpirationInDays: '30'
+  BackupBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: BackupBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowListing
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt [RheaUser, Arn]
+            - !GetAtt [MiniUser, Arn]
+          Action:
+          - s3:ListBucket
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName]]
+        - Sid: AlowRhea
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt [RheaUser, Arn]
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          - s3:DeleteObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/rhea/*']]
+        - Sid: AlowMini
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt [MiniUser, Arn]
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          - s3:DeleteObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/mini/*']]
+        - Sid: DenyUnEncryptedInflightOperations
+          Effect: Deny
+          Principal: "*"
+          Action: s3:*
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/*']]
+          Condition:
+            Bool:
+              aws:SecureTransport: false
+  SecretsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketName: !Ref SecretsBucketName
+  SecretsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: SecretsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowListing
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt [RheaUser, Arn]
+          Action:
+          - s3:ListBucket
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName]]
+        - Sid: AlowReadOnlyAccesstoSecrets
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt [RheaUser, Arn]
+          Action: s3:GetObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
+        - Sid: DenyUnEncryptedObjectUploads
+          Effect: Deny
+          Principal: "*"
+          Action:
+          - s3:PutObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
+          Condition:
+            StringNotEquals:
+              s3:x-amz-server-side-encryption: AES256
+        - Sid: DenyUnEncryptedInflightOperations
+          Effect: Deny
+          Principal: "*"
+          Action: s3:*
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
+          Condition:
+            Bool:
+              aws:SecureTransport: false
+
+  RheaUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref RheaUserName
+  RheaAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref RheaUser
+  MiniUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref MiniUserName
+  MiniAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref MiniUser
+
+Outputs:
+  RheaAccessKey:
+    Description: The Rhea User Access Key
+    Value: !Ref RheaAccessKey
+  RheaSecretKey:
+    Description: The Rhea User Secret Key
+    Value: !GetAtt RheaAccessKey.SecretAccessKey
+  MiniAccessKey:
+    Description: The Mini User Access Key
+    Value: !Ref MiniAccessKey
+  MiniSecretKey:
+    Description: The Mini User Secret Key
+    Value: !GetAtt MiniAccessKey.SecretAccessKey

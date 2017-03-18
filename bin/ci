@@ -5,40 +5,55 @@
 # shellcheck disable=1090
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/envrc"
 
-# CI Install
-ci_install(){
+# Install the VGS Library
+install_vgs(){
   echo 'Install and load VGS library'
   git clone https://github.com/vghn/vgs.git ~/vgs
   # shellcheck disable=1090
   . ~/vgs/load 2>/dev/null || true
+}
 
+# Install gems
+install_gems(){
   echo 'Install gems'
   bundle install --without development --path vendor/bundle
+}
 
+# Install AWS Command Line
+install_aws_cli(){
   echo 'Install AWS-CLI'
   pip install --user --upgrade awscli
+}
 
+# Install HashiCorp Packer
+install_packer(){
   echo 'Install HashiCorp Packer'
   curl -L -o packer.zip 'https://releases.hashicorp.com/packer/0.12.1/packer_0.12.1_linux_amd64.zip'
   unzip -d ~/bin packer.zip
 }
 
-# CI Test
-ci_test(){
+# Validate BASH scripts
+validate_bash(){
   e_info 'Validate BASH scripts'
   find ./bin -type f -exec shellcheck {} +
+}
 
+# Validate CloudFormation templates
+validate_cfn(){
   e_info 'Validate CloudFormation templates'
   find ./cfn \( -name '*.yaml' -o -name '*.json' \) -exec sh -c \
     'echo "Checking ${1}" && aws cloudformation validate-template --template-body "file://${1}" --output table' \
     -- {} \;
+}
 
+# Validate AMIs
+validate_amis(){
   e_info 'Validate AMIs'
   eval "${APPDIR}/bin/ami" validate
 }
 
 # CI Deploy
-ci_deploy(){
+deploy_rhea(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     # Set-up SSH connection
     echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > ~/.ssh/deploy_rsa
@@ -58,13 +73,13 @@ ci_deploy(){
 # Process arguments
 case "${1:-}" in
   install)
-    ci_install
+    install_vgs
     ;;
   test)
-    ci_test
+    validate_bash
     ;;
   deploy)
-    ci_deploy
+    deploy_rhea
     ;;
   *)
     e_abort "USAGE: ${BASH_SOURCE[0]} [install | test | deploy]"
