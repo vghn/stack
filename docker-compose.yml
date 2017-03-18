@@ -57,7 +57,7 @@ services:
     image: vladgh/s3sync:latest
     hostname: ssl-sync-agent
     environment:
-      S3PATH: 's3://vladgh/ssl'
+      S3PATH: 's3://vgast/puppet/ssl'
       WATCHDIR: '/etc/puppetlabs/puppet/ssl'
     restart: unless-stopped
     volumes:
@@ -70,7 +70,7 @@ services:
     image: vladgh/s3sync:latest
     hostname: secrets-sync-agent
     environment:
-      S3PATH: 's3://vladgh/secrets'
+      S3PATH: 's3://vgsec'
       DESTINATION: '/var/secrets'
     volumes:
       - secrets:/var/secrets
@@ -103,8 +103,8 @@ services:
   backup:
     image: vladgh/backup:latest
     environment:
-      AWS_S3_BUCKET: 'vladgh'
-      AWS_S3_PREFIX: 'backup-rhea'
+      AWS_S3_BUCKET: 'vgbak'
+      AWS_S3_PREFIX: 'rhea'
       GPG_RECIPIENT: 'vlad@ghn.me'
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     volumes:
