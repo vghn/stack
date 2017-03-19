@@ -5,6 +5,10 @@
 # shellcheck disable=1090
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/envrc"
 
+# VARs
+PACKER_URL='https://releases.hashicorp.com/packer/0.12.3/packer_0.12.3_linux_amd64.zip'
+SSH_KEY="$(mktemp)"
+
 # Install the VGS Library
 install_vgs(){
   echo 'Install and load VGS library'
@@ -28,7 +32,7 @@ install_aws_cli(){
 # Install HashiCorp Packer
 install_packer(){
   echo 'Install HashiCorp Packer'
-  curl -L -o packer.zip 'https://releases.hashicorp.com/packer/0.12.1/packer_0.12.1_linux_amd64.zip'
+  curl -L -o packer.zip "$PACKER_URL"
   unzip -d ~/bin packer.zip
 }
 
@@ -56,7 +60,6 @@ validate_amis(){
 deploy_rhea(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     e_info 'Set-up SSH key'
-    SSH_KEY="$(mktemp)"
     echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > "$SSH_KEY"
     chmod 600 "$SSH_KEY"
 
@@ -66,17 +69,24 @@ deploy_rhea(){
     e_info 'Update docker-compose'
     ( ssh -i "$SSH_KEY" ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - pull' ) < docker-compose.yml
     ( ssh -i "$SSH_KEY" ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - up -d' ) < docker-compose.yml
+  else
+    e_warn 'SSH deployment is only allowed in production!'
+  fi
+}
 
-    if [[ -s "$SSH_KEY" ]] && [[ "$SSH_KEY" =~ tmp. ]]; then
+# Clean-up
+cleanup() {
+  if [[ -s "$SSH_KEY" ]]; then
+    if [[ "$SSH_KEY" =~ tmp. ]]; then
       e_info 'Removing temporary ssh key'
       rm -rf "${SSH_KEY:?}"
     else
       e_warn 'Could not remove temporary ssh key'
     fi
-  else
-    e_warn 'SSH deployment is only allowed in production!'
   fi
 }
+
+trap cleanup EXIT
 
 # Process arguments
 case "${1:-}" in
