@@ -6,8 +6,11 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/envrc"
 
 # VARs
+DOCKER_PROJECT='vpm'
+SSH_HOST='rhea.ghn.me'
+SSH_USER='ubuntu'
+SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
 PACKER_URL='https://releases.hashicorp.com/packer/0.12.3/packer_0.12.3_linux_amd64.zip'
-SSH_KEY="$(mktemp)"
 
 # Install the VGS Library
 install_vgs(){
@@ -56,26 +59,36 @@ validate_amis(){
   eval "${APPDIR}/bin/ami" validate
 }
 
-# CI Deploy
+# Set-up SSH
+ssh_setup(){
+  e_info 'Set-up SSH key'
+  echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > "$SSH_KEY"
+  chmod 600 "$SSH_KEY"
+
+  e_info 'Update known hosts'
+  ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+}
+
+# Deploy RHEA
 deploy_rhea(){
+  e_info 'Update docker-compose'
+  # shellcheck disable=2029
+  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file - pull" ) < docker-compose.yml
+  # shellcheck disable=2029
+  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file - up -d --build --remove-orphans" ) < docker-compose.yml
+}
+
+# CI Deploy
+deploy(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
-    e_info 'Set-up SSH key'
-    echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > "$SSH_KEY"
-    chmod 600 "$SSH_KEY"
-
-    e_info 'Update known hosts'
-    ssh-keyscan -H puppet.ghn.me >> ~/.ssh/known_hosts
-
-    e_info 'Update docker-compose'
-    ( ssh -i "$SSH_KEY" ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - pull' ) < docker-compose.yml
-    ( ssh -i "$SSH_KEY" ubuntu@puppet.ghn.me 'docker-compose --project-name vpm --file - up -d' ) < docker-compose.yml
+    deploy_rhea
   else
-    e_warn 'SSH deployment is only allowed in production!'
+    e_warn 'Deployment is only allowed in production!'
   fi
 }
 
 # Clean-up
-cleanup() {
+clean_up() {
   if [[ -s "$SSH_KEY" ]]; then
     if [[ "$SSH_KEY" =~ tmp. ]]; then
       e_info 'Removing temporary ssh key'
@@ -86,20 +99,31 @@ cleanup() {
   fi
 }
 
-trap cleanup EXIT
+# Trap exit
+bye(){
+  e_info 'Clean-up'
+  clean_up; exit "${1:-0}"
+}
 
-# Process arguments
-case "${1:-}" in
-  install)
-    install_vgs
-    ;;
-  test)
-    validate_bash
-    ;;
-  deploy)
-    deploy_rhea
-    ;;
-  *)
-    e_abort "USAGE: ${BASH_SOURCE[0]} [install | test | deploy]"
-    ;;
-esac
+
+main(){
+  trap 'bye $?' EXIT HUP INT QUIT TERM
+
+  # Process arguments
+  case "${1:-}" in
+    install)
+      install_vgs
+      ;;
+    test)
+      validate_bash
+      ;;
+    deploy)
+      deploy
+      ;;
+    *)
+      e_abort "USAGE: ${BASH_SOURCE[0]} [install | test | deploy]"
+      ;;
+  esac
+}
+
+main "${@:-}"

@@ -2,18 +2,22 @@ version: '3'
 
 services:
   lb:
-    image: dockercloud/haproxy:latest
+    image: vladgh/lb:latest
     links:
       - api
-      - server
+      - puppet
+      - letsencrypt
     environment:
-      CERT_FOLDER: '/var/secrets/ssl'
+      CERT_FOLDER: '/certs'
+      LIVE_CERT_FOLDER: '/etc/letsencrypt/live'
     ports:
+      - '80:80'
       - '443:443'
       - '8140:8140'
-    command: sh -c 'until ls -A /var/secrets/ssl >/dev/null 2>&1; do echo "Waiting for certificates"; sleep 5; done; sh -c "dockercloud-haproxy"'
     restart: unless-stopped
     volumes:
+      - certs:/certs
+      - letsencrypt:/etc/letsencrypt
       - secrets:/var/secrets
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
@@ -26,7 +30,8 @@ services:
     environment:
       API_CONFIG: '/var/secrets/api.yml'
       SERVICES: 'secrets,r10k'
-      VIRTUAL_HOST: 'https://*'
+      FORCE_SSL: 'yes'
+      VIRTUAL_HOST: 'http://*,https://*'
     entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
     volumes:
@@ -35,7 +40,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
-  server:
+  puppet:
     image: vladgh/vpm-server:latest
     hostname: puppet.ghn.me
     environment:
@@ -51,6 +56,18 @@ services:
       - code:/etc/puppetlabs/code
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
+    networks:
+      - backend
+  letsencrypt:
+    image: vladgh/le:latest
+    environment:
+      VIRTUAL_HOST: '*/.well-known/acme-challenge/*'
+      VIRTUAL_HOST_WEIGHT: '999'
+      DOMAINS: 'rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me'
+      EMAIL: 'webmaster@ghn.me'
+      LOAD_BALANCER_SERVICE_NAME: 'lb'
+    volumes:
+      - letsencrypt:/etc/letsencrypt
     networks:
       - backend
   ssl:
@@ -109,6 +126,7 @@ services:
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     volumes:
       - ssl:/backup/puppetca
+      - letsencrypt:/backup/letsencrypt
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
     command: cron
@@ -117,6 +135,8 @@ services:
 volumes:
   ssl:
   code:
+  certs:
+  letsencrypt:
   secrets:
 
 networks:
