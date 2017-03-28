@@ -1,18 +1,11 @@
 # Configure the load path so all dependencies in your Gemfile can be required
 require 'bundler/setup'
 
-# Add libraries to the load path
-$LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
-
-# VARs
-PROJECT       = 'vpm'
-PUPPET_SERVER = 'puppet.ghn.me'
-
 # Include task modules
-require 'tasks/release'
-Tasks::Release.new
-require 'tasks/travisci'
-Tasks::TravisCI.new
+require 'vtasks/release'
+Vtasks::Release.new
+require 'vtasks/travisci'
+Vtasks::TravisCI.new
 
 # Stack SSH commands
 namespace :stack do
@@ -23,10 +16,11 @@ namespace :stack do
 end
 
 # Display version
-require 'version'
 desc 'Display version'
 task :version do
-  puts "Current version: #{Version::FULL}"
+  require 'vtasks/version'
+  include Vtasks::Utils::Semver
+  puts "Current version: #{gitver}"
 end
 
 # Create a list of contributors from GitHub
