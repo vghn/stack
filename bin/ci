@@ -71,6 +71,8 @@ ssh_setup(){
 
 # Deploy RHEA
 deploy_rhea(){
+  ssh_setup
+
   e_info 'Update docker-compose'
   # shellcheck disable=2029
   ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file - pull" ) < docker-compose.yml
