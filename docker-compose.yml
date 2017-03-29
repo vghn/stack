@@ -25,7 +25,7 @@ services:
       - frontend
       - backend
   api:
-    image: vladgh/vpm-api:latest
+    image: vladgh/wh:latest
     hostname: api
     environment:
       API_CONFIG: '/var/secrets/api.yml'
@@ -41,7 +41,7 @@ services:
     networks:
       - backend
   puppet:
-    image: vladgh/vpm-server:latest
+    image: vladgh/ps:latest
     hostname: puppet.ghn.me
     environment:
       AUTOSIGN_CFG: '/var/secrets/csr.yml'
