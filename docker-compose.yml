@@ -32,7 +32,7 @@ services:
       SERVICES: 'secrets,r10k'
       FORCE_SSL: 'yes'
       VIRTUAL_HOST: 'http://*,https://*'
-    entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
+    entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "/sbin/tini -- bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
     volumes:
       - secrets:/var/secrets
@@ -89,6 +89,7 @@ services:
     environment:
       S3PATH: 's3://vgsec'
       DESTINATION: '/var/secrets'
+      CRON_TIME: '20 * * * *'
     volumes:
       - secrets:/var/secrets
       - ~/.aws:/root/.aws:ro
@@ -100,6 +101,7 @@ services:
     hostname: r10k-agent
     environment:
       REMOTE: 'https://github.com/vghn/puppet.git'
+      CRON_TIME: '10 * * * *'
     command: 'r10k deploy environment --puppetfile'
     volumes:
       - code:/etc/puppetlabs/code
