@@ -35,5 +35,5 @@ end
 # List all tasks by default
 Rake::Task[:default].clear if Rake::Task.task_defined?(:default)
 task :default do
-  system 'rake -D'
+  system 'rake -T'
 end
