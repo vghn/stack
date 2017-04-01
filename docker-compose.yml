@@ -75,10 +75,10 @@ services:
     hostname: ssl-sync-agent
     environment:
       S3PATH: 's3://vgast/puppet/ssl'
-      WATCHDIR: '/etc/puppetlabs/puppet/ssl'
+    command: sync
     restart: unless-stopped
     volumes:
-      - ssl:/etc/puppetlabs/puppet/ssl
+      - ssl:/sync
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -88,10 +88,10 @@ services:
     hostname: secrets-sync-agent
     environment:
       S3PATH: 's3://vgsec'
-      DESTINATION: '/var/secrets'
-      CRON_TIME: '20 * * * *'
+    command: cron
+    restart: unless-stopped
     volumes:
-      - secrets:/var/secrets
+      - secrets:/sync
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
