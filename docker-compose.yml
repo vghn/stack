@@ -48,7 +48,7 @@ services:
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
       PUPPETSERVER_JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
-      entrypoint: sh -c 'until [ -s $${AUTOSIGN_CFG} ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for secrets and R10K"; sleep 5; done; /entrypoint.sh puppetserver foreground'
+      entrypoint: sh -c 'until [ -s $${AUTOSIGN_CFG} ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for secrets and R10K"; sleep 5; done; /sbin/tini -- /entrypoint.sh puppetserver foreground'
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
