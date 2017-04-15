@@ -1,6 +1,10 @@
 Description: VGH RHEA
 
 Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
   ControlRepoArchive:
     Description: The S3 path for the puppet control repository
     Type: String
@@ -9,10 +13,6 @@ Parameters:
     Type: String
   ElasticLoadBalancer:
     Description: The Elastic Load Balancer name
-    Type: String
-  EnvType:
-    Default: production
-    Description: The environment type
     Type: String
   IamInstanceProfile:
     Description: The instance profile
