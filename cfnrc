@@ -6,7 +6,7 @@ get_cfn_defaults(){
   stack="${1:-}"
 
   # Defaults
-  export AWS_PROFILE=${AWS_2017A_PROFILE}
+  export AWS_PROFILE='aws2017a'
   export stacks='efs elb iam main rds rhea sg vpc'
   export depends_on=
 
@@ -46,7 +46,7 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
     main)
-      export AWS_PROFILE=${AWS_MAIN_PROFILE}
+      export AWS_PROFILE='main'
       name='VGH'
       body="${AWS_CFN_STACKS_PATH}/main.yml"
       depends_on='iam'
