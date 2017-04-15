@@ -140,6 +140,11 @@ volumes:
   certs:
   letsencrypt:
   secrets:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=100m,nodev,nosuid"
 
 networks:
   frontend:
