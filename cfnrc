@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+# AWS CloudFormation Defaults
+
+get_cfn_defaults(){
+  local stack A P T
+  stack="${1:-}"
+
+  # Defaults
+  export AWS_PROFILE=${AWS_2017A_PROFILE}
+  export stacks='efs elb iam main rds rhea sg vpc'
+  export depends_on=
+
+  # Default command arguments
+  A=''
+
+  # Common paramaters
+  P="'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
+
+  # Common tags
+  T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
+  T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
+
+  # Stack defaults
+  case "$stack" in
+    efs)
+      name='EFS'
+      body="${AWS_CFN_STACKS_PATH}/efs.yml"
+      depends_on='vpc,sg'
+      P="${P} 'ParameterKey=VolumeName,ParameterValue=${PROJECT_NAME}'"
+      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG EFSSecurityGroup)\"'"
+      ;;
+    elb)
+      name='ELB'
+      body="${AWS_CFN_STACKS_PATH}/elb.yml"
+      depends_on='vpc,sg'
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG ELBSecurityGroup)\"'"
+      P="${P} 'ParameterKey=SSLCertificateId,ParameterValue=${AWS_SSL_ARN}'"
+      ;;
+    iam)
+      name='IAM'
+      body="${AWS_CFN_STACKS_PATH}/iam.yml"
+      A='--capabilities CAPABILITY_IAM'
+      P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
+      ;;
+    main)
+      export AWS_PROFILE=${AWS_MAIN_PROFILE}
+      name='VGH'
+      body="${AWS_CFN_STACKS_PATH}/main.yml"
+      depends_on='iam'
+      A='--capabilities CAPABILITY_NAMED_IAM'
+      P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_MAIN_ASSETS_BUCKET}'"
+      P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_MAIN_BACKUP_BUCKET}'"
+      P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_MAIN_SECRETS_BUCKET}'"
+      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_MAIN_RHEA_USER}'"
+      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_MAIN_MINI_USER}'"
+      ;;
+    puppetdb)
+      name='PuppetDB'
+      body="${AWS_CFN_STACKS_PATH}/puppetdb.yml"
+      depends_on='vpc,sg'
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
+      P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME}'"
+      P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER}'"
+      P="${P} 'ParameterKey=DBPassword,ParameterValue=${PP_DB_PASS}'"
+      ;;
+    rds)
+      name='RDS'
+      body="${AWS_CFN_STACKS_PATH}/rds.yml"
+      depends_on='vpc,sg'
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
+      P="${P} 'ParameterKey=DBEngine,ParameterValue=${AWS_RDS_DB_ENGINE}'"
+      P="${P} 'ParameterKey=DBName,ParameterValue=${AWS_RDS_DB_NAME}'"
+      P="${P} 'ParameterKey=DBUser,ParameterValue=${AWS_RDS_DB_USER}'"
+      P="${P} 'ParameterKey=DBPassword,ParameterValue=${AWS_RDS_DB_PASS}'"
+      ;;
+    rhea)
+      name='RHEA'
+      body="${AWS_CFN_STACKS_PATH}/rhea.yml"
+      depends_on='vpc,sg,iam,elb'
+      P="${P} 'ParameterKey=Version,ParameterValue=${VERSION}-${GIT_SHA1}'"
+      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
+      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_latest_ami_id VGH_RHEA)\"'"
+      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
+      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM InstanceProfile)\"'"
+      P="${P} 'ParameterKey=ElasticLoadBalancer,ParameterValue=\"$(vgs_aws_cfn_get_resource ELB ELB)\"'"
+      P="${P} 'ParameterKey=EFSVolumeID,ParameterValue=\"$(vgs_aws_cfn_get_output EFS VolumeID)\"'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG RheaSecurityGroup)\"'"
+      P="${P} 'ParameterKey=ControlRepoArchive,ParameterValue=s3://${AWS_ASSETS_BUCKET}/${PP_ARTIFACT}'"
+      ;;
+    sg)
+      name='SG'
+      body="${AWS_CFN_STACKS_PATH}/sg.yml"
+      depends_on='vpc'
+      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
+      ;;
+    vpc)
+      name='VPC'
+      body="${AWS_CFN_STACKS_PATH}/vpc.yml"
+      depends_on=
+      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
+      ;;
+    *)
+      cfn_usage
+      ;;
+  esac
+
+  export depends_on
+  export cfn_cmd="--stack-name ${name} --template-body file://${body} ${A} --parameters ${P} --tags ${T}"
+}

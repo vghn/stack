@@ -1,20 +1,24 @@
 Description: VGH SG
 
 Parameters:
-  SSHLocations:
-    Description: The IP address ranges that can be used to SSH to the EC2 instances
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  TrustedIPs:
+    Description: The IP address ranges that can be trusted
     Type: CommaDelimitedList
   VPCId:
     Description: The VPC ID
     Type: AWS::EC2::VPC::Id
 
 Resources:
-  DBSecurityGroup:
+  PuppetDBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: RDS Firewall
       VpcId: !Ref VPCId
-  DBSecurityGroupAllowRheaAccesstoPostgreSQL:
+  PuppetDBSecurityGroupAllowAccess:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !GetAtt DBSecurityGroup.GroupId
@@ -22,21 +26,43 @@ Resources:
       ToPort: '5432'
       IpProtocol: tcp
       SourceSecurityGroupId: !GetAtt RheaSecurityGroup.GroupId
-  DBSecurityGroupAllowSSH1AccesstoPostgreSQL:
+  PuppetDBSecurityGroupAllowTrustedIPs:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !GetAtt DBSecurityGroup.GroupId
       FromPort: '5432'
       ToPort: '5432'
       IpProtocol: tcp
-      CidrIp: !Select ['0', !Ref SSHLocations]
+      CidrIp: !Select ['0', !Ref TrustedIPs]
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: RDS Firewall
+      VpcId: !Ref VPCId
+  DBSecurityGroupAllowAccess:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt DBSecurityGroup.GroupId
+      FromPort: '5432'
+      ToPort: '5432'
+      IpProtocol: tcp
+      SourceSecurityGroupId: !GetAtt RheaSecurityGroup.GroupId
+  DBSecurityGroupAllowTrustedIPs:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt DBSecurityGroup.GroupId
+      FromPort: '5432'
+      ToPort: '5432'
+      IpProtocol: tcp
+      CidrIp: !Select ['0', !Ref TrustedIPs]
 
   EFSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: EFS Firewall
       VpcId: !Ref VPCId
-  EFSSecurityGroupAllowRhea:
+  EFSSecurityGroupAllowAccess:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !GetAtt EFSSecurityGroup.GroupId
@@ -44,12 +70,12 @@ Resources:
       ToPort: '2049'
       IpProtocol: tcp
       SourceSecurityGroupId: !GetAtt RheaSecurityGroup.GroupId
+
   ELBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ELB Firewall
       VpcId: !Ref VPCId
-
   ELBSecurityGroupAllowHTTPS:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -80,14 +106,14 @@ Resources:
       ToPort: '65535'
       IpProtocol: tcp
       SourceSecurityGroupId: !GetAtt ELBSecurityGroup.GroupId
-  RheaSecurityGroupAllowSSH1:
+  RheaSecurityGroupAllowTrustedIPs:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !GetAtt RheaSecurityGroup.GroupId
       FromPort: '22'
       ToPort: '22'
       IpProtocol: tcp
-      CidrIp: !Select ['0', !Ref SSHLocations]
+      CidrIp: !Select ['0', !Ref TrustedIPs]
   RheaSecurityGroupAllowSelf:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -98,6 +124,9 @@ Resources:
       SourceSecurityGroupId: !GetAtt RheaSecurityGroup.GroupId
 
 Outputs:
+  PuppetDBSecurityGroup:
+    Description: The PuppetDB security group
+    Value: !Ref PuppetDBSecurityGroup
   DBSecurityGroup:
     Description: The Relational Database Service security group
     Value: !Ref DBSecurityGroup

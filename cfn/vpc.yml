@@ -1,6 +1,10 @@
 Description: VGH VPC
 
 Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
   NumberOfAZs:
     Type: String
     AllowedValues:
