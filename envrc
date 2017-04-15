@@ -57,7 +57,7 @@ export AWS_IAM_INSTANCE_PROFILE="${AWS_IAM_INSTANCE_PROFILE:-}"
 export AWS_AMI_PACKER="${APPDIR}/ami-packer.json"
 export AWS_TAG_GROUP="${AWS_TAG_GROUP:-$GROUP_NAME}"
 export AWS_TAG_PROJECT="${AWS_TAG_PROJECT:-$PROJECT_NAME}"
-export AWS_RDS_DB_ENGINE="${AWS_RDS_DB_ENGINE:-postgres}"
+export AWS_RDS_DB_ENGINE="${AWS_RDS_DB_ENGINE:-mariadb}"
 export AWS_RDS_DB_NAME="${AWS_RDS_DB_NAME:-db}"
 export AWS_RDS_DB_USER="${AWS_RDS_DB_USER:-admin}"
 export AWS_RDS_DB_PASS="${AWS_RDS_DB_PASS:-ChangeMe}"
@@ -65,6 +65,10 @@ export AWS_RDS_DB_PASS="${AWS_RDS_DB_PASS:-ChangeMe}"
 # Puppet
 export PP_SERVER="${PP_SERVER:-puppet.ghn.me}"
 export PP_ARTIFACT="artifacts/vpm_${ENVTYPE}.tgz"
+export PP_DB_ENGINE="${PP_DB_ENGINE:-postgres}"
+export PP_DB_NAME="${PP_DB_NAME:-$AWS_RDS_DB_NAME}"
+export PP_DB_USER="${PP_DB_USER:-$AWS_RDS_DB_USER}"
+export PP_DB_PASS="${PP_DB_PASS:-$AWS_RDS_DB_PASS}"
 
 # AWS Image defaults
 ami_packer_process(){
@@ -74,109 +78,6 @@ ami_packer_process(){
   export PACKER_VARS="${V}"
 }
 
-# AWS CloudFormation
-get_cfn_defaults(){
-  local stack A P T
-  stack="${1:-}"
-
-  # Defaults
-  export AWS_PROFILE=${AWS_2017A_PROFILE}
-  export stacks='efs elb iam main rds rhea sg vpc'
-  export depends_on=
-
-  # Default command arguments
-  A=''
-
-  # Common tags
-  T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
-  T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
-
-  # Stack defaults
-  case "$stack" in
-    efs)
-      name='EFS'
-      body="${AWS_CFN_STACKS_PATH}/efs.yaml"
-      depends_on='vpc,sg'
-      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
-      P="${P} 'ParameterKey=VolumeName,ParameterValue=${PROJECT_NAME}'"
-      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG EFSSecurityGroup)\"'"
-      ;;
-    elb)
-      name='ELB'
-      body="${AWS_CFN_STACKS_PATH}/elb.yaml"
-      depends_on='vpc,sg'
-      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG ELBSecurityGroup)\"'"
-      P="${P} 'ParameterKey=SSLCertificateId,ParameterValue=${AWS_SSL_ARN}'"
-      ;;
-    iam)
-      name='IAM'
-      body="${AWS_CFN_STACKS_PATH}/iam.yaml"
-      A='--capabilities CAPABILITY_IAM'
-      P="'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
-      ;;
-    main)
-      export AWS_PROFILE=${AWS_MAIN_PROFILE}
-      name='VGH'
-      body="${AWS_CFN_STACKS_PATH}/main.yaml"
-      depends_on='iam'
-      A='--capabilities CAPABILITY_NAMED_IAM'
-      P="     'ParameterKey=AssetsBucketName,ParameterValue=${AWS_MAIN_ASSETS_BUCKET}'"
-      P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_MAIN_BACKUP_BUCKET}'"
-      P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_MAIN_SECRETS_BUCKET}'"
-      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_MAIN_RHEA_USER}'"
-      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_MAIN_MINI_USER}'"
-      ;;
-    rds)
-      name='RDS'
-      body="${AWS_CFN_STACKS_PATH}/rds.yaml"
-      depends_on='vpc,sg'
-      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
-      P="${P} 'ParameterKey=DBEngine,ParameterValue=${AWS_RDS_DB_ENGINE}'"
-      P="${P} 'ParameterKey=DBName,ParameterValue=${AWS_RDS_DB_NAME}'"
-      P="${P} 'ParameterKey=DBUser,ParameterValue=${AWS_RDS_DB_USER}'"
-      P="${P} 'ParameterKey=DBPassword,ParameterValue=${AWS_RDS_DB_PASS}'"
-      ;;
-    rhea)
-      name='RHEA'
-      body="${AWS_CFN_STACKS_PATH}/rhea.yaml"
-      depends_on='vpc,sg,iam,elb'
-      P="     'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
-      P="${P} 'ParameterKey=Version,ParameterValue=${VERSION}-${GIT_SHA1}'"
-      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
-      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_latest_ami_id VGH_RHEA)\"'"
-      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
-      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM InstanceProfile)\"'"
-      P="${P} 'ParameterKey=ElasticLoadBalancer,ParameterValue=\"$(vgs_aws_cfn_get_resource ELB ELB)\"'"
-      P="${P} 'ParameterKey=EFSVolumeID,ParameterValue=\"$(vgs_aws_cfn_get_output EFS VolumeID)\"'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG RheaSecurityGroup)\"'"
-      P="${P} 'ParameterKey=ControlRepoArchive,ParameterValue=s3://${AWS_ASSETS_BUCKET}/${PP_ARTIFACT}'"
-      ;;
-    sg)
-      name='SG'
-      body="${AWS_CFN_STACKS_PATH}/sg.yaml"
-      depends_on='vpc'
-      P="     'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
-      P="${P} 'ParameterKey=SSHLocations,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
-      ;;
-    vpc)
-      name='VPC'
-      body="${AWS_CFN_STACKS_PATH}/vpc.yaml"
-      P="     'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
-      T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
-      T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
-      ;;
-    *)
-      cfn_usage
-      ;;
-  esac
-
-  export depends_on
-  export cfn_cmd="--stack-name ${name} --template-body file://${body} ${A} --parameters ${P} --tags ${T}"
-}
+# Load AWS CloudFormation environment
+# shellcheck disable=1090
+. "${APPDIR}/cfnrc" 2>/dev/null || true
