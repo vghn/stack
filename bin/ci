@@ -73,11 +73,14 @@ ssh_setup(){
 deploy_rhea(){
   ssh_setup
 
+  e_info 'Upload docker-compose file'
+  rsync -avz -e "ssh -i ${SSH_KEY}" --rsync-path 'sudo rsync' ./docker-compose.yml "${SSH_USER}@${SSH_HOST}:/var/local/vpm.yml"
+
   e_info 'Update docker-compose'
   # shellcheck disable=2029
-  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file - pull" ) < docker-compose.yml
+  ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /var/local/vpm.yml pull"
   # shellcheck disable=2029
-  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file - up -d --build --remove-orphans" ) < docker-compose.yml
+  ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /var/local/vpm.yml up -d --build --remove-orphans"
 }
 
 # CI Deploy

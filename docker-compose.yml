@@ -46,7 +46,7 @@ services:
     environment:
       AUTOSIGN_CFG: '/var/secrets/csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
-      JAVA_ARGS: '-Xms1G -Xmx1G'
+      PUPPETSERVER_JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
       entrypoint: sh -c 'until [ -s $${AUTOSIGN_CFG} ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for secrets and R10K"; sleep 5; done; /entrypoint.sh puppetserver foreground'
     restart: unless-stopped
@@ -140,6 +140,11 @@ volumes:
   certs:
   letsencrypt:
   secrets:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=100m,nodev,nosuid"
 
 networks:
   frontend:
