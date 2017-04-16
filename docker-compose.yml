@@ -62,12 +62,12 @@ services:
       - backend
   puppetdb:
     image: vladgh/puppetdb:latest
-    hostname: puppet.ghn.me # same as the puppet service because we reuse the same certificates
+    hostname: puppetdb.ghn.me
     environment:
       PUPPETDB_JAVA_ARGS: '-Xms512M -Xmx512M'
     ports:
       - '8080:8080'
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; ln -fsn /var/secrets/puppetdb_credentials /etc/puppetlabs/puppetdb/conf.d/database.conf && /entrypoint.sh puppetdb foreground'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; ln -fsn /var/secrets/puppetdb_credentials /etc/puppetlabs/puppetdb/conf.d/database.conf && puppet config set certname puppet.ghn.me --section main && /entrypoint.sh puppetdb foreground'
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
