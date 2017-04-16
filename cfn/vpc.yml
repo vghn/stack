@@ -112,7 +112,7 @@ Resources:
     Properties:
       AvailabilityZone:
         Fn::Select:
-        - '0'
+        - '1'
         - Fn::GetAZs: !Ref AWS::Region
       CidrBlock: !FindInMap [CIDRs, !Ref "AWS::Region", Subnet2]
       VpcId: !Ref VPC
@@ -133,7 +133,7 @@ Resources:
     Properties:
       AvailabilityZone:
         Fn::Select:
-        - '0'
+        - '2'
         - Fn::GetAZs: !Ref AWS::Region
       CidrBlock: !FindInMap [CIDRs, !Ref "AWS::Region", Subnet3]
       VpcId: !Ref VPC
@@ -156,7 +156,7 @@ Resources:
     Properties:
       AvailabilityZone:
         Fn::Select:
-        - '0'
+        - '3'
         - Fn::GetAZs: !Ref AWS::Region
       CidrBlock: !FindInMap [CIDRs, !Ref "AWS::Region", Subnet4]
       VpcId: !Ref VPC

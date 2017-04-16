@@ -1,25 +1,16 @@
-Description: VGH RDS
+Description: VGH RDS PuppetDB
 
 Parameters:
   EnvType:
     Default: production
     Description: The environment type
     Type: String
-  DBEngine:
-    AllowedValues:
-      - MySQL
-      - mariadb
-      - postgres
-    ConstraintDescription: Must select a valid database engine
-    Default: mariadb
-    Description: MySQL engine
-    Type: String
   DBName:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric
       characters (max 64)
-    Default: myDatabase
-    Description: MySQL database name
+    Default: puppetdb
+    Description: Puppet database name
     MaxLength: '64'
     MinLength: '1'
     Type: String
@@ -51,18 +42,17 @@ Resources:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Snapshot
     Properties:
-      AllocatedStorage: '5'
-      BackupRetentionPeriod: '3'
+      Engine: postgres
       DBInstanceClass: db.t2.micro
       DBName: !Ref DBName
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      Engine: !Ref DBEngine
       MasterUserPassword: !Ref DBPassword
       MasterUsername: !Ref DBUser
-      MultiAZ: 'false'
+      AllocatedStorage: '5'
+      BackupRetentionPeriod: '3'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      MultiAZ: false
       StorageType: gp2
       VPCSecurityGroups: !Ref SecurityGroupIDs
-      PubliclyAccessible: true
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
