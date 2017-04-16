@@ -62,6 +62,7 @@ Resources:
       MultiAZ: 'false'
       StorageType: gp2
       VPCSecurityGroups: !Ref SecurityGroupIDs
+      PubliclyAccessible: true
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:

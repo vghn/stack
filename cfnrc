@@ -7,7 +7,7 @@ get_cfn_defaults(){
 
   # Defaults
   export AWS_PROFILE='aws2017a'
-  export stacks='efs elb iam main rds rhea sg vpc'
+  export stacks='efs elb iam main puppetdb rds rhea sg vpc'
   export depends_on=
 
   # Default command arguments
@@ -62,7 +62,7 @@ get_cfn_defaults(){
       body="${AWS_CFN_STACKS_PATH}/puppetdb.yml"
       depends_on='vpc,sg'
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG PuppetDBSecurityGroup)\"'"
       P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME}'"
       P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER}'"
       P="${P} 'ParameterKey=DBPassword,ParameterValue=${PP_DB_PASS}'"

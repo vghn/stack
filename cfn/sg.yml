@@ -16,24 +16,32 @@ Resources:
   PuppetDBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: RDS Firewall
+      GroupDescription: PuppetDB RDS Firewall
       VpcId: !Ref VPCId
   PuppetDBSecurityGroupAllowAccess:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !GetAtt DBSecurityGroup.GroupId
+      GroupId: !GetAtt PuppetDBSecurityGroup.GroupId
       FromPort: '5432'
       ToPort: '5432'
       IpProtocol: tcp
       SourceSecurityGroupId: !GetAtt RheaSecurityGroup.GroupId
-  PuppetDBSecurityGroupAllowTrustedIPs:
+  PuppetDBSecurityGroupAllowTrustedIPs1:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !GetAtt DBSecurityGroup.GroupId
+      GroupId: !GetAtt PuppetDBSecurityGroup.GroupId
       FromPort: '5432'
       ToPort: '5432'
       IpProtocol: tcp
       CidrIp: !Select ['0', !Ref TrustedIPs]
+  PuppetDBSecurityGroupAllowTrustedIPs2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt PuppetDBSecurityGroup.GroupId
+      FromPort: '5432'
+      ToPort: '5432'
+      IpProtocol: tcp
+      CidrIp: !Select ['1', !Ref TrustedIPs]
 
   DBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
