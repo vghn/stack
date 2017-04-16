@@ -32,7 +32,7 @@ services:
       SERVICES: 'secrets,r10k'
       FORCE_SSL: 'yes'
       VIRTUAL_HOST: 'http://*,https://*'
-    entrypoint: sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration"; sleep 5; done; sh -c "/sbin/tini -- bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration..."; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
     volumes:
       - secrets:/var/secrets
@@ -45,16 +45,33 @@ services:
     hostname: puppet.ghn.me
     environment:
       AUTOSIGN_CFG: '/var/secrets/csr.yml'
-      DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me'
+      DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me'
       PUPPETSERVER_JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
-      entrypoint: sh -c 'until [ -s $${AUTOSIGN_CFG} ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for secrets and R10K"; sleep 5; done; /sbin/tini -- /entrypoint.sh puppetserver foreground'
+    links:
+      - puppetdb
+    entrypoint: /sbin/tini -- sh -c 'until [ -s $${AUTOSIGN_CFG} ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for secrets and R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
       - secrets:/var/secrets
       - code:/etc/puppetlabs/code
       - ~/.aws:/root/.aws:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - backend
+  puppetdb:
+    image: vladgh/puppetdb:latest
+    hostname: puppetdb.ghn.me
+    environment:
+      PUPPETSERVER_JAVA_ARGS: '-Xms512M -Xmx512M'
+    ports:
+      - '8080:8080'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; ln -fsn /var/secrets/puppetdb_credentials /etc/puppetlabs/puppetdb/conf.d/database.conf && /entrypoint.sh puppetdb foreground'
+    restart: unless-stopped
+    volumes:
+      - ssl:/etc/puppetlabs/puppet/ssl
+      - secrets:/var/secrets
       - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
@@ -88,8 +105,7 @@ services:
     hostname: secrets-sync-agent
     environment:
       S3PATH: 's3://vgsec'
-    command: cron
-    restart: unless-stopped
+    command: periodic_download
     volumes:
       - secrets:/sync
       - ~/.aws:/root/.aws:ro
