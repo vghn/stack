@@ -45,7 +45,7 @@ services:
     hostname: puppet.ghn.me
     environment:
       AUTOSIGN_CFG: '/var/secrets/csr.yml'
-      DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me'
+      DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
       PUPPETSERVER_JAVA_ARGS: '-Xms1G -Xmx1G'
       TCP_PORTS: '8140'
     links:
@@ -62,9 +62,9 @@ services:
       - backend
   puppetdb:
     image: vladgh/puppetdb:latest
-    hostname: puppetdb.ghn.me
+    hostname: puppet.ghn.me # same as the puppet service because we reuse the same certificates
     environment:
-      PUPPETSERVER_JAVA_ARGS: '-Xms512M -Xmx512M'
+      PUPPETDB_JAVA_ARGS: '-Xms512M -Xmx512M'
     ports:
       - '8080:8080'
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; ln -fsn /var/secrets/puppetdb_credentials /etc/puppetlabs/puppetdb/conf.d/database.conf && /entrypoint.sh puppetdb foreground'
