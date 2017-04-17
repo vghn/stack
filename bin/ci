@@ -78,7 +78,7 @@ deploy_rhea(){
 
   e_info 'Update docker-compose'
   # shellcheck disable=2029
-  ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /var/local/vpm.yml pull"
+  ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /var/local/vpm.yml pull --parallel"
   # shellcheck disable=2029
   ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /var/local/vpm.yml up -d --build --remove-orphans"
 }
