@@ -7,7 +7,7 @@ get_cfn_defaults(){
 
   # Defaults
   export AWS_PROFILE='aws2017a'
-  export stacks='efs elb iam main puppetdb rds rhea sg vpc'
+  export stacks='docker_cloud efs elb iam main puppetdb rds rhea sg vpc'
   export depends_on=
 
   # Default command arguments
@@ -22,6 +22,13 @@ get_cfn_defaults(){
 
   # Stack defaults
   case "$stack" in
+    docker_cloud)
+      export AWS_PROFILE='main'
+      name='DockerCloud'
+      body="${AWS_CFN_STACKS_PATH}/docker_cloud.yml"
+      depends_on=
+      A='--capabilities CAPABILITY_IAM'
+      ;;
     efs)
       name='EFS'
       body="${AWS_CFN_STACKS_PATH}/efs.yml"
@@ -42,6 +49,7 @@ get_cfn_defaults(){
     iam)
       name='IAM'
       body="${AWS_CFN_STACKS_PATH}/iam.yml"
+      depends_on=
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
