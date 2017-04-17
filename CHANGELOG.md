@@ -1,5 +1,56 @@
 # Change Log
 
+## [v0.2.0](https://github.com/vghn/stack/tree/v0.2.0) (2017-04-17)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.1.1...v0.2.0)
+
+**Implemented enhancements:**
+
+- Add a Docker Cloud Swarm Role CloudFormation template [\#55](https://github.com/vghn/stack/pull/55) ([vladgh](https://github.com/vladgh))
+- Add PuppetDB [\#53](https://github.com/vghn/stack/pull/53) ([vladgh](https://github.com/vladgh))
+- Improve CloudFormation templates [\#52](https://github.com/vghn/stack/pull/52) ([vladgh](https://github.com/vladgh))
+- Store secrets in volatile memory [\#50](https://github.com/vghn/stack/pull/50) ([vladgh](https://github.com/vladgh))
+- Upgrade Packer [\#49](https://github.com/vghn/stack/pull/49) ([vladgh](https://github.com/vladgh))
+- Add DEBUG global variable [\#48](https://github.com/vghn/stack/pull/48) ([vladgh](https://github.com/vladgh))
+- Remove Faradaygem version requirement [\#47](https://github.com/vghn/stack/pull/47) ([vladgh](https://github.com/vladgh))
+- Minor changes [\#46](https://github.com/vghn/stack/pull/46) ([vladgh](https://github.com/vladgh))
+- Use the new release task options and a CRON\_TIME variable to stack [\#45](https://github.com/vghn/stack/pull/45) ([vladgh](https://github.com/vladgh))
+- Migrate to Vtasks [\#42](https://github.com/vghn/stack/pull/42) ([vladgh](https://github.com/vladgh))
+- Add Code of Conduct [\#41](https://github.com/vghn/stack/pull/41) ([vladgh](https://github.com/vladgh))
+- Add LetsEncrypt [\#40](https://github.com/vghn/stack/pull/40) ([vladgh](https://github.com/vladgh))
+- Improve CI scripts [\#39](https://github.com/vghn/stack/pull/39) ([vladgh](https://github.com/vladgh))
+- Improve the deployment process [\#37](https://github.com/vghn/stack/pull/37) ([vladgh](https://github.com/vladgh))
+- Add a CloudFormation template for the main account [\#35](https://github.com/vghn/stack/pull/35) ([vladgh](https://github.com/vladgh))
+- Use the new rake tasks modules [\#34](https://github.com/vghn/stack/pull/34) ([vladgh](https://github.com/vladgh))
+- Add lifecycle rules for the backup buckets [\#33](https://github.com/vghn/stack/pull/33) ([vladgh](https://github.com/vladgh))
+- Add a backup container [\#32](https://github.com/vghn/stack/pull/32) ([vladgh](https://github.com/vladgh))
+- Improve Puppet CSR [\#31](https://github.com/vghn/stack/pull/31) ([vladgh](https://github.com/vladgh))
+- Remove the vg-secrets bucket [\#30](https://github.com/vghn/stack/pull/30) ([vladgh](https://github.com/vladgh))
+- Improve hiera data and secrets [\#29](https://github.com/vghn/stack/pull/29) ([vladgh](https://github.com/vladgh))
+- Use a new secrets store S3 bucket and Hiera Eyaml [\#27](https://github.com/vghn/stack/pull/27) ([vladgh](https://github.com/vladgh))
+- Use the default cache dir for R10K [\#26](https://github.com/vghn/stack/pull/26) ([vladgh](https://github.com/vladgh))
+- Update options for API and Server images [\#25](https://github.com/vghn/stack/pull/25) ([vladgh](https://github.com/vladgh))
+- Let the CI user have administrator privileges [\#24](https://github.com/vghn/stack/pull/24) ([vladgh](https://github.com/vladgh))
+- Only deploy from the master branch [\#23](https://github.com/vghn/stack/pull/23) ([vladgh](https://github.com/vladgh))
+- Fix ami validate pre-commit hook and clean environment [\#22](https://github.com/vghn/stack/pull/22) ([vladgh](https://github.com/vladgh))
+- Add task to update Travis environment variables from .env [\#21](https://github.com/vghn/stack/pull/21) ([vladgh](https://github.com/vladgh))
+- Minor improvements [\#20](https://github.com/vghn/stack/pull/20) ([vladgh](https://github.com/vladgh))
+- Use BASH language for Travis [\#19](https://github.com/vghn/stack/pull/19) ([vladgh](https://github.com/vladgh))
+- Add rake task to update stack through SSH [\#18](https://github.com/vghn/stack/pull/18) ([vladgh](https://github.com/vladgh))
+
+**Fixed bugs:**
+
+- Fix PuppetDB hostname and JAVA\_ARGS [\#54](https://github.com/vghn/stack/pull/54) ([vladgh](https://github.com/vladgh))
+- Rename docker images [\#44](https://github.com/vghn/stack/pull/44) ([vladgh](https://github.com/vladgh))
+- Fix SSH deployment [\#43](https://github.com/vghn/stack/pull/43) ([vladgh](https://github.com/vladgh))
+- Improve ssh key clean-up after deployment [\#38](https://github.com/vghn/stack/pull/38) ([vladgh](https://github.com/vladgh))
+- Use ubuntu user for deployment [\#36](https://github.com/vghn/stack/pull/36) ([vladgh](https://github.com/vladgh))
+- Fix volumes declaration [\#28](https://github.com/vghn/stack/pull/28) ([vladgh](https://github.com/vladgh))
+
+**Merged pull requests:**
+
+- Add a parallel option to docker-compose pull [\#56](https://github.com/vghn/stack/pull/56) ([vladgh](https://github.com/vladgh))
+- Improve deployment script and PuppetServer environment variables [\#51](https://github.com/vghn/stack/pull/51) ([vladgh](https://github.com/vladgh))
+
 ## [v0.1.1](https://github.com/vghn/stack/tree/v0.1.1) (2017-01-07)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.1.0...v0.1.1)
 
