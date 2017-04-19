@@ -46,7 +46,7 @@ services:
     environment:
       AUTOSIGN_CFG: '/var/secrets/csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
-      PUPPETSERVER_JAVA_ARGS: '-Xms1G -Xmx1G'
+      PUPPETSERVER_JAVA_ARGS: '-Xms512M -Xmx512M'
       TCP_PORTS: '8140'
     links:
       - puppetdb
