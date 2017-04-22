@@ -17,6 +17,7 @@ Parameters:
 
 Resources:
   ELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
       ConnectionDrainingPolicy:
         Enabled: 'true'
@@ -40,7 +41,6 @@ Resources:
         Protocol: TCP
       SecurityGroups: !Ref SecurityGroupIDs
       Subnets: !Ref SubnetIDs
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
 
 Outputs:
   LoadBalancerURL:
