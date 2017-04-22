@@ -1,0 +1,23 @@
+Description: VGH SNS Notifications
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  NotificationEmail:
+    Description: The email used for notifications
+    Type: String
+
+Resources:
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: !Ref NotificationEmail
+        Protocol: email
+
+Outputs:
+  SNSTopicARN:
+    Description: The Notification topic ARN
+    Value: !Ref SNSTopic

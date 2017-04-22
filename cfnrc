@@ -7,7 +7,7 @@ get_cfn_defaults(){
 
   # Defaults
   export AWS_PROFILE='aws2017a'
-  export stacks='docker_cloud efs elb iam main puppetdb rds rhea sg vpc'
+  export stacks='docker_cloud efs elb iam main notifications puppetdb rds rhea sg vpc'
   export depends_on=
 
   # Default command arguments
@@ -64,6 +64,12 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_MAIN_SECRETS_BUCKET}'"
       P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_MAIN_RHEA_USER}'"
       P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_MAIN_MINI_USER}'"
+      ;;
+    notifications)
+      name='Notifications'
+      body="${AWS_CFN_STACKS_PATH}/notifications.yml"
+      depends_on=
+      P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
     puppetdb)
       name='PuppetDB'
