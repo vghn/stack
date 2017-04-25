@@ -83,6 +83,7 @@ services:
       DOMAINS: 'rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me'
       EMAIL: 'webmaster@ghn.me'
       LOAD_BALANCER_SERVICE_NAME: 'lb'
+    restart: unless-stopped
     volumes:
       - letsencrypt:/etc/letsencrypt
     networks:
@@ -106,6 +107,7 @@ services:
     environment:
       S3PATH: 's3://vgsec'
     command: periodic_download
+    restart: unless-stopped
     volumes:
       - secrets:/sync
       - ~/.aws:/root/.aws:ro
@@ -119,6 +121,7 @@ services:
       REMOTE: 'https://github.com/vghn/puppet.git'
       CRON_TIME: '10 * * * *'
     command: 'r10k deploy environment --puppetfile'
+    restart: unless-stopped
     volumes:
       - code:/etc/puppetlabs/code
       - /etc/localtime:/etc/localtime:ro
@@ -142,13 +145,13 @@ services:
       AWS_S3_PREFIX: 'rhea'
       GPG_RECIPIENT: 'vlad@ghn.me'
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
+    command: cron
+    restart: unless-stopped
     volumes:
       - ssl:/backup/puppetca
       - letsencrypt:/backup/letsencrypt
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
-    command: cron
-    restart: unless-stopped
 
 volumes:
   ssl:
