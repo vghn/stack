@@ -4,7 +4,7 @@ services:
   lb:
     image: vladgh/lb:latest
     links:
-      - api
+      - webhook
       - puppet
       - letsencrypt
     environment:
@@ -24,9 +24,9 @@ services:
     networks:
       - frontend
       - backend
-  api:
+  webhook:
     image: vladgh/wh:latest
-    hostname: api
+    hostname: webhook
     environment:
       API_CONFIG: '/var/secrets/api.yml'
       SERVICES: 'secrets,r10k'
@@ -77,6 +77,7 @@ services:
       - backend
   letsencrypt:
     image: vladgh/le:latest
+    hostname: letsencrypt-agent
     environment:
       VIRTUAL_HOST: '*/.well-known/acme-challenge/*'
       VIRTUAL_HOST_WEIGHT: '999'
@@ -106,6 +107,7 @@ services:
     hostname: secrets-sync-agent
     environment:
       S3PATH: 's3://vgsec'
+      INITIAL_DOWNLOAD: 'force'
     command: periodic_download
     restart: unless-stopped
     volumes:
@@ -140,6 +142,7 @@ services:
       - backend
   backup:
     image: vladgh/backup:latest
+    hostname: backup-agent
     environment:
       AWS_S3_BUCKET: 'vgbak'
       AWS_S3_PREFIX: 'rhea'
