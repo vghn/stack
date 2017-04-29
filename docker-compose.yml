@@ -75,6 +75,18 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
+  puppetboard:
+    image: vladgh/puppetboard:latest
+    hostname: puppetboard.ghn.me
+    links:
+      - puppetdb
+    ports:
+      - '8000:8000'
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - backend
   letsencrypt:
     image: vladgh/le:latest
     hostname: letsencrypt-agent
