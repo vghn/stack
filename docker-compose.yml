@@ -3,7 +3,7 @@ version: '3'
 services:
   lb:
     image: vladgh/lb:latest
-    hostname: lb
+    # hostname: lb # DO NOT CHANGE HOSTNAME
     links:
       - webhook
       - puppet
