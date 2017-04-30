@@ -3,6 +3,7 @@ version: '3'
 services:
   lb:
     image: vladgh/lb:latest
+    hostname: lb
     links:
       - webhook
       - puppet
@@ -46,7 +47,7 @@ services:
     environment:
       AUTOSIGN_CFG: '/var/secrets/csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
-      PUPPETSERVER_JAVA_ARGS: '-Xms512M -Xmx512M'
+      PUPPETSERVER_JAVA_ARGS: '-Xms32M -Xmx512M'
       TCP_PORTS: '8140'
     links:
       - puppetdb
@@ -64,7 +65,7 @@ services:
     image: vladgh/puppetdb:latest
     hostname: puppetdb.ghn.me
     environment:
-      PUPPETDB_JAVA_ARGS: '-Xms512M -Xmx512M'
+      PUPPETDB_JAVA_ARGS: '-Xms32M -Xmx128M'
     ports:
       - '8080:8080'
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; ln -fsn /var/secrets/puppetdb_credentials /etc/puppetlabs/puppetdb/conf.d/database.conf && puppet config set certname puppet.ghn.me --section main && /entrypoint.sh puppetdb foreground'
