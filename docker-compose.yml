@@ -11,10 +11,13 @@ services:
     environment:
       CERT_FOLDER: '/certs'
       LIVE_CERT_FOLDER: '/etc/letsencrypt/live'
+      STATS_PORT: '1936'
     ports:
       - '80:80'
       - '443:443'
       - '8140:8140'
+      - '1936:1936'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/haproxy_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; source /var/secrets/haproxy_credentials; set +o allexport; /entrypoint.sh dockercloud-haproxy'
     restart: unless-stopped
     volumes:
       - certs:/certs
@@ -71,7 +74,7 @@ services:
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; ln -fsn /var/secrets/puppetdb_credentials /etc/puppetlabs/puppetdb/conf.d/database.conf && puppet config set certname puppet.ghn.me --section main && /entrypoint.sh puppetdb foreground'
     restart: unless-stopped
     volumes:
-      - ssl:/etc/puppetlabs/puppet/ssl
+      - ssl:/etc/puppetlabs/puppet/ssl:ro
       - secrets:/var/secrets
       - /etc/localtime:/etc/localtime:ro
     networks:
