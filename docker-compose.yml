@@ -3,7 +3,6 @@ version: '3'
 services:
   lb:
     image: vladgh/lb:latest
-    # hostname: lb # DO NOT CHANGE HOSTNAME
     links:
       - webhook
       - puppet
@@ -17,12 +16,12 @@ services:
       - '443:443'
       - '8140:8140'
       - '1936:1936'
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/haproxy_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; source /var/secrets/haproxy_credentials; set +o allexport; /entrypoint.sh dockercloud-haproxy'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/haproxy_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; . /var/secrets/haproxy_credentials; set +o allexport; /entrypoint.sh dockercloud-haproxy'
     restart: unless-stopped
     volumes:
       - certs:/certs
       - letsencrypt:/etc/letsencrypt
-      - secrets:/var/secrets
+      - secrets:/var/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -39,7 +38,7 @@ services:
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration..."; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
     volumes:
-      - secrets:/var/secrets
+      - secrets:/var/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -58,8 +57,8 @@ services:
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
-      - secrets:/var/secrets
       - code:/etc/puppetlabs/code
+      - secrets:/var/secrets:ro
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -71,11 +70,11 @@ services:
       PUPPETDB_JAVA_ARGS: '-Xms32M -Xmx128M'
     ports:
       - '8080:8080'
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; ln -fsn /var/secrets/puppetdb_credentials /etc/puppetlabs/puppetdb/conf.d/database.conf && puppet config set certname puppet.ghn.me --section main && /entrypoint.sh puppetdb foreground'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; . /var/secrets/puppetdb_credentials; set +o allexport; puppet config set certname puppet.ghn.me --section main && /entrypoint.sh puppetdb foreground'
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl:ro
-      - secrets:/var/secrets
+      - secrets:/var/secrets:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
