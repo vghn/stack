@@ -3,7 +3,6 @@ version: '3'
 services:
   lb:
     image: vladgh/lb:latest
-    # hostname: lb # DO NOT CHANGE HOSTNAME
     links:
       - webhook
       - puppet
@@ -22,7 +21,7 @@ services:
     volumes:
       - certs:/certs
       - letsencrypt:/etc/letsencrypt
-      - secrets:/var/secrets
+      - secrets:/var/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -39,7 +38,7 @@ services:
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration..."; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
     volumes:
-      - secrets:/var/secrets
+      - secrets:/var/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -58,8 +57,8 @@ services:
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
-      - secrets:/var/secrets
       - code:/etc/puppetlabs/code
+      - secrets:/var/secrets:ro
       - ~/.aws:/root/.aws:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -75,7 +74,7 @@ services:
     restart: unless-stopped
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl:ro
-      - secrets:/var/secrets
+      - secrets:/var/secrets:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
       - backend
