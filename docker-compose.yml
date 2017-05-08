@@ -31,11 +31,11 @@ services:
     image: vladgh/wh:latest
     hostname: webhook
     environment:
-      API_CONFIG: '/var/secrets/api.yml'
+      API_CONFIG: '/var/secrets/webhook.yml'
       SERVICES: 'secrets,r10k'
       FORCE_SSL: 'yes'
       VIRTUAL_HOST: 'http://*,https://*'
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/api.yml ]; do echo "Waiting for configuration..."; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/webhook.yml ]; do echo "Waiting for configuration..."; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
     restart: unless-stopped
     volumes:
       - secrets:/var/secrets:ro
