@@ -5,7 +5,9 @@ require 'bundler/setup'
 require 'vtasks/release'
 Vtasks::Release.new(
   write_changelog: true,
-  wait_for_ci_success: true
+  wait_for_ci_success: true,
+  bug_labels: 'Type: Bug',
+  enhancement_labels: 'Type: Enhancement'
 )
 require 'vtasks/travisci'
 Vtasks::TravisCI.new
