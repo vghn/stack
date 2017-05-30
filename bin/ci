@@ -69,12 +69,9 @@ ssh_setup(){
   ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 }
 
-# Deploy RHEA
-deploy_rhea(){
+# Upload project files
+upload_project(){
   ssh_setup
-
-  local project_folder='/var/local/vpm'
-  local compose_file="${project_folder}/docker-compose.yml"
 
   e_info 'Create project folder'
   # shellcheck disable=2029
@@ -88,6 +85,14 @@ deploy_rhea(){
     --include '/docker-compose.yml' \
     --exclude "*" \
     . "${SSH_USER}@${SSH_HOST}:${project_folder}"
+}
+
+# Deploy RHEA (rsync docker-compose project files)
+deploy_rhea_compose_rsync(){
+  project_folder='/var/local/vpm'
+  compose_file="${project_folder}/docker-compose.yml"
+
+  upload_project
 
   e_info 'Update docker-compose'
   # shellcheck disable=2029
@@ -98,10 +103,31 @@ deploy_rhea(){
     "docker-compose --project-name ${DOCKER_PROJECT} --file ${compose_file} up -d --build --remove-orphans"
 }
 
+# Deploy RHEA (docker-compose mode)
+deploy_rhea_compose(){
+  ssh_setup
+
+  e_info 'Update docker-compose'
+  # shellcheck disable=2029
+  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin pull" ) < docker-compose.yml
+
+  # shellcheck disable=2029
+  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin up -d --build --remove-orphans" ) < docker-compose.yml
+}
+
+# Deploy RHEA (docker swarm mode)
+deploy_rhea_swarm(){
+  ssh_setup
+
+  e_info 'Deploy stack'
+  # shellcheck disable=2029
+  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker stack deploy --compose-file /dev/stdin ${DOCKER_PROJECT}" ) < stack.yml
+}
+
 # CI Deploy
 deploy(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
-    deploy_rhea
+    deploy_rhea_swarm
   else
     e_warn 'Deployment is only allowed in production!'
   fi
