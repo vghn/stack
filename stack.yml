@@ -1,4 +1,4 @@
-version: '3'
+version: '3.2'
 
 services:
   lb:
@@ -11,9 +11,9 @@ services:
       - '80:80'
       - '443:443'
       - '8140:8140'
-      - '8080:8080'
-      - '8000:8000'
-      - '1936:1936'
+      - mode: host
+        target: 1936
+        published: 1936
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/haproxy_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; . /var/secrets/haproxy_credentials; set +o allexport; /entrypoint.sh dockercloud-haproxy'
     volumes:
       - certs:/certs
@@ -37,7 +37,7 @@ services:
     environment:
       API_CONFIG: '/var/secrets/webhook.yml'
       SERVICES: 'secrets,r10k'
-      SERVICE_PORTS: '80'
+      SERVICE_PORTS: '8523'
       FORCE_SSL: 'yes'
       VIRTUAL_HOST: 'http://*,https://*'
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/webhook.yml ]; do echo "Waiting for configuration..."; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
@@ -75,13 +75,17 @@ services:
     image: vladgh/puppetdb:latest
     hostname: puppetdb.ghn.me
     environment:
-      SERVICE_PORTS: '8080'
       PUPPETDB_JAVA_ARGS: '-Xms32M -Xmx128M'
+    ports:
+      - mode: host
+        target: 8080
+        published: 8080
     entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; . /var/secrets/puppetdb_credentials; set +o allexport; puppet config set certname puppet.ghn.me --section main && /entrypoint.sh puppetdb foreground'
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl:ro
       - secrets:/var/secrets:ro
     networks:
+      - frontend
       - puppet
     deploy:
       replicas: 1
@@ -90,9 +94,12 @@ services:
   puppetboard:
     image: vladgh/puppetboard:latest
     hostname: puppetboard.ghn.me
-    environment:
-      SERVICE_PORTS: '8000'
+    ports:
+      - mode: host
+        target: 8000
+        published: 8000
     networks:
+      - frontend
       - puppet
     deploy:
       replicas: 1
@@ -126,7 +133,7 @@ services:
       - ssl:/sync
       - ~/.aws:/root/.aws:ro
     networks:
-      - encrypted
+      - backend
     deploy:
       replicas: 1
       restart_policy:
@@ -142,7 +149,7 @@ services:
       - secrets:/sync
       - ~/.aws:/root/.aws:ro
     networks:
-      - encrypted
+      - backend
     deploy:
       replicas: 1
       restart_policy:
@@ -158,7 +165,7 @@ services:
       - code:/etc/puppetlabs/code
       - /var/cache/r10k
     networks:
-      - encrypted
+      - backend
     deploy:
       replicas: 1
       restart_policy:
@@ -170,7 +177,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - encrypted
+      - backend
     deploy:
       replicas: 1
       restart_policy:
@@ -189,7 +196,7 @@ services:
       - letsencrypt:/backup/letsencrypt
       - ~/.aws:/root/.aws:ro
     networks:
-      - encrypted
+      - backend
     deploy:
       replicas: 1
       restart_policy:
@@ -213,14 +220,15 @@ volumes:
 
 networks:
   frontend:
-    driver: overlay
-    driver_opts:
-      encrypted: ""
   encrypted:
     driver: overlay
     driver_opts:
       encrypted: ""
   puppet:
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+  backend:
     driver: overlay
     driver_opts:
       encrypted: ""
