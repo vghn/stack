@@ -6,7 +6,6 @@ services:
     environment:
       CERT_FOLDER: '/certs'
       LIVE_CERT_FOLDER: '/etc/letsencrypt/live'
-      STATS_PORT: '1936'
     ports:
       - '80:80'
       - '443:443'
@@ -14,11 +13,9 @@ services:
       - mode: host
         target: 1936
         published: 1936
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/haproxy_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; . /var/secrets/haproxy_credentials; set +o allexport; /entrypoint.sh dockercloud-haproxy'
     volumes:
       - certs:/certs
       - letsencrypt:/etc/letsencrypt
-      - secrets:/var/secrets
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - frontend
@@ -75,12 +72,12 @@ services:
     image: vladgh/puppetdb:latest
     hostname: puppetdb.ghn.me
     environment:
+      PUPPETDB_CERTNAME: 'puppet.ghn.me'
       PUPPETDB_JAVA_ARGS: '-Xms32M -Xmx128M'
-    ports:
-      - mode: host
-        target: 8080
-        published: 8080
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/puppetdb_credentials ]; do echo "Waiting for credentials..."; sleep 5; done; set -o allexport; . /var/secrets/puppetdb_credentials; set +o allexport; puppet config set certname puppet.ghn.me --section main && /entrypoint.sh puppetdb foreground'
+    secrets:
+      - puppetdb_host
+      - puppetdb_pass
+      - puppetdb_user
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl:ro
       - secrets:/var/secrets:ro
@@ -192,15 +189,22 @@ services:
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     command: cron
     volumes:
-      - ssl:/backup/puppetca
-      - letsencrypt:/backup/letsencrypt
+      - ssl:/backup/puppetca                # PuppetCA Certificates
+      - letsencrypt:/backup/letsencrypt     # LetsEncrypt Certificates
+      - /var/lib/docker/swarm:/backup/swarm # Swarm state
       - ~/.aws:/root/.aws:ro
     networks:
       - backend
     deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
+      mode: global
+
+secrets:
+  puppetdb_host:
+    external: true
+  puppetdb_pass:
+    external: true
+  puppetdb_user:
+    external: true
 
 volumes:
   ssl:
