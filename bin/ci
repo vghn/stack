@@ -67,6 +67,8 @@ ssh_setup(){
 
   e_info 'Update known hosts'
   ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+  SSH_CMD="ssh -i ${SSH_KEY} ${SSH_USER}@${SSH_HOST}"
 }
 
 # Upload project files
@@ -74,8 +76,7 @@ upload_project(){
   ssh_setup
 
   e_info 'Create project folder'
-  # shellcheck disable=2029
-  ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "sudo mkdir -p ${project_folder}"
+  eval "$SSH_CMD" "sudo mkdir -p ${project_folder}"
 
   e_info 'Upload project files'
   rsync -avz -e "ssh -i ${SSH_KEY}" \
@@ -95,12 +96,8 @@ deploy_rhea_compose_rsync(){
   upload_project
 
   e_info 'Update docker-compose'
-  # shellcheck disable=2029
-  ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" \
-    "docker-compose --project-name ${DOCKER_PROJECT} --file ${compose_file} pull --parallel"
-  # shellcheck disable=2029
-  ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" \
-    "docker-compose --project-name ${DOCKER_PROJECT} --file ${compose_file} up -d --build --remove-orphans"
+  eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file ${compose_file} pull --parallel"
+  eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file ${compose_file} up -d --build --remove-orphans"
 }
 
 # Deploy RHEA (docker-compose mode)
@@ -108,11 +105,8 @@ deploy_rhea_compose(){
   ssh_setup
 
   e_info 'Update docker-compose'
-  # shellcheck disable=2029
-  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin pull" ) < docker-compose.yml
-
-  # shellcheck disable=2029
-  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin up -d --build --remove-orphans" ) < docker-compose.yml
+  ( eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin pull" ) < docker-compose.yml
+  ( eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin up -d --build --remove-orphans" ) < docker-compose.yml
 }
 
 # Deploy RHEA (docker swarm mode)
@@ -120,8 +114,15 @@ deploy_rhea_swarm(){
   ssh_setup
 
   e_info 'Deploy stack'
-  # shellcheck disable=2029
-  ( ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" "docker stack deploy --compose-file /dev/stdin ${DOCKER_PROJECT}" ) < stack.yml
+  ( eval "$SSH_CMD" "docker stack deploy --compose-file /dev/stdin ${DOCKER_PROJECT}" ) < stack.yml
+}
+
+# Create secret
+create_secret(){
+  ssh_setup
+
+  local name="${1:?}"
+  eval "$SSH_CMD" "docker secret create ${name} /dev/stdin"
 }
 
 # CI Deploy
@@ -165,6 +166,10 @@ main(){
       ;;
     deploy)
       deploy
+      ;;
+    create_secret)
+      shift
+      create_secret "${@}"
       ;;
     *)
       e_abort "USAGE: ${BASH_SOURCE[0]} [install | test | deploy]"
