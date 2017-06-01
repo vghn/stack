@@ -118,6 +118,10 @@ deploy_rhea_swarm(){
 }
 
 # Create secret
+# Ex:
+# $ bin/ci create_secret mysecret < mysecret_file
+# $ echo 'password' | bin/ci create_secret mysecret
+
 create_secret(){
   ssh_setup
 

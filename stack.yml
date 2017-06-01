@@ -32,14 +32,14 @@ services:
     image: vladgh/wh:latest
     hostname: webhook
     environment:
-      API_CONFIG: '/var/secrets/webhook.yml'
-      SERVICES: 'secrets,r10k'
+      API_CONFIG: '/run/secrets/webhook.yml'
+      SERVICES: 'r10k'
       SERVICE_PORTS: '8523'
       FORCE_SSL: 'yes'
       VIRTUAL_HOST: 'http://*,https://*'
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /var/secrets/webhook.yml ]; do echo "Waiting for configuration..."; sleep 5; done; sh -c "bundle exec puma --environment $${RACK_ENV} --port $${RACK_PORT}"'
+    secrets:
+      - webhook.yml
     volumes:
-      - secrets:/var/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - encrypted
@@ -202,6 +202,8 @@ services:
       mode: global
 
 secrets:
+  webhook.yml:
+    external: true
   puppetdb_user:
     external: true
   puppetdb_pass:
