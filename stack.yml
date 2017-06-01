@@ -73,14 +73,17 @@ services:
     hostname: puppetdb.ghn.me
     environment:
       PUPPETDB_CERTNAME: 'puppet.ghn.me'
+      PUPPETDB_HOST: 'pdhmbnpv0r5lty.cwmrzqfvkzxh.us-east-1.rds.amazonaws.com'
       PUPPETDB_JAVA_ARGS: '-Xms32M -Xmx128M'
     secrets:
-      - puppetdb_host
-      - puppetdb_pass
       - puppetdb_user
+      - puppetdb_pass
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl:ro
-      - secrets:/var/secrets:ro
+    ports:
+      - mode: host
+        target: 8080
+        published: 8080
     networks:
       - frontend
       - puppet
@@ -199,11 +202,9 @@ services:
       mode: global
 
 secrets:
-  puppetdb_host:
+  puppetdb_user:
     external: true
   puppetdb_pass:
-    external: true
-  puppetdb_user:
     external: true
 
 volumes:
