@@ -51,17 +51,15 @@ services:
     image: vladgh/ps:latest
     hostname: puppet.ghn.me
     environment:
-      AUTOSIGN_CFG: '/var/secrets/csr.yml'
+      AUTOSIGN_CFG: '/run/secrets/puppet_csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
       PUPPETSERVER_JAVA_ARGS: '-Xms32M -Xmx512M'
       SERVICE_PORTS: '8140'
       TCP_PORTS: '8140'
-    entrypoint: /sbin/tini -- sh -c 'until [ -s $${AUTOSIGN_CFG} ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for secrets and R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
-      - secrets:/var/secrets:ro
       - code:/etc/puppetlabs/code
-      - ~/.aws:/root/.aws:ro
     networks:
       - puppet
     deploy:
