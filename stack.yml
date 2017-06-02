@@ -56,7 +56,10 @@ services:
       PUPPETSERVER_JAVA_ARGS: '-Xms32M -Xmx512M'
       SERVICE_PORTS: '8140'
       TCP_PORTS: '8140'
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
+    secrets:
+      - source: aws_credentials_rhea
+        target: aws_credentials
+    entrypoint: /sbin/tini -- sh -c 'mkdir -p ~/.aws; ln -s /run/secrets/aws_credentials_rhea ~/.aws/credentials; until [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
