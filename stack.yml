@@ -126,26 +126,12 @@ services:
     hostname: ssl-sync-agent
     environment:
       S3PATH: 's3://vgast/puppet/ssl'
+    secrets:
+      - source: aws_credentials_rhea
+        target: aws_credentials
     command: sync
     volumes:
       - ssl:/sync
-      - ~/.aws:/root/.aws:ro
-    networks:
-      - backend
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-  secrets:
-    image: vladgh/s3sync:latest
-    hostname: secrets-sync-agent
-    environment:
-      S3PATH: 's3://vgsec'
-      INITIAL_DOWNLOAD: 'force'
-    command: periodic_download
-    volumes:
-      - secrets:/sync
-      - ~/.aws:/root/.aws:ro
     networks:
       - backend
     deploy:
@@ -188,18 +174,22 @@ services:
       AWS_S3_PREFIX: 'rhea'
       GPG_RECIPIENT: 'vlad@ghn.me'
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
+    secrets:
+      - source: aws_credentials_rhea
+        target: aws_credentials
     command: cron
     volumes:
       - ssl:/backup/puppetca                # PuppetCA Certificates
       - letsencrypt:/backup/letsencrypt     # LetsEncrypt Certificates
       - /var/lib/docker/swarm:/backup/swarm # Swarm state
-      - ~/.aws:/root/.aws:ro
     networks:
       - backend
     deploy:
       mode: global
 
 secrets:
+  aws_credentials_rhea:
+    external: true
   webhook.yml:
     external: true
   puppetdb_user:
@@ -216,12 +206,6 @@ volumes:
     driver: local
   letsencrypt:
     driver: local
-  secrets:
-    driver: local
-    driver_opts:
-      type: tmpfs
-      device: tmpfs
-      o: "size=100m,nodev,nosuid"
 
 networks:
   frontend:
