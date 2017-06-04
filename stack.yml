@@ -176,6 +176,18 @@ services:
       - backend
     deploy:
       mode: global
+  log:
+    image: logzio/logzio-docker:v2.4
+    hostname: log-agent
+    secrets:
+      - logzio_token
+    entrypoint: sh -c "/usr/src/app/index.js --token \"$$(cat /run/secrets/logzio_token)\" --add env=prod --add role=rhea"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backend
+    deploy:
+      mode: global
 
 secrets:
   aws_credentials_rhea:
@@ -185,6 +197,8 @@ secrets:
   puppetdb_user:
     external: true
   puppetdb_pass:
+    external: true
+  logzio_token:
     external: true
 
 volumes:
