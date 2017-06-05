@@ -22,9 +22,6 @@ services:
       - encrypted
       - puppet
     deploy:
-      mode: global
-      restart_policy:
-        condition: any
       placement:
         constraints:
           - node.role == manager
@@ -42,10 +39,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - encrypted
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
   puppet:
     image: vladgh/ps:latest
     hostname: puppet.ghn.me
@@ -64,10 +57,6 @@ services:
       - code:/etc/puppetlabs/code
     networks:
       - puppet
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
   puppetdb:
     image: vladgh/puppetdb:latest
     hostname: puppetdb.ghn.me
@@ -87,10 +76,6 @@ services:
     networks:
       - frontend
       - puppet
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
   puppetboard:
     image: vladgh/puppetboard:latest
     hostname: puppetboard.ghn.me
@@ -101,10 +86,6 @@ services:
     networks:
       - frontend
       - puppet
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
   letsencrypt:
     image: vladgh/le:latest
     hostname: letsencrypt-agent
@@ -119,10 +100,6 @@ services:
       - letsencrypt:/etc/letsencrypt
     networks:
       - encrypted
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
   ssl:
     image: vladgh/s3sync:latest
     hostname: ssl-sync-agent
@@ -136,10 +113,6 @@ services:
       - ssl:/sync
     networks:
       - backend
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
   r10k:
     image: vladgh/r10k:latest
     hostname: r10k-agent
@@ -152,10 +125,6 @@ services:
       - /var/cache/r10k
     networks:
       - backend
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
   backup:
     image: vladgh/backup:latest
     hostname: backup-agent
