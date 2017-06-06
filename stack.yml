@@ -57,6 +57,10 @@ services:
       - code:/etc/puppetlabs/code
     networks:
       - puppet
+    deploy:
+      placement:
+        constraints:
+          - engine.labels.role == rhea
   puppetdb:
     image: vladgh/puppetdb:latest
     hostname: puppetdb.ghn.me
@@ -76,6 +80,10 @@ services:
     networks:
       - frontend
       - puppet
+    deploy:
+      placement:
+        constraints:
+          - engine.labels.role == rhea
   puppetboard:
     image: vladgh/puppetboard:latest
     hostname: puppetboard.ghn.me
@@ -86,6 +94,10 @@ services:
     networks:
       - frontend
       - puppet
+    deploy:
+      placement:
+        constraints:
+          - engine.labels.role == rhea
   letsencrypt:
     image: vladgh/le:latest
     hostname: letsencrypt-agent
@@ -113,6 +125,10 @@ services:
       - ssl:/sync
     networks:
       - backend
+    deploy:
+      placement:
+        constraints:
+          - engine.labels.role == rhea
   r10k:
     image: vladgh/r10k:latest
     hostname: r10k-agent
@@ -125,6 +141,10 @@ services:
       - /var/cache/r10k
     networks:
       - backend
+    deploy:
+      placement:
+        constraints:
+          - engine.labels.role == rhea
   backup:
     image: vladgh/backup:latest
     hostname: backup-agent
