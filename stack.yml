@@ -83,7 +83,7 @@ services:
     deploy:
       placement:
         constraints:
-          - engine.labels.role == rhea
+          - node.labels.role == rhea
   puppetboard:
     image: vladgh/puppetboard:latest
     hostname: puppetboard.ghn.me
@@ -97,7 +97,7 @@ services:
     deploy:
       placement:
         constraints:
-          - engine.labels.role == rhea
+          - node.labels.role == rhea
   letsencrypt:
     image: vladgh/le:latest
     hostname: letsencrypt-agent
@@ -128,7 +128,7 @@ services:
     deploy:
       placement:
         constraints:
-          - engine.labels.role == rhea
+          - node.labels.role == rhea
   r10k:
     image: vladgh/r10k:latest
     hostname: r10k-agent
@@ -144,7 +144,7 @@ services:
     deploy:
       placement:
         constraints:
-          - engine.labels.role == rhea
+          - node.labels.role == rhea
   backup:
     image: vladgh/backup:latest
     hostname: backup-agent
