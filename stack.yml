@@ -60,7 +60,7 @@ services:
     deploy:
       placement:
         constraints:
-          - engine.labels.role == rhea
+          - node.labels.role == rhea
   puppetdb:
     image: vladgh/puppetdb:latest
     hostname: puppetdb.ghn.me
