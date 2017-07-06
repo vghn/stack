@@ -49,6 +49,7 @@ services:
       SERVICE_PORTS: '8140'
       TCP_PORTS: '8140'
     secrets:
+      - puppet_csr.yml
       - source: aws_credentials_rhea
         target: aws_credentials
     entrypoint: /sbin/tini -- sh -c 'mkdir -p ~/.aws; ln -s /run/secrets/aws_credentials_rhea ~/.aws/credentials; until [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
@@ -182,6 +183,8 @@ secrets:
   aws_credentials_rhea:
     external: true
   webhook.yml:
+    external: true
+  puppet_csr.yml:
     external: true
   puppetdb_user:
     external: true
