@@ -159,9 +159,10 @@ services:
         target: aws_credentials
     command: cron
     volumes:
-      - ssl:/backup/puppetca                # PuppetCA Certificates
-      - letsencrypt:/backup/letsencrypt     # LetsEncrypt Certificates
-      - /var/lib/docker/swarm:/backup/swarm # Swarm state
+      - letsencrypt:/backup/letsencrypt               # LetsEncrypt Certificates
+      - ssl:/backup/puppet-ca                         # PuppetCA Certificates
+      - /etc/puppetlabs/puppet/ssl:/backup/puppet-ssl # Puppet Agent Certificates
+      - /var/lib/docker/swarm:/backup/swarm           # Swarm state
     networks:
       - backend
     deploy:
