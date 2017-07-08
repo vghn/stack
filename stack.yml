@@ -54,8 +54,8 @@ services:
     secrets:
       - puppet_csr.yml
       - source: aws_credentials_rhea
-        target: aws_credentials
-    entrypoint: /sbin/tini -- sh -c 'mkdir -p ~/.aws; ln -s /run/secrets/aws_credentials_rhea ~/.aws/credentials; until [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
+        target: /root/.aws/credentials
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
@@ -123,7 +123,7 @@ services:
       S3PATH: 's3://vgast/puppet/ssl'
     secrets:
       - source: aws_credentials_rhea
-        target: aws_credentials
+        target: /root/.aws/credentials
     command: sync
     volumes:
       - ssl:/sync
@@ -159,7 +159,7 @@ services:
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     secrets:
       - source: aws_credentials_rhea
-        target: aws_credentials
+        target: /root/.aws/credentials
     command: cron
     volumes:
       - letsencrypt:/backup/letsencrypt               # LetsEncrypt Certificates
