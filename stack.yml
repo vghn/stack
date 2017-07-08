@@ -52,6 +52,8 @@ services:
       SERVICE_PORTS: '8140'
       TCP_PORTS: '8140'
     secrets:
+      - eyaml_private_key.pkcs7.pem
+      - eyaml_public_key.pkcs7.pem
       - puppet_csr.yml
       - source: aws_credentials_rhea
         target: /root/.aws/credentials
@@ -175,7 +177,7 @@ services:
     hostname: log-agent
     secrets:
       - logzio_token
-    entrypoint: sh -c "/usr/src/app/index.js --token \"$$(cat /run/secrets/logzio_token)\" --add env=prod --add role=rhea"
+    entrypoint: sh -c "/usr/src/app/index.js --token \"$$(cat /run/secrets/logzio_token)\" --add env=prod"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -186,15 +188,19 @@ services:
 secrets:
   aws_credentials_rhea:
     external: true
-  webhook.yml:
+  eyaml_private_key.pkcs7.pem:
+    external: true
+  eyaml_public_key.pkcs7.pem:
+    external: true
+  logzio_token:
     external: true
   puppet_csr.yml:
     external: true
-  puppetdb_user:
-    external: true
   puppetdb_pass:
     external: true
-  logzio_token:
+  puppetdb_user:
+    external: true
+  webhook.yml:
     external: true
 
 volumes:
