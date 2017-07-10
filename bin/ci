@@ -10,7 +10,7 @@ DOCKER_PROJECT='vpm'
 SSH_HOST='rhea.ghn.me'
 SSH_USER='ubuntu'
 SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
-PACKER_URL='https://releases.hashicorp.com/packer/1.0.0/packer_1.0.0_linux_amd64.zip'
+PACKER_URL='https://releases.hashicorp.com/packer/1.0.2/packer_1.0.2_linux_amd64.zip'
 
 # Install the VGS Library
 install_vgs(){
