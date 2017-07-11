@@ -1,5 +1,42 @@
 # Change Log
 
+## [v0.2.1](https://github.com/vghn/stack/tree/v0.2.1) (2017-07-11)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.2.0...v0.2.1)
+
+**Implemented enhancements:**
+
+- Adhere to recommended community standards [\#85](https://github.com/vghn/stack/issues/85)
+- Upgrade Packer version [\#84](https://github.com/vghn/stack/issues/84)
+- Improve swarm secrets [\#83](https://github.com/vghn/stack/issues/83)
+- Remove hardcoded AWS credentials location [\#82](https://github.com/vghn/stack/issues/82)
+- Use global mode for services that require it [\#81](https://github.com/vghn/stack/issues/81)
+- Use node labels instead of engine ones [\#80](https://github.com/vghn/stack/issues/80)
+- Upgrade docker-compose file version [\#79](https://github.com/vghn/stack/issues/79)
+- Constrain Puppet related services to the Rhea role [\#78](https://github.com/vghn/stack/issues/78)
+- Add Logz.io to the stack [\#77](https://github.com/vghn/stack/pull/77) ([vladgh](https://github.com/vladgh))
+- Remove the log agent for now [\#76](https://github.com/vghn/stack/pull/76) ([vladgh](https://github.com/vladgh))
+- Improve AWS credentials for Puppet [\#75](https://github.com/vghn/stack/pull/75) ([vladgh](https://github.com/vladgh))
+- Finish transition to Docker Swarm secrets [\#74](https://github.com/vghn/stack/pull/74) ([vladgh](https://github.com/vladgh))
+- Refactor Puppet to use Docker secrets [\#73](https://github.com/vghn/stack/pull/73) ([vladgh](https://github.com/vladgh))
+- Add secrets to Webhook and update CI docs [\#72](https://github.com/vghn/stack/pull/72) ([vladgh](https://github.com/vladgh))
+- Use Docker Secrets in PuppetDB [\#70](https://github.com/vghn/stack/pull/70) ([vladgh](https://github.com/vladgh))
+- Update CI script to add docker secrets [\#69](https://github.com/vghn/stack/pull/69) ([vladgh](https://github.com/vladgh))
+- Convert the stack to Docker Swarm [\#68](https://github.com/vghn/stack/pull/68) ([vladgh](https://github.com/vladgh))
+- Minor changes [\#67](https://github.com/vghn/stack/pull/67) ([vladgh](https://github.com/vladgh))
+- Improve secrets [\#65](https://github.com/vghn/stack/pull/65) ([vladgh](https://github.com/vladgh))
+- Add haproxy stats [\#64](https://github.com/vghn/stack/pull/64) ([vladgh](https://github.com/vladgh))
+- Tweak memory requirements [\#62](https://github.com/vghn/stack/pull/62) ([vladgh](https://github.com/vladgh))
+- Add Puppet Board [\#61](https://github.com/vghn/stack/pull/61) ([vladgh](https://github.com/vladgh))
+- Improve docker-compose namespace and deployment [\#60](https://github.com/vghn/stack/pull/60) ([vladgh](https://github.com/vladgh))
+- Add notifications CloudFormation template [\#58](https://github.com/vghn/stack/pull/58) ([vladgh](https://github.com/vladgh))
+- Lower RAM requirements for Puppet Server [\#57](https://github.com/vghn/stack/pull/57) ([vladgh](https://github.com/vladgh))
+
+**Fixed bugs:**
+
+- Fix PuppetDB secrets [\#71](https://github.com/vghn/stack/pull/71) ([vladgh](https://github.com/vladgh))
+- Fix haproxy hostname [\#63](https://github.com/vghn/stack/pull/63) ([vladgh](https://github.com/vladgh))
+- Make sure all services get restarted [\#59](https://github.com/vghn/stack/pull/59) ([vladgh](https://github.com/vladgh))
+
 ## [v0.2.0](https://github.com/vghn/stack/tree/v0.2.0) (2017-04-17)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.1.1...v0.2.0)
 
