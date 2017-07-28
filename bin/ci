@@ -68,6 +68,14 @@ decrypt_env(){
   fi
 }
 
+# Load private environment
+load_env(){
+  decrypt_env
+
+  # shellcheck disable=1090
+  . "${APPDIR}/.env" 2>/dev/null || true
+}
+
 # Set-up SSH
 ssh_setup(){
   e_info 'Set-up SSH key'
@@ -141,7 +149,7 @@ create_secret(){
 # CI Deploy
 deploy(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
-    decrypt_env
+    load_env
     deploy_rhea_swarm
   else
     e_warn 'Deployment is only allowed in production!'
