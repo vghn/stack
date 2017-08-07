@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 # AWS CloudFormation Defaults
 
+# Defaults
+export STACKS='docker_cloud efs elb iam main notifications puppetdb rds rhea sg vpc'
+
 get_cfn_defaults(){
   local stack A P T
   stack="${1:-}"
-
-  # Defaults
-  export AWS_PROFILE='aws2017a'
-  export stacks='docker_cloud efs elb iam main notifications puppetdb rds rhea sg vpc'
-  export depends_on=
 
   # Default command arguments
   A=''
@@ -19,6 +17,9 @@ get_cfn_defaults(){
   # Common tags
   T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
   T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
+
+  # Other
+  export depends_on=
 
   # Stack defaults
   case "$stack" in
@@ -121,10 +122,13 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       ;;
     *)
-      cfn_usage
+      usage
       ;;
   esac
 
-  export depends_on
   export cfn_cmd="--stack-name ${name} --template-body file://${body} ${A} --parameters ${P} --tags ${T}"
+}
+
+clear_cfn_defaults(){
+  unset stack name body depends_on A P T cfn_cmd
 }

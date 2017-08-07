@@ -8,21 +8,33 @@ IFS=$'\n\t'
 [ -z "${DEBUG:-}" ] || set -x
 
 # VARs
-export APPDIR TMPDIR NOW VERSION
+DOCKER_PROJECT='vpm'
+SSH_HOST='rhea.ghn.me'
+SSH_USER='ubuntu'
+SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
+PACKER_URL='https://releases.hashicorp.com/packer/1.0.3/packer_1.0.3_linux_amd64.zip'
+export DOCKER_PROJECT SSH_HOST SSH_USER SSH_KEY PACKER_URL
+
+# System VARs
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
 NOW="$(date +"%Y%m%d_%H%M%S")"
 VERSION=$(git describe --always --tags)
+export APPDIR TMPDIR NOW VERSION
 
 # Load private environment
 # shellcheck disable=1090
 . "${APPDIR}/.env" 2>/dev/null || true
 
 # Load VGS library (https://github.com/vghn/vgs)
-# shellcheck disable=1091
-[[ -s /opt/vgs/load ]] && . /opt/vgs/load
 # shellcheck disable=1090
-[[ -s ~/vgs/load ]] && . ~/vgs/load
+. ~/vgs/load || echo 'VGS library is required' 1>&2
+
+# Load functions
+if [[ -d "${APPDIR}/shlib" ]]; then
+  # shellcheck disable=1090
+  for file in ${APPDIR}/shlib/*.sh; do . "$file"; done
+fi
 
 # Detect environment
 detect_environment 2>/dev/null || true
@@ -46,6 +58,7 @@ export SLACK_USER="${SLACK_USER:-VGHStk}"
 export SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
 
 # AWS
+export AWS_PROFILE='aws2017a'
 export AWS_ACCOUNT_NUMBER="${AWS_ACCOUNT_NUMBER:-}"
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 export AWS_ASSETS_BUCKET="${AWS_ASSETS_BUCKET:-}"
