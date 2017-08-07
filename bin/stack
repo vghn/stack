@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# Stack CLI
+
+# Load environment
+# shellcheck disable=1090
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/envrc"
+
+# Usage
+
+usage(){
+  echo '---------------------------------------------'
+  echo "USAGE: ${BASH_SOURCE[0]} [COMMAND] [SUBCOMMAND] [OPTIONS]"
+  echo '---------------------------------------------'
+  echo 'Commands:'
+  echo ''
+  echo '  - ami [create | clean | validate]'
+  echo ''
+  echo '  - cfn [create | update | delete | validate] [STACK]'
+  echo "    * Available stacks: ${STACKS}"
+  echo ''
+  echo '  - ci [install | test | deploy]'
+  echo ''
+  echo '  - hooks [install]'
+  echo ''
+  echo '  - secret [create]'
+  echo ''
+  echo '----------------------------------------------'
+  echo 'For more information please consult the README'
+  echo '----------------------------------------------'
+  exit 1
+}
+
+# Process Stack CLI
+stack_process_cli(){
+  cmd=${1:-}
+  scmd=${2:-}
+  export cmd scmd
+  shift
+
+  trap 'bye $?' EXIT HUP INT QUIT TERM
+
+  case "$cmd" in
+    ami)
+      case "$scmd" in
+        create)
+          ami_create
+          ;;
+        clean)
+          ami_clean
+          ;;
+        validate)
+          ami_validate
+          ;;
+        *)
+          usage
+          ;;
+      esac
+      ;;
+    cfn)
+      get_cfn_defaults "${@:-}"
+      case "$scmd" in
+        create)
+          cfn_validate_stack
+          cfn_create_stack
+          cfn_wait_for_stack
+          ;;
+        update)
+          cfn_validate_stack
+          cfn_update_stack
+          cfn_wait_for_stack
+          ;;
+        delete)
+          cfn_delete_stack
+          cfn_wait_for_stack
+          ;;
+        validate)
+          cfn_validate_stack
+          ;;
+        *)
+          usage
+          ;;
+      esac
+      clear_cfn_defaults
+      ;;
+    ci)
+      case "$scmd" in
+        install)
+          install_vgs
+          ;;
+        test)
+          validate_bash
+          ;;
+        deploy)
+          deploy
+          ;;
+        *)
+          usage
+          ;;
+      esac
+      ;;
+    hooks)
+      case "$scmd" in
+        install)
+          install_git_hooks
+          ;;
+        *)
+          usage
+          ;;
+      esac
+      ;;
+    secret)
+      create_secret "${@:-}"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+}
+
+stack_process_cli "${@:-}"

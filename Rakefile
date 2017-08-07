@@ -16,7 +16,7 @@ Vtasks::TravisCI.new
 namespace :stack do
   desc 'Updates docker compose environment'
   task :update do
-    sh "ENVTYPE=production bin/ci deploy"
+    sh "ENVTYPE=production bin/stack ci deploy"
   end
 end
 

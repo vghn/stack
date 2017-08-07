@@ -1,23 +1,65 @@
 #!/usr/bin/env bash
-# Continuous Integration / Continuous Deployment tasks
+# Common functions
 
-# Load environment
-# shellcheck disable=1090
-. "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/envrc"
+ami_validate(){
+  ami_packer_process
+  e_info "Validate ${AWS_AMI_PACKER}"
+  eval packer validate "${PACKER_VARS}" "$AWS_AMI_PACKER"
+}
 
-# VARs
-DOCKER_PROJECT='vpm'
-SSH_HOST='rhea.ghn.me'
-SSH_USER='ubuntu'
-SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
-PACKER_URL='https://releases.hashicorp.com/packer/1.0.3/packer_1.0.3_linux_amd64.zip'
+ami_create(){
+  ami_packer_process
+  eval packer build "${PACKER_VARS}" "$AWS_AMI_PACKER"
+}
 
-# Install the VGS Library
+# Removes images and snapshots for a given image prefix as well as the
+# the ones that are currently used in launch configurations inside a stack
+ami_clean(){
+  vgs_aws_ec2_images_purge "VGH_RHEA_*" "'$(vgs_aws_cfn_get_parameter RHEA ImageID)'"
+}
+
+# Creates a new stack
+cfn_create_stack(){
+  e_info 'Creating stack'
+  eval "aws cloudformation create-stack ${cfn_cmd:-}"
+}
+
+# Update an existing stack
+cfn_update_stack(){
+  e_info 'Updating stack'
+  eval "aws cloudformation update-stack ${cfn_cmd:-}"
+}
+
+# Deletes an existing stack
+cfn_delete_stack(){
+  e_warn "Deleting stack ${name:-}"
+  eval "aws cloudformation delete-stack --stack-name ${name:-}"
+}
+
+# Validate stack
+cfn_validate_stack(){
+  e_info "Validating ${body:-}"
+  aws cloudformation validate-template \
+    --output table \
+    --template-body "file://${body:-}"
+}
+
+# Wait for stack to finish
+cfn_wait_for_stack(){
+  if ! vgs_aws_cfn_wait "${name:-}"; then
+    e_abort "FATAL: The stack ${name:-} failed"
+  fi
+}
+
+# Install and load the VGS library (https://github.com/vghn/vgs)
 install_vgs(){
-  echo 'Install and load VGS library'
-  git clone https://github.com/vghn/vgs.git ~/vgs
+  if [[ ! -d ~/vgs ]]; then
+    echo 'Install and load VGS library'
+    git clone https://github.com/vghn/vgs.git ~/vgs
+  fi
+  # Load VGS library (https://github.com/vghn/vgs)
   # shellcheck disable=1090
-  . ~/vgs/load 2>/dev/null || true
+  . ~/vgs/load || echo 'VGS library is required' 1>&2
 }
 
 # Install gems
@@ -138,7 +180,6 @@ deploy_rhea_swarm(){
 # Ex:
 # $ bin/ci create_secret mysecret < mysecret_file
 # $ echo 'password' | bin/ci create_secret mysecret
-
 create_secret(){
   ssh_setup
 
@@ -156,52 +197,39 @@ deploy(){
   fi
 }
 
+# Install git hooks
+install_git_hooks(){
+  (
+  # Set working directory
+  cd "$APPDIR" || exit
+
+  for file in ${APPDIR}/hooks/*-git-hook; do
+    echo "Installing ${file}"
+    ln -sfn "$file" "${APPDIR}/.git/hooks/$(basename "${file%-git-hook}")"
+  done
+  )
+}
+
 # Clean-up
 clean_up() {
-  if [[ -s "${APPDIR}/.env" ]]; then
-    e_info 'Removing .env'
-    rm -rf "${APPDIR:?}/.env"
-  fi
+  if [[ "${CI:-false}" == 'true' ]]; then
+    if [[ -s "${APPDIR}/.env" ]]; then
+      e_info 'Removing .env'
+      rm -rf "${APPDIR:?}/.env"
+    fi
 
-  if [[ -s "$SSH_KEY" ]]; then
-    if [[ "$SSH_KEY" =~ tmp. ]]; then
-      e_info 'Removing temporary ssh key'
-      rm -rf "${SSH_KEY:?}"
-    else
-      e_warn 'Could not remove temporary ssh key'
+    if [[ -s "$SSH_KEY" ]]; then
+      if [[ "$SSH_KEY" =~ tmp. ]]; then
+        e_info 'Removing temporary ssh key'
+        rm -rf "${SSH_KEY:?}"
+      else
+        e_warn 'Could not remove temporary ssh key'
+      fi
     fi
   fi
 }
 
 # Trap exit
 bye(){
-  e_info 'Clean-up'
   clean_up; exit "${1:-0}"
 }
-
-
-main(){
-  trap 'bye $?' EXIT HUP INT QUIT TERM
-
-  # Process arguments
-  case "${1:-}" in
-    install)
-      install_vgs
-      ;;
-    test)
-      validate_bash
-      ;;
-    deploy)
-      deploy
-      ;;
-    create_secret)
-      shift
-      create_secret "${@}"
-      ;;
-    *)
-      e_abort "USAGE: ${BASH_SOURCE[0]} [install | test | deploy]"
-      ;;
-  esac
-}
-
-main "${@:-}"
