@@ -53,13 +53,13 @@ cfn_wait_for_stack(){
 
 # Install and load the VGS library (https://github.com/vghn/vgs)
 install_vgs(){
-  if [[ -d ~/vgs ]]; then
+  if [[ ! -d ~/vgs ]]; then
     echo 'Install and load VGS library'
     git clone https://github.com/vghn/vgs.git ~/vgs
   fi
   # Load VGS library (https://github.com/vghn/vgs)
   # shellcheck disable=1090
-  . ~/vgs/load || { echo 'VGS library is required' 1>&2; exit 1; }
+  . ~/vgs/load || echo 'VGS library is required' 1>&2
 }
 
 # Install gems
