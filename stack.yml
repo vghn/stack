@@ -30,9 +30,9 @@ services:
     hostname: webhook
     environment:
       API_CONFIG: '/run/secrets/webhook.yml'
-      SERVICE_PORTS: '8523'
       FORCE_SSL: 'yes'
-      VIRTUAL_HOST: 'http://*,https://*'
+      VIRTUAL_HOST: '*/hooks/*'
+      SERVICE_PORTS: '8523'
     secrets:
       - webhook.yml
     volumes:
