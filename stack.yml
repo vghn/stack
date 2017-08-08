@@ -57,7 +57,7 @@ services:
       - puppet_csr.yml
       - source: aws_credentials_rhea
         target: /root/.aws/credentials
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
