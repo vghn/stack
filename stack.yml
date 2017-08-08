@@ -9,7 +9,6 @@ services:
     ports:
       - '80:80'
       - '443:443'
-      - '8140:8140'
       - mode: host
         target: 1936
         published: 1936
@@ -41,7 +40,27 @@ services:
     networks:
       - encrypted
     deploy:
-      mode: global
+      placement:
+        constraints:
+          - node.labels.role == rhea
+  letsencrypt:
+    image: vladgh/le:latest
+    hostname: letsencrypt-agent
+    environment:
+      SERVICE_PORTS: '80'
+      VIRTUAL_HOST: '*/.well-known/acme-challenge/*'
+      VIRTUAL_HOST_WEIGHT: '999'
+      DOMAINS: 'rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me'
+      EMAIL: 'webmaster@ghn.me'
+      LOAD_BALANCER_SERVICE_NAME: 'lb'
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+    networks:
+      - encrypted
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == rhea
   puppet:
     image: vladgh/ps:latest
     hostname: puppet.ghn.me
@@ -49,8 +68,6 @@ services:
       AUTOSIGN_CFG: '/run/secrets/puppet_csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
       PUPPETSERVER_JAVA_ARGS: '-Xms1024M -Xmx1024M'
-      SERVICE_PORTS: '8140'
-      TCP_PORTS: '8140'
     secrets:
       - eyaml_private_key.pkcs7.pem
       - eyaml_public_key.pkcs7.pem
@@ -61,6 +78,10 @@ services:
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
+    ports:
+      - mode: host
+        target: 8140
+        published: 8140
     networks:
       - puppet
     deploy:
@@ -108,20 +129,6 @@ services:
       placement:
         constraints:
           - node.labels.role == rhea
-  letsencrypt:
-    image: vladgh/le:latest
-    hostname: letsencrypt-agent
-    environment:
-      SERVICE_PORTS: '80'
-      VIRTUAL_HOST: '*/.well-known/acme-challenge/*'
-      VIRTUAL_HOST_WEIGHT: '999'
-      DOMAINS: 'rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me'
-      EMAIL: 'webmaster@ghn.me'
-      LOAD_BALANCER_SERVICE_NAME: 'lb'
-    volumes:
-      - letsencrypt:/etc/letsencrypt
-    networks:
-      - encrypted
   ssl:
     image: vladgh/s3sync:latest
     hostname: ssl-sync-agent
@@ -175,7 +182,9 @@ services:
     networks:
       - backend
     deploy:
-      mode: global
+      placement:
+        constraints:
+          - node.labels.role == rhea
   log:
     image: gliderlabs/logspout:v3.2.2
     hostname: log-agent
