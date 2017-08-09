@@ -50,7 +50,6 @@ services:
       VIRTUAL_HOST_WEIGHT: '999'
       DOMAINS: 'rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me'
       EMAIL: 'webmaster@ghn.me'
-      LOAD_BALANCER_SERVICE_NAME: 'lb'
     volumes:
       - letsencrypt:/etc/letsencrypt
     networks:
