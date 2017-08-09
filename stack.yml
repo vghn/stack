@@ -19,9 +19,7 @@ services:
     networks:
       - frontend
       - encrypted
-      - puppet
     deploy:
-      mode: global
       placement:
         constraints:
           - node.role == manager
@@ -107,7 +105,6 @@ services:
         target: 8080
         published: 8080
     networks:
-      - frontend
       - puppet
     deploy:
       placement:
@@ -123,7 +120,6 @@ services:
         target: 8000
         published: 8000
     networks:
-      - frontend
       - puppet
     deploy:
       placement:
