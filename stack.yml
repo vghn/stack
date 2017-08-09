@@ -65,7 +65,7 @@ services:
     environment:
       AUTOSIGN_CFG: '/run/secrets/puppet_csr.yml'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
-      PUPPETSERVER_JAVA_ARGS: '-Xms1024M -Xmx1024M'
+      PUPPETSERVER_JAVA_ARGS: '-Xms768M -Xmx768M'
     secrets:
       - eyaml_private_key.pkcs7.pem
       - eyaml_public_key.pkcs7.pem
@@ -94,7 +94,7 @@ services:
     environment:
       PUPPETDB_CERTNAME: 'puppet.ghn.me'
       PUPPETDB_HOST: 'pdhmbnpv0r5lty.cwmrzqfvkzxh.us-east-1.rds.amazonaws.com'
-      PUPPETDB_JAVA_ARGS: '-Xms512M -Xmx512M'
+      PUPPETDB_JAVA_ARGS: '-Xms768M -Xmx768M'
     secrets:
       - puppetdb_user
       - puppetdb_pass
