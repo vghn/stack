@@ -144,6 +144,8 @@ services:
   r10k:
     image: vladgh/r10k:latest
     hostname: r10k-agent
+    labels:
+      r10k: 'true'
     environment:
       REMOTE: 'https://github.com/vghn/puppet.git'
       CRON_TIME: '10 * * * *'
