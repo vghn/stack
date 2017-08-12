@@ -2,19 +2,24 @@ version: '3.3'
 
 services:
   lb:
-    image: vladgh/lb:latest
-    environment:
-      CERT_FOLDER: '/certs'
-      LIVE_CERT_FOLDER: '/etc/letsencrypt/live'
+    image: traefik:1.3-alpine
+    hostname: lb
+    command: >-
+      --configfile=/dev/null
+      --web --web.address="0.0.0.0:8888"
+      --docker --docker.swarmmode --docker.domain=traefik --docker.watch
+      --defaultentrypoints='http,https'
+      --entryPoints='Name:http Address::80 Redirect.EntryPoint:https'
+      --entryPoints='Name:https Address::443 TLS'
+      --acme --acme.email='webmaster@ghn.me' --acme.domains='rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me' --acme.entryPoint=https --acme.storage=/certs/acme.json
     ports:
       - '80:80'
       - '443:443'
       - mode: host
-        target: 1936
-        published: 1936
+        target: 8888
+        published: 8888
     volumes:
       - certs:/certs
-      - letsencrypt:/etc/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - frontend
@@ -28,9 +33,6 @@ services:
     hostname: webhook
     environment:
       API_CONFIG: '/run/secrets/webhook.yml'
-      FORCE_SSL: 'yes'
-      VIRTUAL_HOST: 'http://*/hooks/*,https://*/hooks/*'
-      SERVICE_PORTS: '8523'
     secrets:
       - webhook.yml
     volumes:
@@ -38,23 +40,10 @@ services:
     networks:
       - encrypted
     deploy:
-      placement:
-        constraints:
-          - node.labels.role == rhea
-  letsencrypt:
-    image: vladgh/le:latest
-    hostname: letsencrypt-agent
-    environment:
-      SERVICE_PORTS: '80'
-      VIRTUAL_HOST: '*/.well-known/acme-challenge/*'
-      VIRTUAL_HOST_WEIGHT: '999'
-      DOMAINS: 'rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me'
-      EMAIL: 'webmaster@ghn.me'
-    volumes:
-      - letsencrypt:/etc/letsencrypt
-    networks:
-      - encrypted
-    deploy:
+      labels:
+        - "traefik.tags=webhook"
+        - "traefik.port=8523"
+        - "traefik.frontend.rule=HostRegexp:{subdomain:[a-zA-Z0-9]+}.ghn.me"
       placement:
         constraints:
           - node.labels.role == rhea
@@ -172,7 +161,7 @@ services:
         target: /root/.aws/credentials
     command: cron
     volumes:
-      - letsencrypt:/backup/letsencrypt               # LetsEncrypt Certificates
+      - certs:/backup/certs                           # LetsEncrypt Certificates
       - ssl:/backup/puppet-ca                         # PuppetCA Certificates
       - /etc/puppetlabs/puppet/ssl:/backup/puppet-ssl # Puppet Agent Certificates
       - /var/lib/docker/swarm:/backup/swarm           # Swarm state
@@ -218,8 +207,6 @@ volumes:
   code:
     driver: local
   certs:
-    driver: local
-  letsencrypt:
     driver: local
 
 networks:
