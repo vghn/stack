@@ -1,5 +1,27 @@
 # Change Log
 
+## [v0.2.2](https://github.com/vghn/stack/tree/v0.2.2) (2017-08-12)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.2.1...v0.2.2)
+
+**Implemented enhancements:**
+
+- Webhook should redirect to https [\#97](https://github.com/vghn/stack/issues/97)
+- Clean-up networks [\#96](https://github.com/vghn/stack/issues/96)
+- Separate the webhook app from other traffic through the load balancer [\#95](https://github.com/vghn/stack/issues/95)
+- Separate Puppet Server from HAProxy [\#94](https://github.com/vghn/stack/issues/94)
+- Tune Puppet Server and DB memory [\#92](https://github.com/vghn/stack/issues/92)
+- Revert to Papertrail for logs [\#91](https://github.com/vghn/stack/issues/91)
+- Use better algorithms for .env encryption [\#89](https://github.com/vghn/stack/issues/89)
+- Upgrade Packer [\#86](https://github.com/vghn/stack/issues/86)
+- Switch to Traefik [\#98](https://github.com/vghn/stack/pull/98) ([vladgh](https://github.com/vladgh))
+- Reorganize BASH functions and CLI [\#90](https://github.com/vghn/stack/pull/90) ([vladgh](https://github.com/vladgh))
+- Use a GPG encrypted .env [\#87](https://github.com/vghn/stack/pull/87) ([vladgh](https://github.com/vladgh))
+
+**Fixed bugs:**
+
+- Wait for Puppet SSL certificates to be downloaded [\#93](https://github.com/vghn/stack/issues/93)
+- Reload environment after decrypting .env [\#88](https://github.com/vghn/stack/issues/88)
+
 ## [v0.2.1](https://github.com/vghn/stack/tree/v0.2.1) (2017-07-11)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.2.0...v0.2.1)
 
