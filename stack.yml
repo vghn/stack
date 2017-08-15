@@ -55,11 +55,13 @@ services:
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
       PUPPETSERVER_JAVA_ARGS: '-Xms512M -Xmx512M'
     secrets:
-      - eyaml_private_key.pkcs7.pem
-      - eyaml_public_key.pkcs7.pem
-      - puppet_csr.yml
+      - source: eyaml_private_key.pkcs7.pem
+        target: /etc/puppetlabs/puppet/eyaml/eyaml_private_key.pkcs7.pem
+      - source: eyaml_public_key.pkcs7.pem
+        target: /etc/puppetlabs/puppet/eyaml/eyaml_public_key.pkcs7.pem
       - source: aws_credentials_rhea
         target: /root/.aws/credentials
+      - puppet_csr.yml
     entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
       - ssl:/etc/puppetlabs/puppet/ssl
