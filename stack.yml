@@ -73,6 +73,9 @@ services:
     networks:
       - puppet
     deploy:
+      resources:
+        limits:
+          memory: 1G
       placement:
         constraints:
           - node.labels.role == rhea
@@ -97,6 +100,9 @@ services:
     networks:
       - puppet
     deploy:
+      resources:
+        limits:
+          memory: 256M
       placement:
         constraints:
           - node.labels.role == rhea
@@ -112,6 +118,9 @@ services:
     networks:
       - puppet
     deploy:
+      resources:
+        limits:
+          memory: 64M
       placement:
         constraints:
           - node.labels.role == rhea
