@@ -32,13 +32,12 @@ usage(){
 
 # Process Stack CLI
 stack_process_cli(){
-  cmd=${1:-}
-  scmd=${2:-}
-  export cmd scmd
-  shift
+  if [[ -z $1 ]]; then usage; fi
+
+  export cmd="${1:-}"; shift || true
+  export scmd="${1:-}"; shift || true
 
   trap 'bye $?' EXIT HUP INT QUIT TERM
-
   case "$cmd" in
     ami)
       case "$scmd" in
