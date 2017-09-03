@@ -20,6 +20,8 @@ usage(){
   echo ''
   echo '  - ci [install | test | deploy]'
   echo ''
+  echo '  - env [encrypt | decrypt]'
+  echo ''
   echo '  - hooks [install]'
   echo ''
   echo '  - secret [create]'
@@ -91,6 +93,19 @@ stack_process_cli(){
           ;;
         deploy)
           deploy
+          ;;
+        *)
+          usage
+          ;;
+      esac
+      ;;
+    env)
+      case "$scmd" in
+        encrypt)
+          encrypt_env
+          ;;
+        decrypt)
+          decrypt_env
           ;;
         *)
           usage
