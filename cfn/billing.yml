@@ -1,0 +1,38 @@
+Description: VGH Billing Alarms
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  AccountName:
+    Type: String
+    Description: "The name on this account"
+  MaxMonthlyExpenseInDollars:
+    Type: Number
+    Description: >
+      The maximum dollars to spend in the account per month before an
+      alarm is triggered.
+    Default: 10
+
+Resources:
+  Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !ImportValue NotificationsARN
+      AlarmDescription: >
+        Alarm for billing overusage of this account.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Currency
+          Value: USD
+      EvaluationPeriods: 1
+      MetricName: EstimatedCharges
+      Namespace: "AWS/Billing"
+      OKActions:
+        - !ImportValue NotificationsARN
+      Period: 21600 # 6 hours
+      Statistic: Maximum
+      Threshold: !Ref MaxMonthlyExpenseInDollars
