@@ -1,4 +1,4 @@
-Description: VGH SNS Notifications
+Description: VGH Notifications
 
 Parameters:
   EnvType:
@@ -10,14 +10,18 @@ Parameters:
     Type: String
 
 Resources:
-  SNSTopic:
+  NotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
+      TopicName: NotifyMe
+      DisplayName: VGH Notifications
       Subscription:
       - Endpoint: !Ref NotificationEmail
         Protocol: email
 
 Outputs:
-  SNSTopicARN:
+  NotificationTopicArn:
     Description: The Notification topic ARN
-    Value: !Ref SNSTopic
+    Value: !Ref NotificationTopic
+    Export:
+      Name: NotificationsARN
