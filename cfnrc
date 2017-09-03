@@ -2,7 +2,7 @@
 # AWS CloudFormation Defaults
 
 # Defaults
-export STACKS='billing docker_cloud efs elb iam main notifications puppetdb rds rhea sg vpc'
+export STACKS='billing cloudtrail docker_cloud efs elb iam main notifications puppetdb rds rhea sg vpc'
 
 get_cfn_defaults(){
   local stack A P T
@@ -26,8 +26,16 @@ get_cfn_defaults(){
     billing)
       name='BillingAlarms'
       body="${AWS_CFN_STACKS_PATH}/billing.yml"
-      depends_on='notifications'
+      depends_on=''
       P="${P} 'ParameterKey=MaxMonthlyExpenseInDollars,ParameterValue=${AWS_BUDGET}'"
+      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL}'"
+      ;;
+    cloudtrail)
+      name='CloudTrail'
+      body="${AWS_CFN_STACKS_PATH}/cloudtrail.yml"
+      depends_on='notications'
+      A='--capabilities CAPABILITY_IAM'
+      P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
       P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
     docker_cloud)
