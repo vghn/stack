@@ -5,15 +5,16 @@ Parameters:
     Default: production
     Description: The environment type
     Type: String
-  AccountName:
-    Type: String
-    Description: "The name on this account"
   MaxMonthlyExpenseInDollars:
     Type: Number
     Description: >
       The maximum dollars to spend in the account per month before an
       alarm is triggered.
     Default: 10
+  RecipientEmailAddress:
+    Type: String
+    Description: >
+      The email recipient for all billing alarms.
 
 Resources:
   Alarm:
@@ -21,7 +22,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !ImportValue NotificationsARN
+        - !Ref AlertingTopic
       AlarmDescription: >
         Alarm for billing overusage of this account.
       ComparisonOperator: GreaterThanThreshold
@@ -32,7 +33,15 @@ Resources:
       MetricName: EstimatedCharges
       Namespace: "AWS/Billing"
       OKActions:
-        - !ImportValue NotificationsARN
+        - !Ref AlertingTopic
       Period: 21600 # 6 hours
       Statistic: Maximum
       Threshold: !Ref MaxMonthlyExpenseInDollars
+
+  AlertingTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: Billing Alerts
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref RecipientEmailAddress
