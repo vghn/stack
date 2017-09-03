@@ -72,7 +72,6 @@ stack_process_cli(){
           ;;
         delete)
           cfn_delete_stack
-          cfn_wait_for_stack
           ;;
         validate)
           cfn_validate_stack
