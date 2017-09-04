@@ -36,7 +36,6 @@ get_cfn_defaults(){
       depends_on='notications'
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
-      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
     docker_cloud)
       export AWS_PROFILE='main'
