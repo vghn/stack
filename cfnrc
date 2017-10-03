@@ -27,7 +27,9 @@ get_cfn_defaults(){
       name='BillingAlarms'
       body="${AWS_CFN_STACKS_PATH}/billing.yml"
       depends_on=''
-      P="${P} 'ParameterKey=MaxMonthlyExpenseInDollars,ParameterValue=${AWS_BUDGET}'"
+      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
+      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
+      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
       P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
     cloudtrail)

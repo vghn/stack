@@ -5,26 +5,38 @@ Parameters:
     Default: production
     Description: The environment type
     Type: String
-  MaxMonthlyExpenseInDollars:
+  LowMonthlyExpense:
     Type: Number
     Description: >
-      The maximum dollars to spend in the account per month before an
-      alarm is triggered.
-    Default: 10
+      The lowest trigger for the maximum amount to spend in the account
+      per month (in dollars).
+    Default: 3
+  MedMonthlyExpense:
+    Type: Number
+    Description: >
+      The medium trigger for the maximum amount to spend in the account
+      per month (in dollars).
+    Default: 6
+  MaxMonthlyExpense:
+    Type: Number
+    Description: >
+      The maximum amount to spend in the account per month before an
+      alarm is triggered (in dollars).
+    Default: 9
   RecipientEmailAddress:
     Type: String
     Description: >
       The email recipient for all billing alarms.
 
 Resources:
-  Alarm:
+  Low:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmActions:
         - !Ref AlertingTopic
       AlarmDescription: >
-        Alarm for billing overusage of this account.
+        Alarm for billing overuse of this account.
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: Currency
@@ -36,7 +48,47 @@ Resources:
         - !Ref AlertingTopic
       Period: 21600 # 6 hours
       Statistic: Maximum
-      Threshold: !Ref MaxMonthlyExpenseInDollars
+      Threshold: !Ref LowMonthlyExpense
+  Med:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AlertingTopic
+      AlarmDescription: >
+        Alarm for billing overuse of this account.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Currency
+          Value: USD
+      EvaluationPeriods: 1
+      MetricName: EstimatedCharges
+      Namespace: "AWS/Billing"
+      OKActions:
+        - !Ref AlertingTopic
+      Period: 21600 # 6 hours
+      Statistic: Maximum
+      Threshold: !Ref MedMonthlyExpense
+  Max:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AlertingTopic
+      AlarmDescription: >
+        Alarm for billing overuse of this account.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Currency
+          Value: USD
+      EvaluationPeriods: 1
+      MetricName: EstimatedCharges
+      Namespace: "AWS/Billing"
+      OKActions:
+        - !Ref AlertingTopic
+      Period: 21600 # 6 hours
+      Statistic: Maximum
+      Threshold: !Ref MaxMonthlyExpense
 
   AlertingTopic:
     Type: AWS::SNS::Topic
