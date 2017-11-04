@@ -6,12 +6,12 @@ services:
     hostname: lb
     command: >-
       --configfile=/dev/null
-      --web --web.address="0.0.0.0:8888"
+      --web --web.address=0.0.0.0:8888
       --docker --docker.swarmmode --docker.domain=traefik --docker.watch
-      --defaultentrypoints='http,https'
-      --entryPoints='Name:http Address::80 Redirect.EntryPoint:https'
-      --entryPoints='Name:https Address::443 TLS'
-      --acme --acme.email='webmaster@ghn.me' --acme.domains='rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me' --acme.entryPoint=https --acme.storage=/certs/acme.json
+      --defaultentrypoints=http,https
+      --entryPoints="Name:http Address::80 Redirect.EntryPoint:https"
+      --entryPoints="Name:https Address::443 TLS"
+      --acme --acme.email=webmaster@ghn.me --acme.domains=rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me --acme.entryPoint=https --acme.storage=/certs/acme.json
     ports:
       - '80:80'
       - '443:443'
