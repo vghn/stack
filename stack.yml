@@ -183,19 +183,19 @@ services:
       placement:
         constraints:
           - node.labels.role == rhea
-  log:
-    image: gliderlabs/logspout:v3.2.2
-    hostname: log-agent
-    environment:
-      BACKLOG: 'false'
-      EXCLUDE_LABEL: 'logspout.exclude'
-    command: syslog+tls://logs4.papertrailapp.com:11854
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - backend
-    deploy:
-      mode: global
+  # log:
+    # image: gliderlabs/logspout:v3.2.2
+    # hostname: log-agent
+    # environment:
+      # BACKLOG: 'false'
+      # EXCLUDE_LABEL: 'logspout.exclude'
+    # command: syslog+tls://logs4.papertrailapp.com:11854
+    # volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock
+    # networks:
+      # - backend
+    # deploy:
+      # mode: global
 
 secrets:
   aws_credentials_rhea:
