@@ -41,7 +41,7 @@ cfn_validate_stack(){
   e_info "Validating ${body:-}"
   aws cloudformation validate-template \
     --output table \
-    --template-body "file://${body:-}"
+    --template-body "file://${AWS_CFN_STACKS_PATH}/${body:-}"
 }
 
 # Wait for stack to finish

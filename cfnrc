@@ -25,30 +25,50 @@ get_cfn_defaults(){
   case "$stack" in
     billing)
       name='BillingAlarms'
-      body="${AWS_CFN_STACKS_PATH}/billing.yml"
+      body='billing.yml'
       depends_on=''
       P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
       P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
       P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
       P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
+    mec7-billing)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='BillingAlarms'
+      body='billing.yml'
+      depends_on=''
+      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
+      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
+      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
+      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
+      ;;
     cloudtrail)
       name='CloudTrail'
-      body="${AWS_CFN_STACKS_PATH}/cloudtrail.yml"
+      body='cloudtrail.yml'
       depends_on='notications'
+      A='--capabilities CAPABILITY_IAM'
+      P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
+      ;;
+    mec7-cloudtrail)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='CloudTrail'
+      body='cloudtrail.yml'
+      depends_on='mec7-notications'
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
       ;;
     docker_cloud)
       export AWS_PROFILE='main'
       name='DockerCloud'
-      body="${AWS_CFN_STACKS_PATH}/docker_cloud.yml"
+      body='docker_cloud.yml'
       depends_on=
       A='--capabilities CAPABILITY_IAM'
       ;;
     efs)
       name='EFS'
-      body="${AWS_CFN_STACKS_PATH}/efs.yml"
+      body='efs.yml'
       depends_on='vpc,sg'
       P="${P} 'ParameterKey=VolumeName,ParameterValue=${PROJECT_NAME}'"
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
@@ -57,7 +77,7 @@ get_cfn_defaults(){
       ;;
     elb)
       name='ELB'
-      body="${AWS_CFN_STACKS_PATH}/elb.yml"
+      body='elb.yml'
       depends_on='vpc,sg'
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG ELBSecurityGroup)\"'"
@@ -65,15 +85,23 @@ get_cfn_defaults(){
       ;;
     iam)
       name='IAM'
-      body="${AWS_CFN_STACKS_PATH}/iam.yml"
+      body='iam.yml'
       depends_on=
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
+    mec7-iam)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='IAM'
+      body='mec7_iam.yml'
+      depends_on=
+      A='--capabilities CAPABILITY_IAM'
+      ;;
     main)
       export AWS_PROFILE='main'
       name='VGH'
-      body="${AWS_CFN_STACKS_PATH}/main.yml"
+      body='main.yml'
       depends_on='iam'
       A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_MAIN_ASSETS_BUCKET}'"
@@ -84,13 +112,21 @@ get_cfn_defaults(){
       ;;
     notifications)
       name='Notifications'
-      body="${AWS_CFN_STACKS_PATH}/notifications.yml"
+      body='notifications.yml'
       depends_on=
       P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
+    mec7-notifications)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='Notifications'
+      body='notifications.yml'
+      depends_on=
+      P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
+      ;;
     puppetdb)
       name='PuppetDB'
-      body="${AWS_CFN_STACKS_PATH}/puppetdb.yml"
+      body='puppetdb.yml'
       depends_on='vpc,sg'
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG PuppetDBSecurityGroup)\"'"
@@ -100,7 +136,7 @@ get_cfn_defaults(){
       ;;
     rds)
       name='RDS'
-      body="${AWS_CFN_STACKS_PATH}/rds.yml"
+      body='rds.yml'
       depends_on='vpc,sg'
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
@@ -111,7 +147,7 @@ get_cfn_defaults(){
       ;;
     rhea)
       name='RHEA'
-      body="${AWS_CFN_STACKS_PATH}/rhea.yml"
+      body='rhea.yml'
       depends_on='vpc,sg,iam,elb'
       P="${P} 'ParameterKey=Version,ParameterValue=${VERSION}-${GIT_SHA1}'"
       P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
@@ -126,14 +162,46 @@ get_cfn_defaults(){
       ;;
     sg)
       name='SG'
-      body="${AWS_CFN_STACKS_PATH}/sg.yml"
+      body='sg.yml'
       depends_on='vpc'
       P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
+    mec7-sg)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='SG'
+      body='mec7_sg.yml'
+      depends_on='mec7-vpc'
+      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${MEC7_TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
+      ;;
+    mec7-unifi)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      export AWS_EC2_KEY='mec7'
+      name='UNIFI'
+      body='mec7_unifi.yml'
+      depends_on='mec7-vpc,mev7-sg,mec7-iam'
+      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
+      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
+      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
+      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM UnifiInstanceProfile)\"'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG UnifiSecurityGroup)\"'"
+      ;;
     vpc)
       name='VPC'
-      body="${AWS_CFN_STACKS_PATH}/vpc.yml"
+      body='vpc.yml'
+      depends_on=
+      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
+      ;;
+    mec7-vpc)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      export AWS_AZ_NUMBER='2'
+      name='VPC'
+      body='vpc.yml'
       depends_on=
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       ;;
@@ -142,7 +210,7 @@ get_cfn_defaults(){
       ;;
   esac
 
-  export cfn_cmd="--stack-name ${name} --template-body file://${body} ${A} --parameters ${P} --tags ${T}"
+  export cfn_cmd="--stack-name ${name} --template-body file://${AWS_CFN_STACKS_PATH}/${body} ${A} --parameters ${P} --tags ${T}"
 }
 
 clear_cfn_defaults(){

@@ -1,0 +1,113 @@
+Description: VGH MEC7 SG
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  TrustedIPs:
+    Description: The IP address ranges that can be trusted
+    Type: CommaDelimitedList
+  VPCId:
+    Description: The VPC ID
+    Type: AWS::EC2::VPC::Id
+
+Resources:
+  UnifiSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Unifi Firewall
+      VpcId: !Ref VPCId
+  UnifiSecurityGroupAllowSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '0'
+      ToPort: '65535'
+      IpProtocol: tcp
+      SourceSecurityGroupId: !GetAtt UnifiSecurityGroup.GroupId
+  UnifiSecurityGroupAllowSSH:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '22'
+      ToPort: '22'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+  UnifiSecurityGroupAllowTrustedIPs1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '22'
+      ToPort: '22'
+      IpProtocol: tcp
+      CidrIp: !Select ['0', !Ref TrustedIPs]
+  UnifiSecurityGroupAllowTrustedIPs2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '22'
+      ToPort: '22'
+      IpProtocol: tcp
+      CidrIp: !Select ['1', !Ref TrustedIPs]
+  UnifiSecurityGroupAllow8080:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '8080'
+      ToPort: '8080'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+  UnifiSecurityGroupAllow8443:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '8443'
+      ToPort: '8443'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+  UnifiSecurityGroupAllow8843:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '8843'
+      ToPort: '8843'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+  UnifiSecurityGroupAllow8880:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '8880'
+      ToPort: '8880'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+  UnifiSecurityGroupAllow6789:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '6789'
+      ToPort: '6789'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+  UnifiSecurityGroupAllow3478:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '3478'
+      ToPort: '3478'
+      IpProtocol: udp
+      CidrIp: 0.0.0.0/0
+  UnifiSecurityGroupAllow10001:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt UnifiSecurityGroup.GroupId
+      FromPort: '10001'
+      ToPort: '10001'
+      IpProtocol: udp
+      CidrIp: 0.0.0.0/0
+
+Outputs:
+  UnifiSecurityGroup:
+    Description: The Unifi security group
+    Value: !Ref UnifiSecurityGroup
