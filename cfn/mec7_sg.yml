@@ -98,13 +98,13 @@ Resources:
       ToPort: '3478'
       IpProtocol: udp
       CidrIp: 0.0.0.0/0
-  UnifiSecurityGroupAllow10001:
+  UnifiSecurityGroupAllowLogs:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !GetAtt UnifiSecurityGroup.GroupId
-      FromPort: '10001'
-      ToPort: '10001'
-      IpProtocol: udp
+      FromPort: '10514'
+      ToPort: '10514'
+      IpProtocol: tcp
       CidrIp: 0.0.0.0/0
 
 Outputs:
