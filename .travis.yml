@@ -13,11 +13,14 @@ cache:
   directories:
   - vendor/bundle
   - "$HOME/.cache/pip"
-install:
-- bin/stack ci install
-script:
-- bin/stack ci test
-- bin/stack ci deploy
+jobs:
+  include:
+    - stage: install
+      script: bin/stack ci install
+    - stage: test
+      script: bin/stack ci test
+    - stage: deploy
+      script: bin/stack ci deploy
 notifications:
   slack:
     secure: jJ3ZVC1hxVShU5PI9CtUuDB6sTxjjE0AnNAUMJmE2QqNMWztUOYrdHkcahYv8xi4ebPs78tb8d9zMSWQqyCCqcHdZFnfTd/TLpKu184C+Jh1fyu9asLe6rnHLwsDPFzQKz9cfGQK60JEWOrHJD4eJMB35U6W1UT+oTaWod4AR/tmbzkDg5jfcwfH9+DLor6iI2KmAcAHAUP/v6nL2pJBp5codwjwDXSmTV95xP60lguL6MQefz6Wh+0k+KtDZ1RX7omugd4rbCAGwji2m9oL+JbFW9ABERfLL6ohUiE7UJQpGo//vnbF+hox0xuTL73ZEPFVQ7/T3K6tyCrbVy9HxHjCKWivJXHGQY7wNPfIS7xRKG1FBv5kFyawXr//Yg/LvaGCQc0oYrUdwGh177yl/TH7g0nbZwPH0oFud2f340RB1DMTFIkxWGOuhC6LALln6yqbh0+STjN89xUIqUB7JBbl2QANUX1vFvNj8/FeDfTV4G+wMz40FJfb5ds+nKTOq1r03wuq8C1o5BdwxVc9L2KOsrKsQ7GQwmS8k2LQTKXIUNTpoOzvFG2kdFruM0pYafm9mCQYtUQogsy7ahPDbv0zlTq0P4EX5xbup8JjO3rQrBy80WTpLwZnEx+sgaSk9+tsDzfSXGc3b9x7DndktopUCEe0yK/aEn+cCY8T6TM=
