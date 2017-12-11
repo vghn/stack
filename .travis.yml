@@ -15,11 +15,8 @@ cache:
   - "$HOME/.cache/pip"
 jobs:
   include:
-    - stage: install
-      script: bin/stack ci install
-    - stage: test
+    - script: bin/stack ci install
       script: bin/stack ci test
-    - stage: deploy
       script: bin/stack ci deploy
 notifications:
   slack:
