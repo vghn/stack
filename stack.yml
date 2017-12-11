@@ -13,6 +13,7 @@ services:
       --entryPoints="Name:https Address::443 TLS"
       --acme --acme.email=webmaster@ghn.me
       --acme.domains=rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me
+      --acme.domains=vps159021.vps.ovh.ca
       --acme.entryPoint=https
       --acme.storage=/certs/acme.json
     ports:
