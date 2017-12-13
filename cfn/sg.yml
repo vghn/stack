@@ -13,36 +13,6 @@ Parameters:
     Type: AWS::EC2::VPC::Id
 
 Resources:
-  PuppetDBSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: PuppetDB RDS Firewall
-      VpcId: !Ref VPCId
-  PuppetDBSecurityGroupAllowAccess:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !GetAtt PuppetDBSecurityGroup.GroupId
-      FromPort: '5432'
-      ToPort: '5432'
-      IpProtocol: tcp
-      SourceSecurityGroupId: !GetAtt RheaSecurityGroup.GroupId
-  PuppetDBSecurityGroupAllowTrustedIPs1:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !GetAtt PuppetDBSecurityGroup.GroupId
-      FromPort: '5432'
-      ToPort: '5432'
-      IpProtocol: tcp
-      CidrIp: !Select ['0', !Ref TrustedIPs]
-  PuppetDBSecurityGroupAllowTrustedIPs2:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !GetAtt PuppetDBSecurityGroup.GroupId
-      FromPort: '5432'
-      ToPort: '5432'
-      IpProtocol: tcp
-      CidrIp: !Select ['1', !Ref TrustedIPs]
-
   DBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -132,9 +102,6 @@ Resources:
       SourceSecurityGroupId: !GetAtt RheaSecurityGroup.GroupId
 
 Outputs:
-  PuppetDBSecurityGroup:
-    Description: The PuppetDB security group
-    Value: !Ref PuppetDBSecurityGroup
   DBSecurityGroup:
     Description: The Relational Database Service security group
     Value: !Ref DBSecurityGroup

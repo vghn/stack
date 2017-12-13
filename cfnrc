@@ -2,7 +2,8 @@
 # AWS CloudFormation Defaults
 
 # Defaults
-export STACKS='billing cloudtrail docker_cloud efs elb iam main notifications puppetdb rds rhea sg vpc'
+export STACKS="billing cloudtrail docker_cloud efs elb iam main notifications \
+puppetdb puppetsg rds rhea sg vpc"
 
 get_cfn_defaults(){
   local stack A P T
@@ -157,14 +158,23 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
     puppetdb)
+      export AWS_PROFILE='aws2017a'
       name='PuppetDB'
-      body='puppetdb.yml'
+      body='puppet/db.yml'
       depends_on='vpc,sg'
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG PuppetDBSecurityGroup)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output PuppetSG SecurityGroup)\"'"
       P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME}'"
       P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER}'"
       P="${P} 'ParameterKey=DBPassword,ParameterValue=${PP_DB_PASS}'"
+      ;;
+    puppetsg)
+      export AWS_PROFILE='aws2017a'
+      name='PuppetSG'
+      body='puppet/sg.yml'
+      depends_on='vpc'
+      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     rds)
       name='RDS'
@@ -193,6 +203,7 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=ControlRepoArchive,ParameterValue=s3://${AWS_ASSETS_BUCKET}/${PP_ARTIFACT}'"
       ;;
     sg)
+      export AWS_PROFILE='aws2017a'
       name='SG'
       body='sg.yml'
       depends_on='vpc'
