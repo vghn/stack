@@ -50,7 +50,7 @@ Resources:
           echo 'IN_PROGRESS' | tee /var/lib/cloud/instance/status_cfn
 
           echo 'Update APT'
-          while ! apt-get -qy update; do echo 'Waiting for APT; sleep 1; done
+          while ! apt-get -qy update; do echo 'Waiting for APT'; sleep 1; done
 
           echo 'Ensure Python PIP is installed'
           command -v pip >/dev/null 2>&1 || apt-get -qy install python-pip
