@@ -32,30 +32,10 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
       P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
-    mec7-billing)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='BillingAlarms'
-      body='billing.yml'
-      depends_on=''
-      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
-      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
-      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
-      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
-      ;;
     cloudtrail)
       name='CloudTrail'
       body='cloudtrail.yml'
       depends_on='notications'
-      A='--capabilities CAPABILITY_IAM'
-      P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
-      ;;
-    mec7-cloudtrail)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='CloudTrail'
-      body='cloudtrail.yml'
-      depends_on='mec7-notications'
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
       ;;
@@ -90,14 +70,6 @@ get_cfn_defaults(){
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
-    mec7-iam)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='IAM'
-      body='mec7_iam.yml'
-      depends_on=
-      A='--capabilities CAPABILITY_IAM'
-      ;;
     main)
       export AWS_PROFILE='main'
       name='VGH'
@@ -110,11 +82,33 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_MAIN_RHEA_USER}'"
       P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_MAIN_MINI_USER}'"
       ;;
-    notifications)
-      name='Notifications'
-      body='notifications.yml'
+    mec7-billing)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='BillingAlarms'
+      body='billing.yml'
+      depends_on=''
+      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
+      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
+      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
+      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
+      ;;
+    mec7-cloudtrail)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='CloudTrail'
+      body='cloudtrail.yml'
+      depends_on='mec7-notications'
+      A='--capabilities CAPABILITY_IAM'
+      P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
+      ;;
+    mec7-iam)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='IAM'
+      body='mec7_iam.yml'
       depends_on=
-      P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
+      A='--capabilities CAPABILITY_IAM'
       ;;
     mec7-notifications)
       export AWS_PROFILE='mec7'
@@ -123,6 +117,44 @@ get_cfn_defaults(){
       body='notifications.yml'
       depends_on=
       P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
+      ;;
+    mec7-sg)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      name='SG'
+      body='mec7_sg.yml'
+      depends_on='mec7-vpc'
+      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${MEC7_TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
+      ;;
+    mec7-unifi)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      export AWS_EC2_KEY='mec7'
+      name='UNIFI'
+      body='mec7_unifi.yml'
+      depends_on='mec7-vpc,mev7-sg,mec7-iam'
+      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
+      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
+      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
+      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM UnifiInstanceProfile)\"'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG UnifiSecurityGroup)\"'"
+      ;;
+    mec7-vpc)
+      export AWS_PROFILE='mec7'
+      export AWS_DEFAULT_REGION='us-west-1'
+      export AWS_AZ_NUMBER='2'
+      name='VPC'
+      body='vpc.yml'
+      depends_on=
+      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
+      ;;
+    notifications)
+      name='Notifications'
+      body='notifications.yml'
+      depends_on=
+      P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
     puppetdb)
       name='PuppetDB'
@@ -167,39 +199,7 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
-    mec7-sg)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='SG'
-      body='mec7_sg.yml'
-      depends_on='mec7-vpc'
-      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
-      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${MEC7_TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
-      ;;
-    mec7-unifi)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      export AWS_EC2_KEY='mec7'
-      name='UNIFI'
-      body='mec7_unifi.yml'
-      depends_on='mec7-vpc,mev7-sg,mec7-iam'
-      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
-      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
-      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
-      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM UnifiInstanceProfile)\"'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG UnifiSecurityGroup)\"'"
-      ;;
     vpc)
-      name='VPC'
-      body='vpc.yml'
-      depends_on=
-      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
-      ;;
-    mec7-vpc)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      export AWS_AZ_NUMBER='2'
       name='VPC'
       body='vpc.yml'
       depends_on=
