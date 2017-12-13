@@ -16,7 +16,11 @@ Vtasks::TravisCI.new
 namespace :stack do
   desc 'Updates docker compose environment'
   task :update do
-    sh "ENVTYPE=production bin/stack ci deploy"
+    sh 'ENVTYPE=production bin/stack ci deploy'
+  end
+  desc 'Encrypts .env'
+  task :env do
+    sh 'echo "$TRAVIS_KEY_STACK" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env'
   end
 end
 
