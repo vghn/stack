@@ -1,4 +1,4 @@
-Description: VGH RDS PuppetDB
+Description: VGH PuppetDB RDS
 
 Parameters:
   EnvType:
