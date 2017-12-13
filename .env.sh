@@ -78,6 +78,9 @@ export AWS_RDS_DB_NAME="${AWS_RDS_DB_NAME:-db}"
 export AWS_RDS_DB_USER="${AWS_RDS_DB_USER:-admin}"
 export AWS_RDS_DB_PASS="${AWS_RDS_DB_PASS:-ChangeMe}"
 
+# Prometheus
+export PROMETHEUS_ASSETS_BUCKET="${PROMETHEUS_ASSETS_BUCKET:-}"
+
 # Puppet
 export PP_SERVER="${PP_SERVER:-puppet.ghn.me}"
 export PP_ARTIFACT="artifacts/vpm_${ENVTYPE}.tgz"

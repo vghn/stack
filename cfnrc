@@ -157,6 +157,35 @@ get_cfn_defaults(){
       depends_on=
       P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
+    prometheus)
+      export AWS_PROFILE='aws2017a'
+      export AWS_EC2_KEY='vgh'
+      name='Prometheus'
+      body='prometheus/main.yml'
+      depends_on='vpc,prometheus-iam,prometheus-sg'
+      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
+      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
+      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
+      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output PrometheusIAM InstanceProfile)\"'"
+      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
+      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output PrometheusSG SecurityGroup)\"'"
+      ;;
+    prometheus-iam)
+      export AWS_PROFILE='aws2017a'
+      name='PrometheusIAM'
+      body='prometheus/iam.yml'
+      depends_on=
+      A='--capabilities CAPABILITY_IAM'
+      P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${PROMETHEUS_ASSETS_BUCKET}'"
+      ;;
+    prometheus-sg)
+      export AWS_PROFILE='aws2017a'
+      name='PrometheusSG'
+      body='prometheus/sg.yml'
+      depends_on='vpc'
+      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
+      ;;
     puppetdb)
       export AWS_PROFILE='aws2017a'
       name='PuppetDB'

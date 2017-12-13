@@ -1,0 +1,92 @@
+Description: Prometheus IAM
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  AssetsBucket:
+    Description: The S3 bucket containing the assets
+    Type: String
+
+Resources:
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+      - !Ref InstanceRole
+      Path: /
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Path: /
+      Policies:
+      - PolicyName: InstancePolicies
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - ec2:Describe*
+            - autoscaling:Describe*
+            - autoscaling:EnterStandby
+            - autoscaling:ExitStandby
+            - elasticloadbalancing:ConfigureHealthCheck
+            - elasticloadbalancing:DescribeLoadBalancers
+            Effect: Allow
+            Resource: '*'
+            Sid: AllowScalingOperations
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource:
+            - arn:aws:logs:*:*:*
+            Sid: AllowLogging
+          - Action:
+            - ssm:DescribeParameters
+            Effect: Allow
+            Resource: '*'
+            Sid: AllowListingParameters
+          - Action:
+            - ssm:GetParameters
+            Effect: Allow
+            Resource: arn:aws:ssm:*:*:parameter/prometheus/*
+            Sid: AllowGettingParameters
+          - Action:
+              - kms:ListKeys
+              - kms:ListAliases
+              - kms:Describe*
+              - kms:Decrypt
+            Effect: Allow
+            Resource: arn:aws:kms:*:*:alias/aws/ssm
+            Sid: AllowKMSDecryption
+          - Action: s3:ListAllMyBuckets
+            Effect: Allow
+            Resource: arn:aws:s3:::*
+            Sid: AllowS3ListAllBuckets
+          - Action: '*'
+            Effect: Allow
+            Resource:
+              - !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket]]
+              - !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket, '/*']]
+            Sid: AllowS3AccessToAssetsBucket
+
+Outputs:
+  InstanceProfile:
+    Description: The Instance Profile
+    Value: !Ref InstanceProfile
+  InstanceRole:
+    Description: The instance role name
+    Value: !Ref InstanceRole
