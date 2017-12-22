@@ -27,10 +27,27 @@ Parameters:
 
 Resources:
   EIP:
-    Type: 'AWS::EC2::EIP'
+    Type: AWS::EC2::EIP
     Properties:
       InstanceId: !Ref Instance
       Domain: vpc
+
+  Volume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: 10
+      VolumeType: gp2
+      AvailabilityZone: !GetAtt Instance.AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: Prometheus
+
+  MountPoint:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref Instance
+      VolumeId: !Ref Volume
+      Device: /dev/sdg
 
   Instance:
     Type: AWS::EC2::Instance
@@ -41,6 +58,9 @@ Resources:
       SecurityGroupIds: !Ref SecurityGroupIDs
       SubnetId: !Select ['0',  !Ref SubnetIDs]
       IamInstanceProfile: !Ref IamInstanceProfile
+      Tags:
+        - Key: Name
+          Value: Prometheus
       UserData:
         Fn::Base64: !Sub |
           #!/usr/bin/env bash

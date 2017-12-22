@@ -34,6 +34,22 @@ Resources:
       ToPort: '22'
       IpProtocol: tcp
       CidrIp: 0.0.0.0/0
+  SecurityGroupAllowHTTP:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt SecurityGroup.GroupId
+      FromPort: '80'
+      ToPort: '80'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+  SecurityGroupAllowHTTPS:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt SecurityGroup.GroupId
+      FromPort: '443'
+      ToPort: '443'
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
   SecurityGroupAllowTrustedIPs1:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
