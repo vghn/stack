@@ -3,7 +3,7 @@
 
 # Defaults
 export STACKS="billing cloudtrail docker_cloud efs elb iam main notifications \
-puppetdb puppetsg rds rhea sg vpc"
+prometheus prometheus-iam prometheus-sg puppetdb puppetsg rds rhea sg vpc"
 
 get_cfn_defaults(){
   local stack A P T
