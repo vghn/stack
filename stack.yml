@@ -28,6 +28,8 @@ services:
     networks:
       - frontend
       - encrypted
+    labels:
+      container_group: lbs
     deploy:
       placement:
         constraints:
@@ -43,15 +45,17 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - encrypted
+    labels:
+      container_group: webhooks
     deploy:
-      labels:
-        - "traefik.tags=webhook"
-        - "traefik.port=8523"
-        - "traefik.frontend.rule=HostRegexp:{subdomain:[a-z]+}.ghn.me;PathPrefix:/"
-        - "traefik.backend.loadbalancer.sticky=true"
       placement:
         constraints:
           - node.labels.role == rhea
+      labels:
+        traefik.tags: 'webhook'
+        traefik.port: '8523'
+        traefik.frontend.rule: 'HostRegexp:vps159021.vps.ovh.ca,{subdomain:[a-z]+}.ghn.me;PathPrefix:/'
+        traefik.backend.loadbalancer.sticky: 'true'
   puppet:
     image: vladgh/ps:latest
     hostname: puppet.ghn.me
@@ -77,6 +81,8 @@ services:
         published: 8140
     networks:
       - puppet
+    labels:
+      container_group: puppet
     deploy:
       placement:
         constraints:
@@ -99,6 +105,8 @@ services:
         published: 8001
     networks:
       - puppet
+    labels:
+      container_group: puppet
     deploy:
       placement:
         constraints:
@@ -112,6 +120,8 @@ services:
         published: 8000
     networks:
       - puppet
+    labels:
+      container_group: puppet
     deploy:
       placement:
         constraints:
@@ -129,6 +139,8 @@ services:
       - ssl:/sync
     networks:
       - backend
+    labels:
+      container_group: puppet
     deploy:
       placement:
         constraints:
@@ -136,8 +148,6 @@ services:
   r10k:
     image: vladgh/r10k:latest
     hostname: r10k-agent
-    labels:
-      r10k: 'true'
     environment:
       REMOTE: 'https://github.com/vghn/puppet.git'
       CRON_TIME: '10 * * * *'
@@ -147,6 +157,9 @@ services:
       - /var/cache/r10k
     networks:
       - backend
+    labels:
+      container_group: puppet
+      r10k: 'true'
     deploy:
       placement:
         constraints:
@@ -170,6 +183,8 @@ services:
       - /var/lib/docker/swarm:/backup/swarm           # Swarm state
     networks:
       - backend
+    labels:
+      container_group: backup
     deploy:
       placement:
         constraints:
@@ -186,6 +201,8 @@ services:
       - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
     networks:
       - backend
+    labels:
+      container_group: logs
     deploy:
       mode: global
 
@@ -207,11 +224,8 @@ secrets:
 
 volumes:
   ssl:
-    driver: local
   code:
-    driver: local
   certs:
-    driver: local
 
 networks:
   frontend:
