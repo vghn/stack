@@ -205,6 +205,24 @@ services:
       container_group: logs
     deploy:
       mode: global
+  cadvisor:
+    image: google/cadvisor:v0.28.3
+    volumes:
+      - /:/rootfs:ro
+      - /dev/disk/:/dev/disk:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:rw
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - mode: host
+        target: 8080
+        published: 9101
+    networks:
+      - backend
+    labels:
+      container_group: monitoring
+    deploy:
+      mode: global
 
 secrets:
   aws_credentials_rhea:
