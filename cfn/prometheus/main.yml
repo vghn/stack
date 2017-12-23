@@ -67,26 +67,15 @@ Resources:
           set -euo pipefail
           IFS=$'\n\t'
 
+          set -x
+          export DEBIAN_FRONTEND=noninteractive
+
           echo 'Update APT'
-          while ! apt-get -qy update; do echo 'Waiting for APT'; sleep 1; done
+          while ! apt-get -y update; do echo 'Waiting for APT' ; sleep 1; done
 
-          echo 'Ensure Python PIP is installed and updated'
-          command -v pip >/dev/null 2>&1 || apt-get -qy install python-pip
-          pip install --upgrade pip setuptools
-
-          echo 'Ensure CloudFormation helper scripts are installed'
-          [[ -x /usr/local/bin/cfn-init ]] || pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-
-          echo 'Ensure AWSCLI is installed'
-          [[ -x /usr/local/bin/aws ]] || pip install --upgrade awscli
-
-          echo 'Install Docker CE'
-          curl -fsSL get.docker.com | sudo sh
-          usermod -aG docker ubuntu
-
-          echo 'Install Docker Compose'
-          curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
+          # Upgrade system
+          apt-get -qy dist-upgrade
+          apt-get -qy autoremove --purge
 
 Outputs:
   PublicIP:
