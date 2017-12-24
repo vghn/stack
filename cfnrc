@@ -27,7 +27,6 @@ get_cfn_defaults(){
     billing)
       name='BillingAlarms'
       body='billing.yml'
-      depends_on=''
       P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
       P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
       P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
@@ -44,7 +43,6 @@ get_cfn_defaults(){
       export AWS_PROFILE='main'
       name='DockerCloud'
       body='docker_cloud.yml'
-      depends_on=
       A='--capabilities CAPABILITY_IAM'
       ;;
     efs)
@@ -67,7 +65,6 @@ get_cfn_defaults(){
     iam)
       name='IAM'
       body='iam.yml'
-      depends_on=
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
@@ -88,7 +85,6 @@ get_cfn_defaults(){
       export AWS_DEFAULT_REGION='us-west-1'
       name='BillingAlarms'
       body='billing.yml'
-      depends_on=''
       P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
       P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
       P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
@@ -107,8 +103,7 @@ get_cfn_defaults(){
       export AWS_PROFILE='mec7'
       export AWS_DEFAULT_REGION='us-west-1'
       name='IAM'
-      body='mec7_iam.yml'
-      depends_on=
+      body='mec7/iam.yml'
       A='--capabilities CAPABILITY_IAM'
       ;;
     mec7-notifications)
@@ -116,14 +111,13 @@ get_cfn_defaults(){
       export AWS_DEFAULT_REGION='us-west-1'
       name='Notifications'
       body='notifications.yml'
-      depends_on=
       P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
       ;;
     mec7-sg)
       export AWS_PROFILE='mec7'
       export AWS_DEFAULT_REGION='us-west-1'
       name='SG'
-      body='mec7_sg.yml'
+      body='mec7/sg.yml'
       depends_on='mec7-vpc'
       P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${MEC7_TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
@@ -133,7 +127,7 @@ get_cfn_defaults(){
       export AWS_DEFAULT_REGION='us-west-1'
       export AWS_EC2_KEY='mec7'
       name='UNIFI'
-      body='mec7_unifi.yml'
+      body='mec7/unifi.yml'
       depends_on='mec7-vpc,mev7-sg,mec7-iam'
       P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
       P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
@@ -148,13 +142,11 @@ get_cfn_defaults(){
       export AWS_AZ_NUMBER='2'
       name='VPC'
       body='vpc.yml'
-      depends_on=
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       ;;
     notifications)
       name='Notifications'
       body='notifications.yml'
-      depends_on=
       P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
       ;;
     prometheus)
@@ -174,7 +166,6 @@ get_cfn_defaults(){
       export AWS_PROFILE='aws2017a'
       name='PrometheusIAM'
       body='prometheus/iam.yml'
-      depends_on=
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${PROMETHEUS_ASSETS_BUCKET}'"
       ;;
@@ -242,7 +233,6 @@ get_cfn_defaults(){
     vpc)
       name='VPC'
       body='vpc.yml'
-      depends_on=
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       ;;
     *)
