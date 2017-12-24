@@ -14,11 +14,14 @@ Parameters:
   SecretsBucketName:
     Description: The S3 bucket containing the secrets
     Type: String
-  RheaUserName:
-    Description: Rhea user name
-    Type: String
   MiniUserName:
     Description: Mini user name
+    Type: String
+  PrometheusUserName:
+    Description: Prometheus user name
+    Type: String
+  RheaUserName:
+    Description: Rhea user name
     Type: String
 
 Resources:
@@ -36,6 +39,14 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+        - Sid: DenyUnEncryptedInflightOperations
+          Effect: Deny
+          Principal: "*"
+          Action: s3:*
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, "/*"]]
+          Condition:
+            Bool:
+              aws:SecureTransport: false
         - Sid: AllowListing
           Effect: Allow
           Principal:
@@ -52,15 +63,7 @@ Resources:
           - s3:PutObject
           - s3:GetObject
           - s3:DeleteObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, '/*']]
-        - Sid: DenyUnEncryptedInflightOperations
-          Effect: Deny
-          Principal: "*"
-          Action: s3:*
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, '/*']]
-          Condition:
-            Bool:
-              aws:SecureTransport: false
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, "/*"]]
   BackupBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -101,24 +104,24 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+        - Sid: DenyUnEncryptedInflightOperations
+          Effect: Deny
+          Principal: "*"
+          Action: s3:*
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/*"]]
+          Condition:
+            Bool:
+              aws:SecureTransport: false
         - Sid: AllowListing
           Effect: Allow
           Principal:
             AWS:
-            - !GetAtt [RheaUser, Arn]
             - !GetAtt [MiniUser, Arn]
+            - !GetAtt [PrometheusUser, Arn]
+            - !GetAtt [RheaUser, Arn]
           Action:
           - s3:ListBucket
           Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName]]
-        - Sid: AlowRhea
-          Effect: Allow
-          Principal:
-            AWS: !GetAtt [RheaUser, Arn]
-          Action:
-          - s3:PutObject
-          - s3:GetObject
-          - s3:DeleteObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/rhea/*']]
         - Sid: AlowMini
           Effect: Allow
           Principal:
@@ -127,15 +130,25 @@ Resources:
           - s3:PutObject
           - s3:GetObject
           - s3:DeleteObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/mini/*']]
-        - Sid: DenyUnEncryptedInflightOperations
-          Effect: Deny
-          Principal: "*"
-          Action: s3:*
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/*']]
-          Condition:
-            Bool:
-              aws:SecureTransport: false
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/mini/*"]]
+        - Sid: AlowPrometheus
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt [PrometheusUser, Arn]
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          - s3:DeleteObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/prometheus/*"]]
+        - Sid: AlowRhea
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt [RheaUser, Arn]
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          - s3:DeleteObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/rhea/*"]]
   SecretsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -150,6 +163,14 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+        - Sid: DenyUnEncryptedInflightOperations
+          Effect: Deny
+          Principal: "*"
+          Action: s3:*
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, "/*"]]
+          Condition:
+            Bool:
+              aws:SecureTransport: false
         - Sid: AllowListing
           Effect: Allow
           Principal:
@@ -164,33 +185,17 @@ Resources:
             AWS:
             - !GetAtt [RheaUser, Arn]
           Action: s3:GetObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, "/*"]]
         - Sid: DenyUnEncryptedObjectUploads
           Effect: Deny
           Principal: "*"
           Action:
           - s3:PutObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, "/*"]]
           Condition:
             StringNotEquals:
               s3:x-amz-server-side-encryption: AES256
-        - Sid: DenyUnEncryptedInflightOperations
-          Effect: Deny
-          Principal: "*"
-          Action: s3:*
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
-          Condition:
-            Bool:
-              aws:SecureTransport: false
 
-  RheaUser:
-    Type: AWS::IAM::User
-    Properties:
-      UserName: !Ref RheaUserName
-  RheaAccessKey:
-    Type: AWS::IAM::AccessKey
-    Properties:
-      UserName: !Ref RheaUser
   MiniUser:
     Type: AWS::IAM::User
     Properties:
@@ -199,17 +204,39 @@ Resources:
     Type: AWS::IAM::AccessKey
     Properties:
       UserName: !Ref MiniUser
+  PrometheusUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref PrometheusUserName
+  PrometheusAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref PrometheusUser
+  RheaUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref RheaUserName
+  RheaAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref RheaUser
 
 Outputs:
-  RheaAccessKey:
-    Description: The Rhea User Access Key
-    Value: !Ref RheaAccessKey
-  RheaSecretKey:
-    Description: The Rhea User Secret Key
-    Value: !GetAtt RheaAccessKey.SecretAccessKey
   MiniAccessKey:
     Description: The Mini User Access Key
     Value: !Ref MiniAccessKey
   MiniSecretKey:
     Description: The Mini User Secret Key
     Value: !GetAtt MiniAccessKey.SecretAccessKey
+  PrometheusAccessKey:
+    Description: The Prometheus User Access Key
+    Value: !Ref PrometheusAccessKey
+  PrometheusSecretKey:
+    Description: The Prometheus User Secret Key
+    Value: !GetAtt PrometheusAccessKey.SecretAccessKey
+  RheaAccessKey:
+    Description: The Rhea User Access Key
+    Value: !Ref RheaAccessKey
+  RheaSecretKey:
+    Description: The Rhea User Secret Key
+    Value: !GetAtt RheaAccessKey.SecretAccessKey
