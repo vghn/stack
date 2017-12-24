@@ -3,7 +3,7 @@ version: '3.4'
 services:
   lb:
     image: traefik:1.4
-    hostname: lb
+    hostname: lb-rhea
     command: >-
       --configfile=/dev/null
       --web --web.address=0.0.0.0:8888
@@ -36,7 +36,7 @@ services:
           - node.role == manager
   webhook:
     image: vladgh/wh:latest
-    hostname: webhook
+    hostname: webhook-rhea
     environment:
       API_CONFIG: '/run/secrets/webhook.yml'
     secrets:
@@ -128,7 +128,7 @@ services:
           - node.labels.role == rhea
   ssl:
     image: vladgh/s3sync:latest
-    hostname: ssl-sync-agent
+    hostname: sync-rhea
     environment:
       S3PATH: 's3://vgast/puppet/ssl'
     secrets:
@@ -147,7 +147,7 @@ services:
           - node.labels.role == rhea
   r10k:
     image: vladgh/r10k:latest
-    hostname: r10k-agent
+    hostname: r10k
     environment:
       REMOTE: 'https://github.com/vghn/puppet.git'
       CRON_TIME: '10 * * * *'
@@ -166,7 +166,7 @@ services:
           - node.labels.role == rhea
   backup:
     image: vladgh/backup:latest
-    hostname: backup-agent
+    hostname: backup-rhea
     environment:
       AWS_S3_BUCKET: 'vgbak'
       AWS_S3_PREFIX: 'rhea'
@@ -191,7 +191,7 @@ services:
           - node.labels.role == rhea
   log:
     image: vladgh/ls:latest
-    hostname: log-agent
+    hostname: logs-rhea
     environment:
       BACKLOG: 'false'
       EXCLUDE_LABEL: 'logspout.exclude'
@@ -206,6 +206,7 @@ services:
       mode: global
   cadvisor:
     image: google/cadvisor:v0.28.3
+    hostname: cadvisor-rhea
     volumes:
       - /:/rootfs:ro
       - /dev/disk/:/dev/disk:ro
