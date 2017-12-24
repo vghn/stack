@@ -40,7 +40,7 @@ get_cfn_defaults(){
       P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
       ;;
     docker_cloud)
-      export AWS_PROFILE='main'
+      export AWS_PROFILE='default'
       name='DockerCloud'
       body='docker_cloud.yml'
       A='--capabilities CAPABILITY_IAM'
@@ -68,18 +68,18 @@ get_cfn_defaults(){
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
-    main)
+    vgh)
       export AWS_PROFILE='default'
       name='VGH'
-      body='main.yml'
+      body='vgh.yml'
       depends_on='iam'
       A='--capabilities CAPABILITY_NAMED_IAM'
-      P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_MAIN_ASSETS_BUCKET}'"
-      P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_MAIN_BACKUP_BUCKET}'"
-      P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_MAIN_SECRETS_BUCKET}'"
-      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_MAIN_MINI_USER}'"
-      P="${P} 'ParameterKey=PrometheusUserName,ParameterValue=${AWS_MAIN_PROMETHEUS_USER}'"
-      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_MAIN_RHEA_USER}'"
+      P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_VGH_ASSETS_BUCKET}'"
+      P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_VGH_BACKUP_BUCKET}'"
+      P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_VGH_SECRETS_BUCKET}'"
+      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_VGH_MINI_USER}'"
+      P="${P} 'ParameterKey=PrometheusUserName,ParameterValue=${AWS_VGH_PROMETHEUS_USER}'"
+      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_VGH_RHEA_USER}'"
       ;;
     mec7-billing)
       export AWS_PROFILE='mec7'
