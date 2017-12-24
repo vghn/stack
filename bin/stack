@@ -6,7 +6,6 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/.env.sh"
 
 # Usage
-
 usage(){
   echo '---------------------------------------------'
   echo "USAGE: ${BASH_SOURCE[0]} [COMMAND] [SUBCOMMAND] [OPTIONS]"
@@ -16,7 +15,7 @@ usage(){
   echo '  - ami [create | clean | validate]'
   echo ''
   echo '  - cfn [create | update | delete | validate] [STACK]'
-  echo "    * Available stacks: ${STACKS}"
+  echo '    * Check the cfnrc file for available stacks'
   echo ''
   echo '  - ci [install | test | deploy]'
   echo ''

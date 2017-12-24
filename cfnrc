@@ -2,9 +2,6 @@
 # AWS CloudFormation Defaults
 
 # Defaults
-export STACKS="billing cloudtrail docker_cloud efs elb iam notifications \
-prometheus prometheus-iam prometheus-sg puppetdb puppetsg rds rhea sg vgh vpc"
-
 get_cfn_defaults(){
   local stack A P T
   stack="${1:-}"
