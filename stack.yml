@@ -190,15 +190,14 @@ services:
         constraints:
           - node.labels.role == rhea
   log:
-    image: gliderlabs/logspout:v3.2.3
+    image: vladgh/ls:latest
     hostname: log-agent
     environment:
       BACKLOG: 'false'
       EXCLUDE_LABEL: 'logspout.exclude'
-    entrypoint: sh -c 'update-ca-certificates && /bin/logspout syslog+tls://logs.ghn.me:10514'
+    command: syslog+tls://logs.ghn.me:10514
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
     networks:
       - backend
     labels:
