@@ -2,8 +2,8 @@
 # AWS CloudFormation Defaults
 
 # Defaults
-export STACKS="billing cloudtrail docker_cloud efs elb iam main notifications \
-prometheus prometheus-iam prometheus-sg puppetdb puppetsg rds rhea sg vpc"
+export STACKS="billing cloudtrail docker_cloud efs elb iam notifications \
+prometheus prometheus-iam prometheus-sg puppetdb puppetsg rds rhea sg vgh vpc"
 
 get_cfn_defaults(){
   local stack A P T
@@ -67,19 +67,6 @@ get_cfn_defaults(){
       body='iam.yml'
       A='--capabilities CAPABILITY_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
-      ;;
-    vgh)
-      export AWS_PROFILE='default'
-      name='VGH'
-      body='vgh.yml'
-      depends_on='iam'
-      A='--capabilities CAPABILITY_NAMED_IAM'
-      P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_VGH_ASSETS_BUCKET}'"
-      P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_VGH_BACKUP_BUCKET}'"
-      P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_VGH_SECRETS_BUCKET}'"
-      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_VGH_MINI_USER}'"
-      P="${P} 'ParameterKey=PrometheusUserName,ParameterValue=${AWS_VGH_PROMETHEUS_USER}'"
-      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_VGH_RHEA_USER}'"
       ;;
     mec7-billing)
       export AWS_PROFILE='mec7'
@@ -230,6 +217,19 @@ get_cfn_defaults(){
       depends_on='vpc'
       P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
+      ;;
+    vgh)
+      export AWS_PROFILE='default'
+      name='VGH'
+      body='vgh.yml'
+      depends_on='iam'
+      A='--capabilities CAPABILITY_NAMED_IAM'
+      P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_VGH_ASSETS_BUCKET}'"
+      P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_VGH_BACKUP_BUCKET}'"
+      P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_VGH_SECRETS_BUCKET}'"
+      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_VGH_MINI_USER}'"
+      P="${P} 'ParameterKey=PrometheusUserName,ParameterValue=${AWS_VGH_PROMETHEUS_USER}'"
+      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_VGH_RHEA_USER}'"
       ;;
     vpc)
       name='VPC'
