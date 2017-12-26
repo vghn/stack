@@ -180,7 +180,7 @@ deploy_rhea_swarm(){
   ssh_setup
 
   e_info 'Deploy stack'
-  ( eval "$SSH_CMD" "docker stack deploy --compose-file /dev/stdin ${DOCKER_PROJECT}" ) < stack.yml
+  ( eval "$SSH_CMD" "docker stack deploy --compose-file /dev/stdin ${DOCKER_PROJECT}" ) < "${APPDIR}/swarm/rhea.yml"
 }
 
 # Create secret
