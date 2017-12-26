@@ -9,22 +9,22 @@
 
   "builders": [
     {
-      "name": "RHEA",
+      "name": "VGH",
       "type": "amazon-ebs",
-      "ami_name": "VGH_RHEA_v{{user `version`}}_{{timestamp}}",
-      "ami_description": "VGH RHEA Image (v{{user `version`}})",
+      "ami_name": "VGH_v{{user `version`}}_{{timestamp}}",
+      "ami_description": "VGH Image (v{{user `version`}})",
       "region": "{{user `region`}}",
       "source_ami": "{{user `base_ami`}}",
       "instance_type": "t2.micro",
       "ssh_username": "ubuntu",
       "iam_instance_profile": "{{user `iam_instance_profile`}}",
       "run_tags": {
-        "Name": "VGH RHEA AMI",
+        "Name": "VGH AMI",
         "Group": "vgh",
-        "Project": "vpm"
+        "Project": "vgh"
       },
       "tags": {
-        "Name": "VGH RHEA AMI",
+        "Name": "VGH AMI",
         "Group": "vgh",
         "Project": "vgh"
       }
@@ -68,7 +68,7 @@
         "rm -r /etc/puppetlabs/puppet/{ssl,puppet.conf} || true"
       ],
       "type": "shell",
-      "only": ["RHEA"]
+      "only": ["VGH"]
     }
   ],
 
@@ -76,7 +76,7 @@
     {
       "inline": ["bin/ami clean"],
       "type": "shell-local",
-      "only": ["RHEA"]
+      "only": ["VGH"]
     }
   ]
 }

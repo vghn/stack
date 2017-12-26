@@ -2,13 +2,11 @@
 # Common functions
 
 ami_validate(){
-  ami_packer_process
   e_info "Validate ${AWS_AMI_PACKER}"
   eval packer validate "${PACKER_VARS}" "$AWS_AMI_PACKER"
 }
 
 ami_create(){
-  ami_packer_process
   eval packer build "${PACKER_VARS}" "$AWS_AMI_PACKER"
 }
 

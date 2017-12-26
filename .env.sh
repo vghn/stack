@@ -89,13 +89,9 @@ export PP_DB_NAME="${PP_DB_NAME:-$AWS_RDS_DB_NAME}"
 export PP_DB_USER="${PP_DB_USER:-$AWS_RDS_DB_USER}"
 export PP_DB_PASS="${PP_DB_PASS:-$AWS_RDS_DB_PASS}"
 
-# AWS Image defaults
-ami_packer_process(){
-  local V
-  V="     -var 'base_ami=$(vgs_aws_ec2_get_ubuntu_base_image_id 'xenial-16.04')'"
-  V="${V} -var 'iam_instance_profile=$(vgs_aws_cfn_get_output IAM InstanceProfile)'"
-  export PACKER_VARS="${V}"
-}
+# Load AWS AMI Build environment
+# shellcheck disable=1090
+. "${APPDIR}/amirc" 2>/dev/null || true
 
 # Load AWS CloudFormation environment
 # shellcheck disable=1090

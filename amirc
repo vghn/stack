@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# AWS Image Build defaults
+
+process_ami_build(){
+  # Defaults
+  local ami V
+  ami="${1:-}"
+  V=''
+
+  case "$ami" in
+    vgh)
+      V="     -var 'base_ami=$(vgs_aws_ec2_get_ubuntu_base_image_id 'xenial-16.04')'"
+      V="${V} -var 'iam_instance_profile=$(vgs_aws_cfn_get_output IAM InstanceProfile)'"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+
+  export PACKER_VARS="${V}"
+}
+
+clear_ami(){
+  unset ami V
+}
