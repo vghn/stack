@@ -1,5 +1,48 @@
 # Change Log
 
+## [v0.3.0](https://github.com/vghn/stack/tree/v0.3.0) (2017-12-26)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.2.2...v0.3.0)
+
+**Implemented enhancements:**
+
+- Allow working with multiple Docker Swarm Stacks [\#129](https://github.com/vghn/stack/issues/129)
+- Allow building multiple AMIs with Packer [\#128](https://github.com/vghn/stack/issues/128)
+- Do not deploy from TravisCI [\#127](https://github.com/vghn/stack/issues/127)
+- Add custom logspout image [\#126](https://github.com/vghn/stack/issues/126)
+- Add cAdvisor [\#125](https://github.com/vghn/stack/issues/125)
+- Label containers [\#124](https://github.com/vghn/stack/issues/124)
+- Add custom EBS volume to Prometheus [\#123](https://github.com/vghn/stack/issues/123)
+- Redirect logs to logs.ghn.me [\#122](https://github.com/vghn/stack/issues/122)
+- Add Prometheus [\#121](https://github.com/vghn/stack/issues/121)
+- Add encryption task to rake [\#120](https://github.com/vghn/stack/issues/120)
+- Add OVH hostname to LetsEncrypt certificate [\#118](https://github.com/vghn/stack/issues/118)
+- Change PuppetDB dashboard port [\#117](https://github.com/vghn/stack/issues/117)
+- Increase memory limit for Puppet and PuppetDB [\#116](https://github.com/vghn/stack/issues/116)
+- Rename envrc to .env.sh [\#114](https://github.com/vghn/stack/issues/114)
+- Remove SNS notifications from CloudTrail [\#110](https://github.com/vghn/stack/issues/110)
+- Add intermediary triggers to billing alarms [\#109](https://github.com/vghn/stack/issues/109)
+- Add CloudTrail CloudFormation template [\#108](https://github.com/vghn/stack/issues/108)
+- Separate SNS topics [\#107](https://github.com/vghn/stack/issues/107)
+- Add billing alarms [\#106](https://github.com/vghn/stack/issues/106)
+- Improve notifications CloudFormation template [\#105](https://github.com/vghn/stack/issues/105)
+- Add .env encrypt/decrypt commands [\#104](https://github.com/vghn/stack/issues/104)
+- Upgrade Packer [\#103](https://github.com/vghn/stack/issues/103)
+- Allow passing of AWS profile as environment variable [\#102](https://github.com/vghn/stack/issues/102)
+- Use sticky session in Traefik [\#100](https://github.com/vghn/stack/issues/100)
+- Use TravisCI stages [\#99](https://github.com/vghn/stack/issues/99)
+- Use the updated TravisCI images [\#119](https://github.com/vghn/stack/pull/119) ([vladgh](https://github.com/vladgh))
+- Add MEC7 cloudformation files [\#115](https://github.com/vghn/stack/pull/115) ([vladgh](https://github.com/vladgh))
+- Switch to new Bundler file names [\#113](https://github.com/vghn/stack/pull/113) ([vladgh](https://github.com/vladgh))
+- Upgrade Packer and Traefik [\#112](https://github.com/vghn/stack/pull/112) ([vladgh](https://github.com/vladgh))
+
+**Fixed bugs:**
+
+- Fix CLI [\#101](https://github.com/vghn/stack/issues/101)
+
+**Merged pull requests:**
+
+- Receive build notifications via Atomist [\#111](https://github.com/vghn/stack/pull/111) ([vladgh](https://github.com/vladgh))
+
 ## [v0.2.2](https://github.com/vghn/stack/tree/v0.2.2) (2017-08-12)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.2.1...v0.2.2)
 
