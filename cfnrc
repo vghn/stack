@@ -2,7 +2,7 @@
 # AWS CloudFormation Defaults
 
 # Defaults
-get_cfn_defaults(){
+process_cfn(){
   local stack A P T
   stack="${1:-}"
 
@@ -241,6 +241,6 @@ get_cfn_defaults(){
   export cfn_cmd="--stack-name ${name} --template-body file://${AWS_CFN_STACKS_PATH}/${body} ${A} --parameters ${P} --tags ${T}"
 }
 
-clear_cfn_defaults(){
+clear_cfn(){
   unset stack name body depends_on A P T cfn_cmd
 }

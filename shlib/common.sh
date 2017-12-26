@@ -195,7 +195,7 @@ create_secret(){
 }
 
 # CI Deploy
-deploy(){
+deploy_rhea(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     load_env
     deploy_rhea_swarm

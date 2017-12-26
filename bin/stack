@@ -17,13 +17,17 @@ usage(){
   echo '  - cfn [create | update | delete | validate] [STACK]'
   echo '    * Check the cfnrc file for available stacks'
   echo ''
-  echo '  - ci [install | test | deploy]'
+  echo '  - deploy [rhea]'
   echo ''
   echo '  - env [encrypt | decrypt]'
   echo ''
   echo '  - hooks [install]'
   echo ''
+  echo '  - install'
+  echo ''
   echo '  - secret [create]'
+  echo ''
+  echo '  - test'
   echo ''
   echo '----------------------------------------------'
   echo 'For more information please consult the README'
@@ -59,7 +63,7 @@ stack_process_cli(){
       clear_ami
       ;;
     cfn)
-      get_cfn_defaults "${@:-}"
+      process_cfn "${@:-}"
       case "$scmd" in
         create)
           cfn_validate_stack
@@ -81,18 +85,12 @@ stack_process_cli(){
           usage
           ;;
       esac
-      clear_cfn_defaults
+      clear_cfn
       ;;
-    ci)
+    deploy)
       case "$scmd" in
-        install)
-          install_vgs
-          ;;
-        test)
-          validate_bash
-          ;;
-        deploy)
-          deploy
+        rhea)
+          deploy_rhea
           ;;
         *)
           usage
@@ -122,8 +120,14 @@ stack_process_cli(){
           ;;
       esac
       ;;
+    install)
+      install_vgs
+      ;;
     secret)
       create_secret "${@:-}"
+      ;;
+    test)
+      validate_bash
       ;;
     *)
       usage
