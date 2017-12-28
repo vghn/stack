@@ -34,7 +34,7 @@ fi
 
 # Load VGS library (https://github.com/vghn/vgs)
 # shellcheck disable=1090
-. ~/vgs/load || echo 'VGS library is required' 1>&2
+. ~/vgs/load 2>/dev/null || echo 'VGS library is required' 1>&2
 
 # Load functions
 if [[ -d "${APPDIR}/shlib" ]]; then
