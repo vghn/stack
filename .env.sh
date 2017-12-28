@@ -24,16 +24,13 @@ VERSION=$(git describe --always --tags)
 export APPDIR TMPDIR NOW VERSION
 
 # Load private environment
-# shellcheck disable=1090
-. "${APPDIR}/.env" 2>/dev/null || true
-
-# Load encrypted private environment
-# Create a base64 encoded string of the GPG passphrase and use that as an environment variable on TravisCI.
-# $ travis env set ENCRYPT_KEY "$(echo 'MyPassphrase' | base64)" --private
-# Encrypt file locally
-# $ echo 'MyPassphrase' | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env
-# shellcheck disable=1090
-. <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
+if [[ -s "${APPDIR}/.env" ]]; then
+  # shellcheck disable=1090
+  . "${APPDIR}/.env" 2>/dev/null || true
+elif [[ -s "${APPDIR}/.env.gpg" ]]; then
+  # shellcheck disable=1090
+  . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
+fi
 
 # Load VGS library (https://github.com/vghn/vgs)
 # shellcheck disable=1090
