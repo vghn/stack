@@ -60,6 +60,7 @@ Resources:
             Resource: '*'
             Sid: AllowListingParameters
           - Action:
+            - ssm:GetParameter
             - ssm:GetParameters
             Effect: Allow
             Resource: arn:aws:ssm:*:*:parameter/prometheus/*
