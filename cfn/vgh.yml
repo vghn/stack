@@ -72,18 +72,6 @@ Resources:
       BucketName: !Ref BackupBucketName
       LifecycleConfiguration:
         Rules:
-        - Id: Rhea Hourly Rotation
-          Prefix: rhea/hourly/
-          Status: Enabled
-          ExpirationInDays: '1'
-        - Id: Rhea Daily Rotation
-          Prefix: rhea/daily/
-          Status: Enabled
-          ExpirationInDays: '7'
-        - Id: Rhea Weekly Rotation
-          Prefix: rhea/weekly/
-          Status: Enabled
-          ExpirationInDays: '30'
         - Id: Mini Hourly Rotation
           Prefix: mini/hourly/
           Status: Enabled
@@ -94,6 +82,30 @@ Resources:
           ExpirationInDays: '7'
         - Id: Mini Weekly Rotation
           Prefix: mini/weekly/
+          Status: Enabled
+          ExpirationInDays: '30'
+        - Id: Prometheus Hourly Rotation
+          Prefix: prometheus/hourly/
+          Status: Enabled
+          ExpirationInDays: '1'
+        - Id: Prometheus Daily Rotation
+          Prefix: prometheus/daily/
+          Status: Enabled
+          ExpirationInDays: '7'
+        - Id: Prometheus Weekly Rotation
+          Prefix: prometheus/weekly/
+          Status: Enabled
+          ExpirationInDays: '30'
+        - Id: Rhea Hourly Rotation
+          Prefix: rhea/hourly/
+          Status: Enabled
+          ExpirationInDays: '1'
+        - Id: Rhea Daily Rotation
+          Prefix: rhea/daily/
+          Status: Enabled
+          ExpirationInDays: '7'
+        - Id: Rhea Weekly Rotation
+          Prefix: rhea/weekly/
           Status: Enabled
           ExpirationInDays: '30'
   BackupBucketPolicy:
