@@ -40,7 +40,8 @@ services:
     environment:
       API_CONFIG: '/run/secrets/webhook.yml'
     secrets:
-      - webhook.yml
+      - source: webhook.yml_v2
+        target: webhook.yml
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -237,7 +238,7 @@ secrets:
     external: true
   puppetdb_user:
     external: true
-  webhook.yml:
+  webhook.yml_v2:
     external: true
 
 volumes:
