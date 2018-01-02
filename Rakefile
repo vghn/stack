@@ -14,9 +14,11 @@ Vtasks::TravisCI.new
 
 # Stack SSH commands
 namespace :stack do
-  desc 'Updates docker compose environment'
-  task :update do
-    sh 'ENVTYPE=production bin/stack ci deploy'
+  namespace :update do
+    desc 'Updates RHEA stack'
+    task :rhea do
+      sh 'ENVTYPE=production bin/stack deploy rhea'
+    end
   end
   desc 'Encrypts .env'
   task :env do
