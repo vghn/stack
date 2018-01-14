@@ -64,7 +64,7 @@ services:
     image: prom/prometheus:v2.0.0
     hostname: prometheus.ghn.me
     configs:
-      - source: alertrules.yml
+      - source: alertrules.yml_v4
         target: /etc/prometheus/alertrules.yml
       - source: prometheus.yml
         target: /etc/prometheus/prometheus.yml
@@ -222,7 +222,7 @@ secrets:
     external: true
 
 configs:
-  alertrules.yml:
+  alertrules.yml_v4:
     external: true
   prometheus.yml:
     external: true
