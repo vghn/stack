@@ -8,13 +8,10 @@ IFS=$'\n\t'
 [ -z "${DEBUG:-}" ] || set -x
 
 # VARs
-DOCKER_PROJECT='vpm'
-SSH_HOST='rhea.ghn.me'
-SSH_USER='ubuntu'
 SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
 ENCRYPT_KEY="${ENCRYPT_KEY:-$(echo "$TRAVIS_KEY_STACK" | base64)}"
 PACKER_URL='https://releases.hashicorp.com/packer/1.1.3/packer_1.1.3_linux_amd64.zip'
-export DOCKER_PROJECT SSH_HOST SSH_USER SSH_KEY ENCRYPT_KEY PACKER_URL
+export SSH_KEY ENCRYPT_KEY PACKER_URL
 
 # System VARs
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"

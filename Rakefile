@@ -15,9 +15,9 @@ Vtasks::TravisCI.new
 # Stack SSH commands
 namespace :stack do
   namespace :update do
-    desc 'Updates RHEA stack'
-    task :rhea do
-      sh 'ENVTYPE=production bin/stack deploy rhea'
+    desc 'Updates VPM stack'
+    task :vpm do
+      sh 'ENVTYPE=production bin/stack deploy vpm'
     end
   end
   desc 'Encrypts .env'

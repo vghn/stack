@@ -1,5 +1,6 @@
 # Private
 .env
+swarm/*-secrets
 
 # Other
 .bundle/

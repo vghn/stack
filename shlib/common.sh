@@ -101,6 +101,15 @@ validate_amis(){
 
 # Set-up SSH
 ssh_setup(){
+  local stack="${1:-}"
+
+  case "$stack" in
+    vpm)
+      SSH_HOST='rhea.ghn.me'
+      SSH_USER='ubuntu'
+      ;;
+  esac
+
   e_info 'Set-up SSH key'
   echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > "$SSH_KEY"
   chmod 600 "$SSH_KEY"
@@ -130,49 +139,37 @@ upload_project(){
 
 # Deploy RHEA (rsync docker-compose project files)
 deploy_rhea_compose_rsync(){
-  project_folder='/var/local/vpm'
+  docker_project='vpm'
+  project_folder="/var/local/${docker_project}"
   compose_file="${project_folder}/docker-compose.yml"
 
   upload_project
 
   e_info 'Update docker-compose'
-  eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file ${compose_file} pull --parallel"
-  eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file ${compose_file} up -d --build --remove-orphans"
+  eval "$SSH_CMD" "docker-compose --project-name ${docker_project} --file ${compose_file} pull --parallel"
+  eval "$SSH_CMD" "docker-compose --project-name ${docker_project} --file ${compose_file} up -d --build --remove-orphans"
 }
 
 # Deploy RHEA (docker-compose mode)
 deploy_rhea_compose(){
+  docker_project='vpm'
+
   ssh_setup
 
   e_info 'Update docker-compose'
-  ( eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin pull" ) < docker-compose.yml
-  ( eval "$SSH_CMD" "docker-compose --project-name ${DOCKER_PROJECT} --file /dev/stdin up -d --build --remove-orphans" ) < docker-compose.yml
+  ( eval "$SSH_CMD" "docker-compose --project-name ${docker_project} --file /dev/stdin pull" ) < docker-compose.yml
+  ( eval "$SSH_CMD" "docker-compose --project-name ${docker_project} --file /dev/stdin up -d --build --remove-orphans" ) < docker-compose.yml
 }
 
-# Deploy RHEA (docker swarm mode)
-deploy_rhea_swarm(){
-  ssh_setup
+# Deploy Swarm
+deploy_swarm(){
+  local stack="${1:-}"
 
-  e_info 'Deploy stack'
-  ( eval "$SSH_CMD" "docker stack deploy --compose-file /dev/stdin ${DOCKER_PROJECT}" ) < "${APPDIR}/swarm/rhea.yml"
-}
-
-# Create secret
-# Ex:
-# $ bin/ci create_secret mysecret < mysecret_file
-# $ echo 'password' | bin/ci create_secret mysecret
-create_secret(){
-  ssh_setup
-
-  local name="${1:?}"
-  eval "$SSH_CMD" "docker secret create ${name} /dev/stdin"
-}
-
-# CI Deploy
-deploy_rhea(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     load_env
-    deploy_rhea_swarm
+    ssh_setup "$stack"
+    e_info 'Deploy stack'
+    ( eval "$SSH_CMD" "docker stack deploy --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
   else
     e_warn 'Deployment is only allowed in production!'
   fi

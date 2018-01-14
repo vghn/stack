@@ -90,7 +90,7 @@ stack_process_cli(){
     deploy)
       case "$scmd" in
         rhea)
-          deploy_rhea
+          deploy_swarm rhea
           ;;
         *)
           usage
