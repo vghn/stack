@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 
 services:
   lb:
@@ -7,7 +7,7 @@ services:
     command: >-
       --configfile=/dev/null
       --web --web.address=0.0.0.0:8888
-      --docker --docker.domain=traefik --docker.watch
+      --docker --docker.swarmmode --docker.domain=traefik --docker.watch
       --defaultentrypoints=http,https
       --entryPoints="Name:http Address::80 Redirect.EntryPoint:https"
       --entryPoints="Name:https Address::443 TLS"
@@ -18,9 +18,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
-      - mode: host
-        target: 8888
-        published: 8888
+      - '8888:8888'
     volumes:
       - data:/data
       - /var/run/docker.sock:/var/run/docker.sock
@@ -87,7 +85,6 @@ services:
           - node.labels.role == prometheus
   alertmanager:
     image: prom/alertmanager:v0.12.0
-    restart: unless-stopped
     hostname: alertmanager.ghn.me
     secrets:
       - source: alertmanager_config.yml

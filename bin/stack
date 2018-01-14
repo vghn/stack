@@ -17,7 +17,7 @@ usage(){
   echo '  - cfn [create | update | delete | validate] [STACK]'
   echo '    * Check the cfnrc file for available stacks'
   echo ''
-  echo '  - deploy [rhea]'
+  echo '  - deploy [stack name]'
   echo ''
   echo '  - env [encrypt | decrypt]'
   echo ''
@@ -88,17 +88,7 @@ stack_process_cli(){
       clear_cfn
       ;;
     deploy)
-      case "$scmd" in
-        rhea)
-          deploy_swarm rhea
-          ;;
-        prometheus)
-          deploy_swarm prometheus
-          ;;
-        *)
-          usage
-          ;;
-      esac
+      deploy_swarm "$scmd"
       ;;
     env)
       case "$scmd" in
