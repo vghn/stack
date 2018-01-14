@@ -1,0 +1,242 @@
+version: '3'
+
+services:
+  lb:
+    image: traefik:1.4
+    hostname: lb-prometheus
+    command: >-
+      --configfile=/dev/null
+      --web --web.address=0.0.0.0:8888
+      --docker --docker.domain=traefik --docker.watch
+      --defaultentrypoints=http,https
+      --entryPoints="Name:http Address::80 Redirect.EntryPoint:https"
+      --entryPoints="Name:https Address::443 TLS"
+      --acme --acme.email=webmaster@ghn.me
+      --acme.domains=prometheus.ghn.me,logs.ghn.me,monitor.ghn.me
+      --acme.entryPoint=https
+      --acme.storage=/data/lecerts/acme.json
+    ports:
+      - '80:80'
+      - '443:443'
+      - mode: host
+        target: 8888
+        published: 8888
+    volumes:
+      - data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - frontend
+      - backend
+    labels:
+      container_group: monitoring
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.role == prometheus
+  grafana:
+    image: grafana/grafana:4.6.3
+    hostname: grafana.ghn.me
+    environment:
+      GF_PATHS_DATA: '/data/grafana'
+      GF_SERVER_ROOT_URL: 'https://prometheus.ghn.me'
+      GF_SMTP_ENABLED: 'true'
+      GF_SMTP_HOST: 'smtp.sendgrid.net:587'
+      GF_SMTP_FROM_ADDRESS: 'admin@ghn.me'
+      GF_SMTP_FROM_NAME: 'Prometheus'
+    secrets:
+      - grafana_env
+    entrypoint: sh -c 'set -o allexport && . /run/secrets/grafana_env && /run.sh'
+    volumes:
+      - data:/data
+    networks:
+      - backend
+    labels:
+      container_group: monitoring
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == prometheus
+      labels:
+        traefik.tags: 'grafana'
+        traefik.port: '3000'
+        traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
+        traefik.backend.loadbalancer.sticky: 'true'
+  prometheus:
+    image: prom/prometheus:v2.0.0
+    hostname: prometheus.ghn.me
+    configs:
+      - source: alertrules.yml
+        target: /etc/prometheus/alertrules.yml
+      - source: prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+    volumes:
+      - data:/data
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/data/prometheus'
+    ports:
+      - '9090:9090'
+    networks:
+      - backend
+    labels:
+      container_group: monitoring
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == prometheus
+  alertmanager:
+    image: prom/alertmanager:v0.12.0
+    restart: unless-stopped
+    hostname: alertmanager.ghn.me
+    secrets:
+      - source: alertmanager_config.yml
+        target: /etc/alertmanager/config.yml
+    volumes:
+      - data:/data
+    command:
+      - '-storage.path=/data/alertmanager'
+      - '-config.file=/etc/alertmanager/config.yml'
+    ports:
+      - '9093:9093'
+    networks:
+      - backend
+    labels:
+      container_group: monitoring
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == prometheus
+  rsyslog:
+    image: vladgh/rs:latest
+    hostname: logs.ghn.me
+    environment:
+      LOGZIO_TOKEN_FILE: '/run/secrets/logzio_token'
+      CA_CERT: '/run/secrets/logs-combined-ca-cert.pem'
+      SERVER_CERT: '/run/secrets/logs-server-cert.pem'
+      SERVER_KEY: '/run/secrets/logs-server-key.pem'
+      TIME_ZONE: 'US/Central'
+      REMOTE_LOGS_PATH: '/data/logs'
+    secrets:
+      - logs-combined-ca-cert.pem
+      - logs-server-cert.pem
+      - logs-server-key.pem
+      - logzio_token
+    volumes:
+      - data:/data
+    ports:
+      - '10514:10514'
+    networks:
+      - frontend
+    labels:
+      container_group: logs
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == prometheus
+  logrotate:
+    image: blacklabelops/logrotate:1.2
+    hostname: logrotate-prometheus
+    environment:
+      LOGS_DIRECTORIES: '/data/logs'
+      LOGROTATE_INTERVAL: 'daily'
+      LOGROTATE_COPIES: '90'
+      LOGROTATE_COMPRESSION: 'compress'
+      TZ: 'US/Central'
+    volumes:
+      - data:/data
+    networks:
+      - backend
+    labels:
+      container_group: logs
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == prometheus
+  backup:
+    image: vladgh/backup:latest
+    hostname: backup-prometheus
+    environment:
+      AWS_S3_BUCKET: 'vgbak'
+      AWS_S3_PREFIX: 'prometheus'
+      GPG_RECIPIENT: 'vlad@ghn.me'
+      GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
+    secrets:
+      - source: aws_credentials_prometheus
+        target: /root/.aws/credentials
+    command: cron
+    volumes:
+      - data:/backup # Data
+    networks:
+      - backend
+    labels:
+      container_group: backup
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == prometheus
+  log:
+    image: vladgh/ls:latest
+    hostname: logs-prometheus
+    environment:
+      BACKLOG: 'false'
+      EXCLUDE_LABEL: 'logspout.exclude'
+    command: syslog+tls://logs.ghn.me:10514
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backend
+    labels:
+      container_group: logs
+    deploy:
+      mode: global
+  cadvisor:
+    image: google/cadvisor:v0.28.3
+    hostname: cadvisor-prometheus
+    volumes:
+      - /:/rootfs:ro
+      - /dev/disk/:/dev/disk:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:rw
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - '8080:8080'
+    networks:
+      - backend
+    labels:
+      container_group: monitoring
+    deploy:
+      mode: global
+
+secrets:
+  alertmanager_config.yml:
+    external: true
+  aws_credentials_prometheus:
+    external: true
+  grafana_env:
+    external: true
+  logs-combined-ca-cert.pem:
+    external: true
+  logs-server-cert.pem:
+    external: true
+  logs-server-key.pem:
+    external: true
+  logzio_token:
+    external: true
+
+configs:
+  alertrules.yml:
+    external: true
+  prometheus.yml:
+    external: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: ext4
+      device: /dev/prometheus/data
+
+networks:
+  frontend:
+  backend:

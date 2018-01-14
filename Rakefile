@@ -15,6 +15,10 @@ Vtasks::TravisCI.new
 # Stack SSH commands
 namespace :stack do
   namespace :update do
+    desc 'Updates MONITOR stack'
+    task :monitor do
+      sh 'ENVTYPE=production bin/stack deploy monitor'
+    end
     desc 'Updates VPM stack'
     task :vpm do
       sh 'ENVTYPE=production bin/stack deploy vpm'

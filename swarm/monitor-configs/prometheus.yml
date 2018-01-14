@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 1m
+  evaluation_interval: 1m
+  scrape_timeout: 10s
+  external_labels:
+    monitor: 'vgh'
+
+rule_files:
+  - 'alertrules.yml'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+        - 'localhost:9090'
+  - job_name: 'grafana'
+    static_configs:
+      - targets:
+        - 'grafana:3000'
+  - job_name: 'nodes'
+    static_configs:
+      - targets:
+        - 'prometheus.ghn.me:9100'
+        - 'rhea.ghn.me:9100'
+        - 'vgh.asuscomm.com:9100'
+  - job_name: 'containers'
+    static_configs:
+      - targets:
+        - 'cadvisor:8080'
+        - 'rhea.ghn.me:9101'
+        - 'vgh.asuscomm.com:9101'
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093

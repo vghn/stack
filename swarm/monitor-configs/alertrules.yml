@@ -1,0 +1,96 @@
+groups:
+- name: vgh-nodes
+  rules:
+  - alert: monitoring_service_down
+    expr: up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "The monitoring service '{{ $labels.job }}' is down."
+      summary: "MONITORING SERVICE DOWN WARNING: NODE {{ $labels.host }}"
+  - alert: node_restarted
+    expr: node_time - node_boot_time < 300
+    for: 1m
+    labels:
+      severity: Warning
+    annotations:
+      description: "Warning: Node {{ $labels.host }} was restarted at {{ $value }} seconds ago."
+      summary: "NODE RESTARTED WARNING: NODE {{ $labels.host }}"
+  - alert: node_high_load
+    expr: node_load1 > 1
+    for: 5m
+    labels:
+      severity: Warning
+    annotations:
+      description: "{{ $labels.host}} is under high load. Load is {{ humanize $value }}."
+      summary: "HIGH LOAD WARNING: NODE {{ $labels.host }}"
+  - alert: node_running_out_of_disk_space
+    expr: node_filesystem_free{mountpoint="/etc/hostname"} < 1e+09
+    for: 5m
+    labels:
+      severity: Warning
+    annotations:
+      description: "Less than 1GB of free disk space. Free disk space at {{ humanize $value }} GB."
+      summary: "LOW DISK SPACE WARING: NODE {{ $labels.host }}"
+  - alert: node_low_disk_space
+    expr: 100 * min(node_filesystem_avail / node_filesystem_size{mountpoint=~"/etc/hostname|^/mnt.*|^/data.*"})
+      BY (device, fstype, host, instance, job) < 10
+    for: 5m
+    labels:
+      severity: Warning
+    annotations:
+      description: "Warning, node {{ $labels.host }} has less than 10% of free disk
+        space on device {{ $labels.device }} with mount point {{ $labels.mountpoint
+        }}. Available disk space at {{ humanize $value }}%"
+      summary: "LOW DISK SPACE WARING: NODE {{ $labels.host }}"
+
+# CONTAINERS ###################################################################
+- name: vgh-containers
+  rules:
+  - alert: high_cpu_usage_on_container
+    expr: sum(rate(container_cpu_usage_seconds_total{name=~".+"}[5m])) BY (name, host) * 100 > 50
+    for: 5m
+    annotations:
+      description: '{{ $labels.name }} is using a LOT of CPU. CPU usage is {{ humanize $value}}%.'
+      summary: "HIGH CPU USAGE WARNING: CONTAINER '{{ $labels.name }}' on '{{ $labels.host}}'"
+  - alert: rsyslog_container_down
+    expr: absent(container_cpu_usage_seconds_total{container_label_com_docker_compose_project =~'monitor',container_label_com_docker_compose_service=~'rsyslog'})
+    for: 5m
+    labels:
+      severity: Critical
+    annotations:
+      description: container with  name '{{ $labels.name }}' is down for more than 5 minutes
+      summary: CONTAINER '{{ $labels.name }}' down
+  - alert: unifi_controller_container_down
+    expr: absent(container_cpu_usage_seconds_total{container_label_com_docker_compose_project =~'unifi',container_label_com_docker_compose_service=~'controller'})
+    for: 5m
+    labels:
+      severity: Critical
+    annotations:
+      description: container with  name '{{ $labels.name }}' is down for more than 5 minutes
+      summary: CONTAINER '{{ $labels.name }}' down
+  - alert: puppetserver_container_down
+    expr: absent(container_cpu_usage_seconds_total{container_label_com_docker_swarm_service_name="vpm_puppet"})
+    for: 5m
+    labels:
+      severity: Critical
+    annotations:
+      description: container with  name '{{ $labels.name }}' is down for more than 5 minutes
+      summary: CONTAINER '{{ $labels.name }}' down
+  - alert: puppetdb_container_down
+    expr: absent(container_cpu_usage_seconds_total{container_label_com_docker_swarm_service_name="vpm_puppetdb"})
+    for: 5m
+    labels:
+      severity: Critical
+    annotations:
+      description: container with  name '{{ $labels.name }}' is down for more than 5 minutes
+      summary: CONTAINER '{{ $labels.name }}' down
+################################################################################
+
+  # - alert: TESTING_high_load_on_node
+    # expr: node_load1 > 0
+    # for: 1s
+    # annotations:
+      # description: "{{ $labels.host}} is under high load. Load is {{ humanize $value }}."
+      # summary: "+++ TESTING ++++ TESTING ++++ TESTING +++ ::: HIGH LOAD WARNING: NODE {{ $labels.host }}"

@@ -92,6 +92,9 @@ stack_process_cli(){
         rhea)
           deploy_swarm rhea
           ;;
+        prometheus)
+          deploy_swarm prometheus
+          ;;
         *)
           usage
           ;;

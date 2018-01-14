@@ -108,6 +108,10 @@ ssh_setup(){
       SSH_HOST='rhea.ghn.me'
       SSH_USER='ubuntu'
       ;;
+    monitor)
+      SSH_HOST='prometheus.ghn.me'
+      SSH_USER='ubuntu'
+      ;;
   esac
 
   e_info 'Set-up SSH key'
