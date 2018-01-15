@@ -220,6 +220,8 @@ Resources:
     Type: AWS::IAM::User
     Properties:
       UserName: !Ref PrometheusUserName
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
   PrometheusAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
