@@ -1,23 +1,23 @@
 dist: trusty
 group: travis_latest
 language: ruby
-branches:
-  except:
-  - "/^v\\d/"
-addons:
-  apt:
-    sources:
-    - debian-sid
-    packages:
-    - shellcheck
-cache:
-  directories:
-  - vendor/bundle
-  - "$HOME/.cache/pip"
-install:
-- bin/stack install
-script:
-- bin/stack test
+# branches:
+  # except:
+  # - "/^v\\d/"
+# addons:
+  # apt:
+    # sources:
+    # - debian-sid
+    # packages:
+    # - shellcheck
+# cache:
+  # directories:
+  # - vendor/bundle
+  # - "$HOME/.cache/pip"
+# install:
+# - bin/stack install
+# script:
+# - bin/stack test
 notifications:
   webhooks:
     urls: https://tqcyffnork.execute-api.us-east-1.amazonaws.com/prod/travis
