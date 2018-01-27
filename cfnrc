@@ -33,14 +33,14 @@ process_cfn(){
       name='CloudTrail'
       body='cloudtrail.yml'
       depends_on='notications'
-      A='--capabilities CAPABILITY_IAM'
+      A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
       ;;
     docker_cloud)
       export AWS_PROFILE='default'
       name='DockerCloud'
       body='docker_cloud.yml'
-      A='--capabilities CAPABILITY_IAM'
+      A='--capabilities CAPABILITY_NAMED_IAM'
       ;;
     efs)
       name='EFS'
@@ -62,7 +62,7 @@ process_cfn(){
     iam)
       name='IAM'
       body='iam.yml'
-      A='--capabilities CAPABILITY_IAM'
+      A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
       ;;
     mec7-billing)
@@ -81,7 +81,7 @@ process_cfn(){
       name='CloudTrail'
       body='cloudtrail.yml'
       depends_on='mec7-notications'
-      A='--capabilities CAPABILITY_IAM'
+      A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
       ;;
     mec7-iam)
@@ -89,7 +89,7 @@ process_cfn(){
       export AWS_DEFAULT_REGION='us-west-1'
       name='IAM'
       body='mec7/iam.yml'
-      A='--capabilities CAPABILITY_IAM'
+      A='--capabilities CAPABILITY_NAMED_IAM'
       ;;
     mec7-notifications)
       export AWS_PROFILE='mec7'
@@ -151,7 +151,7 @@ process_cfn(){
       export AWS_PROFILE='aws2017a'
       name='PrometheusIAM'
       body='prometheus/iam.yml'
-      A='--capabilities CAPABILITY_IAM'
+      A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${PROMETHEUS_ASSETS_BUCKET}'"
       ;;
     prometheus-sg)
