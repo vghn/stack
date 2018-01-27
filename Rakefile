@@ -12,24 +12,6 @@ Vtasks::Release.new(
 require 'vtasks/travisci'
 Vtasks::TravisCI.new
 
-# Stack SSH commands
-namespace :stack do
-  namespace :update do
-    desc 'Updates MONITOR stack'
-    task :monitor do
-      sh 'ENVTYPE=production bin/stack deploy monitor'
-    end
-    desc 'Updates VPM stack'
-    task :vpm do
-      sh 'ENVTYPE=production bin/stack deploy vpm'
-    end
-  end
-  desc 'Encrypts .env'
-  task :env do
-    sh 'echo "$TRAVIS_KEY_STACK" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env'
-  end
-end
-
 # Display version
 desc 'Display version'
 task :version do

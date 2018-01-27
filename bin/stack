@@ -19,7 +19,7 @@ usage(){
   echo ''
   echo '  - deploy [stack name]'
   echo ''
-  echo '  - env [encrypt | decrypt]'
+  echo '  - env'
   echo ''
   echo '  - hooks [install]'
   echo ''
@@ -88,20 +88,14 @@ stack_process_cli(){
       clear_cfn
       ;;
     deploy)
-      deploy_swarm "$scmd"
+      if [[ -n "$scmd" ]]; then
+        deploy_swarm "$scmd"
+      else
+        usage
+      fi
       ;;
     env)
-      case "$scmd" in
-        encrypt)
-          encrypt_env
-          ;;
-        decrypt)
-          decrypt_env
-          ;;
-        *)
-          usage
-          ;;
-      esac
+      echo "$TRAVIS_KEY_STACK" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env
       ;;
     hooks)
       case "$scmd" in

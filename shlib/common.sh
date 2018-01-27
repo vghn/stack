@@ -169,6 +169,10 @@ deploy_rhea_compose(){
 deploy_swarm(){
   local stack="${1:-}"
 
+  if [[ -z "$stack" ]]; then
+    e_warn 'Stack name is required'
+  fi
+
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     load_env
     ssh_setup "$stack"
