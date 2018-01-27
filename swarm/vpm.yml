@@ -69,11 +69,10 @@ services:
         target: /etc/puppetlabs/puppet/eyaml/eyaml_private_key.pkcs7.pem
       - source: eyaml_public_key.pkcs7.pem
         target: /etc/puppetlabs/puppet/eyaml/eyaml_public_key.pkcs7.pem
-      - source: aws_credentials_rhea
-        target: /root/.aws/credentials
       - puppet_csr.yml
     entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
+      - /home/ubuntu/.aws:/root/.aws
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
     ports:
@@ -132,11 +131,9 @@ services:
     hostname: sync-rhea
     environment:
       S3PATH: 's3://vgast/puppet/ssl'
-    secrets:
-      - source: aws_credentials_rhea
-        target: /root/.aws/credentials
     command: sync
     volumes:
+      - /home/ubuntu/.aws:/root/.aws
       - ssl:/sync
     networks:
       - backend
@@ -173,11 +170,9 @@ services:
       AWS_S3_PREFIX: 'rhea'
       GPG_RECIPIENT: 'vlad@ghn.me'
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
-    secrets:
-      - source: aws_credentials_rhea
-        target: /root/.aws/credentials
     command: cron
     volumes:
+      - /home/ubuntu/.aws:/root/.aws                  # AWS Credentials
       - certs:/backup/certs                           # LetsEncrypt Certificates
       - ssl:/backup/puppet-ca                         # PuppetCA Certificates
       - /etc/puppetlabs/puppet/ssl:/backup/puppet-ssl # Puppet Agent Certificates
@@ -226,8 +221,6 @@ services:
       mode: global
 
 secrets:
-  aws_credentials_rhea:
-    external: true
   eyaml_private_key.pkcs7.pem:
     external: true
   eyaml_public_key.pkcs7.pem:

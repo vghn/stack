@@ -158,9 +158,6 @@ services:
       AWS_S3_PREFIX: 'prometheus'
       GPG_RECIPIENT: 'vlad@ghn.me'
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
-    secrets:
-      - source: aws_credentials_prometheus
-        target: /root/.aws/credentials
     command: cron
     volumes:
       - data:/backup # Data
@@ -207,8 +204,6 @@ services:
 
 secrets:
   alertmanager_config.yml:
-    external: true
-  aws_credentials_prometheus:
     external: true
   grafana_env:
     external: true
