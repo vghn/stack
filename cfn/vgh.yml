@@ -211,10 +211,27 @@ Resources:
             StringNotEquals:
               s3:x-amz-server-side-encryption: AES256
 
+  OnPremiseGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: OnPremise
+
   MiniUser:
     Type: AWS::IAM::User
     Properties:
       UserName: !Ref MiniUserName
+      Groups:
+      - !Ref OnPremiseGroup
+      Policies:
+      - PolicyName: MiniUserPolicies
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - ssm:Get*
+            Effect: Allow
+            Resource: arn:aws:ssm:*:*:parameter/mini/*
+            Sid: AllowGettingParameters
   MiniAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
@@ -233,6 +250,18 @@ Resources:
     Type: AWS::IAM::User
     Properties:
       UserName: !Ref RheaUserName
+      Groups:
+      - !Ref OnPremiseGroup
+      Policies:
+      - PolicyName: RheaUserPolicies
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - ssm:Get*
+            Effect: Allow
+            Resource: arn:aws:ssm:*:*:parameter/rhea/*
+            Sid: AllowGettingParameters
   RheaAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
