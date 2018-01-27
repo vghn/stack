@@ -17,15 +17,18 @@ Parameters:
   MiniUserName:
     Description: Mini user name
     Type: String
+    Default: mini
   PrometheusUserName:
     Description: Prometheus user name
     Type: String
+    Default: prometheus
   PrometheusInstanceRoleArn:
     Description: Prometheus Instance Role ARN
     Type: String
   RheaUserName:
     Description: Rhea user name
     Type: String
+    Default: rhea
 
 Resources:
   AssetsBucket:
@@ -237,6 +240,7 @@ Resources:
     Properties:
       UserName: !Ref MiniUser
   PrometheusUser:
+    # Used by Grafana Billing Dashboard
     Type: AWS::IAM::User
     Properties:
       UserName: !Ref PrometheusUserName

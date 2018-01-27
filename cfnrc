@@ -224,8 +224,6 @@ process_cfn(){
       P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_VGH_ASSETS_BUCKET}'"
       P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_VGH_BACKUP_BUCKET}'"
       P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_VGH_SECRETS_BUCKET}'"
-      P="${P} 'ParameterKey=MiniUserName,ParameterValue=${AWS_VGH_MINI_USER}'"
-      P="${P} 'ParameterKey=RheaUserName,ParameterValue=${AWS_VGH_RHEA_USER}'"
       P="${P} 'ParameterKey=PrometheusInstanceRoleArn,ParameterValue=\"$(AWS_PROFILE=aws2017a  vgs_aws_cfn_get_output PrometheusIAM InstanceRoleArn)\"'"
       ;;
     vpc)
