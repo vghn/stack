@@ -20,6 +20,9 @@ Parameters:
   PrometheusUserName:
     Description: Prometheus user name
     Type: String
+  PrometheusInstanceRoleArn:
+    Description: Prometheus Instance Role ARN
+    Type: String
   RheaUserName:
     Description: Rhea user name
     Type: String
@@ -129,8 +132,8 @@ Resources:
           Principal:
             AWS:
             - !GetAtt [MiniUser, Arn]
-            - !GetAtt [PrometheusUser, Arn]
             - !GetAtt [RheaUser, Arn]
+            - !Ref PrometheusInstanceRoleArn
           Action:
           - s3:ListBucket
           Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName]]
@@ -146,7 +149,7 @@ Resources:
         - Sid: AlowPrometheus
           Effect: Allow
           Principal:
-            AWS: !GetAtt [PrometheusUser, Arn]
+            AWS: !Ref PrometheusInstanceRoleArn
           Action:
           - s3:PutObject
           - s3:GetObject
