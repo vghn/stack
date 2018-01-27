@@ -8,6 +8,10 @@ Parameters:
   AssetsBucket:
     Description: The S3 bucket containing the assets
     Type: String
+  PrometheusUserName:
+    Description: Prometheus user name
+    Type: String
+    Default: prometheus
 
 Resources:
   InstanceProfile:
@@ -60,8 +64,7 @@ Resources:
             Resource: '*'
             Sid: AllowListingParameters
           - Action:
-            - ssm:GetParameter
-            - ssm:GetParameters
+            - ssm:Get*
             Effect: Allow
             Resource: arn:aws:ssm:*:*:parameter/prometheus/*
             Sid: AllowGettingParameters
@@ -83,6 +86,17 @@ Resources:
               - !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket]]
               - !Join ['', ['arn:aws:s3:::', !Ref AssetsBucket, '/*']]
             Sid: AllowS3AccessToAssetsBucket
+  PrometheusUser:
+    # Used by Grafana Billing Dashboard
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref PrometheusUserName
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
+  PrometheusAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref PrometheusUser
 
 Outputs:
   InstanceProfile:
@@ -91,3 +105,9 @@ Outputs:
   InstanceRole:
     Description: The instance role name
     Value: !Ref InstanceRole
+  PrometheusAccessKey:
+    Description: The Prometheus User Access Key
+    Value: !Ref PrometheusAccessKey
+  PrometheusSecretKey:
+    Description: The Prometheus User Secret Key
+    Value: !GetAtt PrometheusAccessKey.SecretAccessKey
