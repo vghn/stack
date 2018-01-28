@@ -98,15 +98,14 @@ process_cfn(){
       P="${P} 'ParameterKey=PrometheusInstanceRoleArn,ParameterValue=\"$(AWS_PROFILE=aws2017a  vgs_aws_cfn_get_output PrometheusIAM InstanceRoleArn)\"'"
       ;;
     vpc)
+      export AWS_PROFILE='default'
       name='VPC'
       body='vpc.yml'
-      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       ;;
     vpc2017a)
       export AWS_PROFILE='aws2017a'
       name='VPC'
       body='vpc.yml'
-      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
       ;;
     *)
       usage

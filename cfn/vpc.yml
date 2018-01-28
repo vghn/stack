@@ -5,19 +5,10 @@ Parameters:
     Default: production
     Description: The environment type
     Type: String
-  NumberOfAZs:
-    Type: String
-    AllowedValues:
-    - '2'
-    - '3'
-    - '4'
-    Default: '2'
-    Description: The number of Availability Zones to use in the VPC. This must match
-      the number of zones in existing in the region.
 
 Conditions:
-  3AZCondition: !Or [ !Equals [!Ref NumberOfAZs, '3' ], Condition: 4AZCondition ]
-  4AZCondition: !Equals [!Ref NumberOfAZs, '4']
+  3AZCondition: !Or [!Equals [!Ref "AWS::Region", 'us-west-2'], !Equals [!Ref "AWS::Region", 'us-east-2'], Condition: 4AZCondition]
+  4AZCondition: !Equals [!Ref "AWS::Region", 'us-east-1']
 
 Mappings:
   CIDRs:
