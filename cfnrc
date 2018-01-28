@@ -42,93 +42,6 @@ process_cfn(){
       body='docker_cloud.yml'
       A='--capabilities CAPABILITY_NAMED_IAM'
       ;;
-    efs)
-      name='EFS'
-      body='efs.yml'
-      depends_on='vpc,sg'
-      P="${P} 'ParameterKey=VolumeName,ParameterValue=${PROJECT_NAME}'"
-      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG EFSSecurityGroup)\"'"
-      ;;
-    elb)
-      name='ELB'
-      body='elb.yml'
-      depends_on='vpc,sg'
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG ELBSecurityGroup)\"'"
-      P="${P} 'ParameterKey=SSLCertificateId,ParameterValue=${AWS_SSL_ARN}'"
-      ;;
-    iam)
-      name='IAM'
-      body='iam.yml'
-      A='--capabilities CAPABILITY_NAMED_IAM'
-      P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${AWS_ASSETS_BUCKET}'"
-      ;;
-    mec7-billing)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='BillingAlarms'
-      body='billing.yml'
-      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
-      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
-      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
-      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
-      ;;
-    mec7-cloudtrail)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='CloudTrail'
-      body='cloudtrail.yml'
-      depends_on='mec7-notications'
-      A='--capabilities CAPABILITY_NAMED_IAM'
-      P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
-      ;;
-    mec7-iam)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='IAM'
-      body='mec7/iam.yml'
-      A='--capabilities CAPABILITY_NAMED_IAM'
-      ;;
-    mec7-notifications)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='Notifications'
-      body='notifications.yml'
-      P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${MEC7_NOTIFICATION_EMAIL}'"
-      ;;
-    mec7-sg)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      name='SG'
-      body='mec7/sg.yml'
-      depends_on='mec7-vpc'
-      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
-      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${MEC7_TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
-      ;;
-    mec7-unifi)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      export AWS_EC2_KEY='mec7'
-      name='UNIFI'
-      body='mec7/unifi.yml'
-      depends_on='mec7-vpc,mev7-sg,mec7-iam'
-      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
-      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
-      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
-      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM UnifiInstanceProfile)\"'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG UnifiSecurityGroup)\"'"
-      ;;
-    mec7-vpc)
-      export AWS_PROFILE='mec7'
-      export AWS_DEFAULT_REGION='us-west-1'
-      export AWS_AZ_NUMBER='2'
-      name='VPC'
-      body='vpc.yml'
-      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
-      ;;
     notifications)
       name='Notifications'
       body='notifications.yml'
@@ -139,7 +52,7 @@ process_cfn(){
       export AWS_EC2_KEY='vgh'
       name='Prometheus'
       body='prometheus/main.yml'
-      depends_on='vpc,prometheus-iam,prometheus-sg'
+      depends_on='prometheus-iam,prometheus-sg'
       P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
       P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
       P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
@@ -158,17 +71,17 @@ process_cfn(){
       export AWS_PROFILE='aws2017a'
       name='PrometheusSG'
       body='prometheus/sg.yml'
-      depends_on='vpc'
       P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      depends_on='vpc2017a'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     puppetdb)
       export AWS_PROFILE='aws2017a'
       name='PuppetDB'
       body='puppet/db.yml'
-      depends_on='vpc,sg'
       P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
       P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output PuppetSG SecurityGroup)\"'"
+      depends_on='vpc2017a,puppetsg'
       P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME}'"
       P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER}'"
       P="${P} 'ParameterKey=DBPassword,ParameterValue=${PP_DB_PASS}'"
@@ -177,49 +90,17 @@ process_cfn(){
       export AWS_PROFILE='aws2017a'
       name='PuppetSG'
       body='puppet/sg.yml'
-      depends_on='vpc'
       P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
-    rds)
-      name='RDS'
-      body='rds.yml'
-      depends_on='vpc,sg'
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG DBSecurityGroup)\"'"
-      P="${P} 'ParameterKey=DBEngine,ParameterValue=${AWS_RDS_DB_ENGINE}'"
-      P="${P} 'ParameterKey=DBName,ParameterValue=${AWS_RDS_DB_NAME}'"
-      P="${P} 'ParameterKey=DBUser,ParameterValue=${AWS_RDS_DB_USER}'"
-      P="${P} 'ParameterKey=DBPassword,ParameterValue=${AWS_RDS_DB_PASS}'"
-      ;;
-    rhea)
-      name='RHEA'
-      body='rhea.yml'
-      depends_on='vpc,sg,iam,elb'
-      P="${P} 'ParameterKey=Version,ParameterValue=${VERSION}-${GIT_SHA1}'"
-      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
-      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_latest_ami_id VGH_RHEA)\"'"
-      P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
-      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output IAM InstanceProfile)\"'"
-      P="${P} 'ParameterKey=ElasticLoadBalancer,ParameterValue=\"$(vgs_aws_cfn_get_resource ELB ELB)\"'"
-      P="${P} 'ParameterKey=EFSVolumeID,ParameterValue=\"$(vgs_aws_cfn_get_output EFS VolumeID)\"'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output SG RheaSecurityGroup)\"'"
-      P="${P} 'ParameterKey=ControlRepoArchive,ParameterValue=s3://${AWS_ASSETS_BUCKET}/${PP_ARTIFACT}'"
-      ;;
-    sg)
-      export AWS_PROFILE='aws2017a'
-      name='SG'
-      body='sg.yml'
-      depends_on='vpc'
-      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
+      depends_on='vpc2017a'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     vgh)
       export AWS_PROFILE='default'
       name='VGH'
       body='vgh.yml'
-      depends_on='iam'
+      depends_on='prometheus-iam'
       A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_VGH_ASSETS_BUCKET}'"
       P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_VGH_BACKUP_BUCKET}'"
