@@ -31,8 +31,6 @@ process_cfn(){
       ;;
     cloudtrail)
       name='CloudTrail'
-      body='cloudtrail.yml'
-      depends_on='notications'
       A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
       ;;
@@ -54,11 +52,9 @@ process_cfn(){
       body='prometheus/main.yml'
       depends_on='prometheus-iam,prometheus-sg'
       P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
-      P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
+      P="${P} 'ParameterKey=ImageID,ParameterValue=ami-3dec9947'"
+      # P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
       P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
-      P="${P} 'ParameterKey=IamInstanceProfile,ParameterValue=\"$(vgs_aws_cfn_get_output PrometheusIAM InstanceProfile)\"'"
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output PrometheusSG SecurityGroup)\"'"
       ;;
     prometheus-iam)
       export AWS_PROFILE='aws2017a'
@@ -71,7 +67,6 @@ process_cfn(){
       export AWS_PROFILE='aws2017a'
       name='PrometheusSG'
       body='prometheus/sg.yml'
-      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
       depends_on='vpc2017a'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
@@ -79,8 +74,6 @@ process_cfn(){
       export AWS_PROFILE='aws2017a'
       name='PuppetDB'
       body='puppet/db.yml'
-      P="${P} 'ParameterKey=SubnetIDs,ParameterValue=\"$(vgs_aws_cfn_get_output VPC SubnetIDs)\"'"
-      P="${P} 'ParameterKey=SecurityGroupIDs,ParameterValue=\"$(vgs_aws_cfn_get_output PuppetSG SecurityGroup)\"'"
       depends_on='vpc2017a,puppetsg'
       P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME}'"
       P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER}'"
@@ -90,9 +83,6 @@ process_cfn(){
       export AWS_PROFILE='aws2017a'
       name='PuppetSG'
       body='puppet/sg.yml'
-      P="${P} 'ParameterKey=VPCId,ParameterValue=\"$(vgs_aws_cfn_get_output VPC VPCId)\"'"
-      P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
-      ;;
       depends_on='vpc2017a'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
@@ -108,6 +98,12 @@ process_cfn(){
       P="${P} 'ParameterKey=PrometheusInstanceRoleArn,ParameterValue=\"$(AWS_PROFILE=aws2017a  vgs_aws_cfn_get_output PrometheusIAM InstanceRoleArn)\"'"
       ;;
     vpc)
+      name='VPC'
+      body='vpc.yml'
+      P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"
+      ;;
+    vpc2017a)
+      export AWS_PROFILE='aws2017a'
       name='VPC'
       body='vpc.yml'
       P="${P} 'ParameterKey=NumberOfAZs,ParameterValue=${AWS_AZ_NUMBER}'"

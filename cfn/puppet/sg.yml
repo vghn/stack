@@ -8,16 +8,13 @@ Parameters:
   TrustedIPs:
     Description: The IP address ranges that can be trusted
     Type: CommaDelimitedList
-  VPCId:
-    Description: The VPC ID
-    Type: AWS::EC2::VPC::Id
 
 Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: PuppetDB RDS Firewall
-      VpcId: !Ref VPCId
+      VpcId: !ImportValue VPCId
   SecurityGroupAllowTrustedIPs1:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -39,3 +36,5 @@ Outputs:
   SecurityGroup:
     Description: The PuppetDB security group
     Value: !Ref SecurityGroup
+    Export:
+      Name: PuppetDBSecurityGroup

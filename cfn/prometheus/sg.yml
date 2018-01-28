@@ -8,16 +8,13 @@ Parameters:
   TrustedIPs:
     Description: The IP address ranges that can be trusted
     Type: CommaDelimitedList
-  VPCId:
-    Description: The VPC ID
-    Type: AWS::EC2::VPC::Id
 
 Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Prometheus Firewall
-      VpcId: !Ref VPCId
+      VpcId: !ImportValue VPCId
   SecurityGroupAllowSelf:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -79,3 +76,5 @@ Outputs:
   SecurityGroup:
     Description: The Prometheus Security Group
     Value: !Ref SecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}"

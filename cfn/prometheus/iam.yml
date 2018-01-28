@@ -102,9 +102,13 @@ Outputs:
   InstanceProfile:
     Description: The Instance Profile
     Value: !Ref InstanceProfile
+    Export:
+      Name: !Sub "${AWS::StackName}InstanceProfile"
   InstanceRoleArn:
     Description: The instance role ARN
     Value: !GetAtt InstanceRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}InstanceRoleArn"
   PrometheusAccessKey:
     Description: The Prometheus User Access Key
     Value: !Ref PrometheusAccessKey

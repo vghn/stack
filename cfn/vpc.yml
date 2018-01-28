@@ -180,6 +180,10 @@ Outputs:
   SubnetIDs:
     Description: Subnet IDs
     Value: !Join [',', [!Ref Subnet1, !Ref Subnet2, !If [3AZCondition, !Ref Subnet3, !Ref "AWS::NoValue"], !If [4AZCondition, !Ref Subnet4, !Ref "AWS::NoValue"]]]
+    Export:
+      Name: !Sub "${AWS::StackName}SubnetIDs"
   VPCId:
     Description: The VPC ID
     Value: !Ref VPC
+    Export:
+      Name: !Sub "${AWS::StackName}Id"

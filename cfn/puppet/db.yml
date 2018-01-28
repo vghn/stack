@@ -30,12 +30,6 @@ Parameters:
     MinLength: '1'
     NoEcho: 'true'
     Type: String
-  SecurityGroupIDs:
-    Description: The list of security group ids
-    Type: List<AWS::EC2::SecurityGroup::Id>
-  SubnetIDs:
-    Description: The list of subnet ids
-    Type: List<AWS::EC2::Subnet::Id>
 
 Resources:
   DB:
@@ -52,14 +46,16 @@ Resources:
       DBSubnetGroupName: !Ref DBSubnetGroup
       MultiAZ: false
       StorageType: gp2
-      VPCSecurityGroups: !Ref SecurityGroupIDs
+      VPCSecurityGroups: !Split [",", !ImportValue PuppetDBSecurityGroup]
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: DB Subnet Group
-      SubnetIds: !Ref SubnetIDs
+      SubnetIds: !Split [",", !ImportValue VPCSubnetIDs]
 
 Outputs:
   DBEndpoint:
     Description: The database endpoint
     Value: !GetAtt DB.Endpoint.Address
+    Export:
+      Name: PuppetDBEndpoint

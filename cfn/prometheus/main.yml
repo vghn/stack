@@ -5,9 +5,6 @@ Parameters:
     Default: production
     Description: The environment type
     Type: String
-  IamInstanceProfile:
-    Description: The instance profile
-    Type: String
   ImageID:
     Description: The base image id
     Type: AWS::EC2::Image::Id
@@ -18,12 +15,6 @@ Parameters:
   KeyName:
     Description: The name of the key pair used to log into the EC2 instance via SSH
     Type: AWS::EC2::KeyPair::KeyName
-  SecurityGroupIDs:
-    Description: The list of security group ids
-    Type: List<AWS::EC2::SecurityGroup::Id>
-  SubnetIDs:
-    Description: The list of subnet ids
-    Type: List<AWS::EC2::Subnet::Id>
 
 Resources:
   EIP:
@@ -55,9 +46,9 @@ Resources:
       ImageId: !Ref ImageID
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
-      SecurityGroupIds: !Ref SecurityGroupIDs
-      SubnetId: !Select ['0',  !Ref SubnetIDs]
-      IamInstanceProfile: !Ref IamInstanceProfile
+      SecurityGroupIds: !Split [",", !ImportValue PrometheusSG]
+      SubnetId: !Select ['0',  !Split [",", !ImportValue VPCSubnetIDs]]
+      IamInstanceProfile: !ImportValue PrometheusIAMInstanceProfile
       Tags:
         - Key: Name
           Value: Prometheus
