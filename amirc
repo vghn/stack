@@ -9,6 +9,8 @@ process_ami_build(){
 
   case "$ami" in
     vgh)
+      name='VGH AMI'
+      file='vgh.json'
       V="     -var 'base_ami=$(vgs_aws_ec2_get_ubuntu_base_image_id 'xenial-16.04')'"
       V="${V} -var 'iam_instance_profile=$(vgs_aws_cfn_get_output IAM InstanceProfile)'"
       ;;
@@ -17,9 +19,9 @@ process_ami_build(){
       ;;
   esac
 
-  export PACKER_VARS="${V}"
+  export ami_cmd="${V} ${file}"
 }
 
 clear_ami(){
-  unset ami V
+  unset ami name file V
 }

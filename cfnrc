@@ -13,45 +13,46 @@ process_cfn(){
   P="'ParameterKey=EnvType,ParameterValue=${ENVTYPE}'"
 
   # Common tags
-  T="     'Key=Group,Value=${AWS_TAG_GROUP}'"
-  T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT}'"
+  T="     'Key=Group,Value=${AWS_TAG_GROUP:-vgh}'"
+  T="${T} 'Key=Project,Value=${AWS_TAG_PROJECT:-vgh}'"
 
   # Other
-  export depends_on=
+depends_on=
 
   # Stack defaults
   case "$stack" in
     billing)
       name='BillingAlarms'
-      body='billing.yml'
-      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((AWS_BUDGET/3))'"
-      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((AWS_BUDGET/2))'"
-      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${AWS_BUDGET}'"
-      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL}'"
+      file='billing.yml'
+      local budget=${AWS_BUDGET:-14}
+      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((budget/3))'"
+      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((budget/2))'"
+      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${budget}'"
+      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL:-}'"
       ;;
     cloudtrail)
       name='CloudTrail'
+      file='cloudtrail.yml'
       A='--capabilities CAPABILITY_NAMED_IAM'
-      P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS}'"
+      P="${P} 'ParameterKey=CloudWatchLogsRetentionInDays,ParameterValue=${AWS_LOG_RETENTION_DAYS:-14}'"
       ;;
     docker_cloud)
       export AWS_PROFILE='default'
       name='DockerCloud'
-      body='docker_cloud.yml'
+      file='docker_cloud.yml'
       A='--capabilities CAPABILITY_NAMED_IAM'
       ;;
     notifications)
       name='Notifications'
-      body='notifications.yml'
-      P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL}'"
+      file='notifications.yml'
+      P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL:-}'"
       ;;
     prometheus)
       export AWS_PROFILE='aws2017a'
-      export AWS_EC2_KEY='vgh'
       name='Prometheus'
-      body='prometheus/main.yml'
+      file='prometheus/main.yml'
       depends_on='prometheus-iam,prometheus-sg'
-      P="${P} 'ParameterKey=KeyName,ParameterValue=${AWS_EC2_KEY}'"
+      P="${P} 'ParameterKey=KeyName,ParameterValue=vgh'"
       P="${P} 'ParameterKey=ImageID,ParameterValue=ami-3dec9947'"
       # P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
       P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
@@ -59,37 +60,37 @@ process_cfn(){
     prometheus-iam)
       export AWS_PROFILE='aws2017a'
       name='PrometheusIAM'
-      body='prometheus/iam.yml'
+      file='prometheus/iam.yml'
       A='--capabilities CAPABILITY_NAMED_IAM'
-      P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${PROMETHEUS_ASSETS_BUCKET}'"
+      P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${PROMETHEUS_ASSETS_BUCKET:-prometheus}'"
       ;;
     prometheus-sg)
       export AWS_PROFILE='aws2017a'
       name='PrometheusSG'
-      body='prometheus/sg.yml'
+      file='prometheus/sg.yml'
       depends_on='vpc2017a'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     puppetdb)
       export AWS_PROFILE='aws2017a'
       name='PuppetDB'
-      body='puppet/db.yml'
+      file='puppet/db.yml'
       depends_on='vpc2017a,puppetsg'
-      P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME}'"
-      P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER}'"
-      P="${P} 'ParameterKey=DBPassword,ParameterValue=${PP_DB_PASS}'"
+      P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME:-puppetdb}'"
+      P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER:-puppetdb}'"
+      P="${P} 'ParameterKey=DBPassword,ParameterValue=${PP_DB_PASS:-puppetdb}'"
       ;;
     puppetsg)
       export AWS_PROFILE='aws2017a'
       name='PuppetSG'
-      body='puppet/sg.yml'
+      file='puppet/sg.yml'
       depends_on='vpc2017a'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     vgh)
       export AWS_PROFILE='default'
       name='VGH'
-      body='vgh.yml'
+      file='vgh.yml'
       depends_on='prometheus-iam'
       A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_VGH_ASSETS_BUCKET}'"
@@ -100,21 +101,22 @@ process_cfn(){
     vpc)
       export AWS_PROFILE='default'
       name='VPC'
-      body='vpc.yml'
+      file='vpc.yml'
       ;;
     vpc2017a)
       export AWS_PROFILE='aws2017a'
       name='VPC'
-      body='vpc.yml'
+      file='vpc.yml'
       ;;
     *)
       usage
       ;;
   esac
 
-  export cfn_cmd="--stack-name ${name} --template-body file://${AWS_CFN_STACKS_PATH}/${body} ${A} --parameters ${P} --tags ${T}"
+  e_info "This stack depends on: ${depends_on}"
+  export cfn_cmd="--stack-name ${name} --template-body file://${AWS_CFN_STACKS_PATH}/${file} ${A} --parameters ${P} --tags ${T}"
 }
 
 clear_cfn(){
-  unset stack name body depends_on A P T cfn_cmd
+  unset stack name file depends_on A P T cfn_cmd
 }

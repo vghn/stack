@@ -3,7 +3,7 @@
 
 # Load environment
 # shellcheck disable=1090
-. "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/.env.sh"
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/envrc"
 
 # Usage
 usage(){
@@ -12,7 +12,7 @@ usage(){
   echo '---------------------------------------------'
   echo 'Commands:'
   echo ''
-  echo '  - ami [create | clean | validate] [NAME]'
+  echo '  - ami [build | clean | validate] [NAME]'
   echo ''
   echo '  - cfn [create | update | delete | validate] [STACK]'
   echo '    * Check the cfnrc file for available stacks'
@@ -47,8 +47,8 @@ stack_process_cli(){
     ami)
       process_ami_build "${@:-}"
       case "$scmd" in
-        create)
-          ami_create
+        build)
+          ami_build
           ;;
         clean)
           ami_clean

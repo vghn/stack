@@ -2,12 +2,11 @@
 # Common functions
 
 ami_validate(){
-  e_info "Validate ${AWS_AMI_PACKER}"
-  eval packer validate "${PACKER_VARS}" "$AWS_AMI_PACKER"
+  eval "packer validate ${ami_cmd:-}"
 }
 
-ami_create(){
-  eval packer build "${PACKER_VARS}" "$AWS_AMI_PACKER"
+ami_build(){
+  eval "packer build ${ami_cmd:-}"
 }
 
 # Removes images and snapshots for a given image prefix as well as the
@@ -36,10 +35,10 @@ cfn_delete_stack(){
 
 # Validate stack
 cfn_validate_stack(){
-  e_info "Validating ${body:-}"
+  e_info "Validating ${file:-}"
   aws cloudformation validate-template \
     --output table \
-    --template-body "file://${AWS_CFN_STACKS_PATH}/${body:-}"
+    --template-body "file://${AWS_CFN_STACKS_PATH}/${file:-}"
 }
 
 # Wait for stack to finish
@@ -115,7 +114,7 @@ ssh_setup(){
   esac
 
   e_info 'Set-up SSH key'
-  echo "$DEPLOY_RSA" | base64 --decode --ignore-garbage > "$SSH_KEY"
+  echo "$DEPLOY_RSA:-" | base64 --decode --ignore-garbage > "$SSH_KEY"
   chmod 600 "$SSH_KEY"
 
   e_info 'Update known hosts'
