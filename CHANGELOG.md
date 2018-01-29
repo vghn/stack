@@ -1,5 +1,32 @@
 # Change Log
 
+## [v0.3.1](https://github.com/vghn/stack/tree/v0.3.1) (2018-01-29)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.3.0...v0.3.1)
+
+**Implemented enhancements:**
+
+- Improve CLI scripts [\#147](https://github.com/vghn/stack/issues/147)
+- VPC Stack should be aware of AZs [\#146](https://github.com/vghn/stack/issues/146)
+- Use cross stack references [\#145](https://github.com/vghn/stack/issues/145)
+- Unify stack commands under bin/stack [\#144](https://github.com/vghn/stack/issues/144)
+- Remove AWS credentials as swarm secrets [\#143](https://github.com/vghn/stack/issues/143)
+- Create an OnPremise group with Rhea and Mini [\#142](https://github.com/vghn/stack/issues/142)
+- Use Prometheus instance role instead of user [\#141](https://github.com/vghn/stack/issues/141)
+- Add Prometheus user to AWS2017A account [\#140](https://github.com/vghn/stack/issues/140)
+- Add named IAM capability to CloudFormation [\#139](https://github.com/vghn/stack/issues/139)
+- Add CloudWatch access to the Prometheus user [\#138](https://github.com/vghn/stack/issues/138)
+- Improve alert rules [\#137](https://github.com/vghn/stack/issues/137)
+- Add monitoring stack [\#136](https://github.com/vghn/stack/issues/136)
+- Improve scripts for stack update [\#135](https://github.com/vghn/stack/issues/135)
+- Allow secret rotation for webhook [\#134](https://github.com/vghn/stack/issues/134)
+- Allow both GetParameter and GetParameters for SSM [\#132](https://github.com/vghn/stack/issues/132)
+- Add lifecycle rotation for Prometheus backups [\#131](https://github.com/vghn/stack/issues/131)
+- Do not save the decrypted .env to disk [\#130](https://github.com/vghn/stack/issues/130)
+
+**Fixed bugs:**
+
+- Fix deploy task [\#133](https://github.com/vghn/stack/issues/133)
+
 ## [v0.3.0](https://github.com/vghn/stack/tree/v0.3.0) (2017-12-26)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.2.2...v0.3.0)
 
