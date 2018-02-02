@@ -47,9 +47,9 @@ Resources:
         Statement:
         - Sid: DenyUnEncryptedInflightOperations
           Effect: Deny
-          Principal: "*"
+          Principal: '*'
           Action: s3:*
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, "/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, '/*']]
           Condition:
             Bool:
               aws:SecureTransport: false
@@ -69,7 +69,7 @@ Resources:
           - s3:PutObject
           - s3:GetObject
           - s3:DeleteObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, "/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref AssetsBucketName, '/*']]
   BackupBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -124,9 +124,9 @@ Resources:
         Statement:
         - Sid: DenyUnEncryptedInflightOperations
           Effect: Deny
-          Principal: "*"
+          Principal: '*'
           Action: s3:*
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/*']]
           Condition:
             Bool:
               aws:SecureTransport: false
@@ -148,7 +148,7 @@ Resources:
           - s3:PutObject
           - s3:GetObject
           - s3:DeleteObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/mini/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/mini/*']]
         - Sid: AlowPrometheus
           Effect: Allow
           Principal:
@@ -157,7 +157,7 @@ Resources:
           - s3:PutObject
           - s3:GetObject
           - s3:DeleteObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/prometheus/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/prometheus/*']]
         - Sid: AlowRhea
           Effect: Allow
           Principal:
@@ -166,13 +166,17 @@ Resources:
           - s3:PutObject
           - s3:GetObject
           - s3:DeleteObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, "/rhea/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/rhea/*']]
   SecretsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
       AccessControl: Private
       BucketName: !Ref SecretsBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
   SecretsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -183,9 +187,9 @@ Resources:
         Statement:
         - Sid: DenyUnEncryptedInflightOperations
           Effect: Deny
-          Principal: "*"
+          Principal: '*'
           Action: s3:*
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, "/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
           Condition:
             Bool:
               aws:SecureTransport: false
@@ -203,13 +207,13 @@ Resources:
             AWS:
             - !GetAtt [RheaUser, Arn]
           Action: s3:GetObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, "/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
         - Sid: DenyUnEncryptedObjectUploads
           Effect: Deny
-          Principal: "*"
+          Principal: '*'
           Action:
           - s3:PutObject
-          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, "/*"]]
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucketName, '/*']]
           Condition:
             StringNotEquals:
               s3:x-amz-server-side-encryption: AES256
