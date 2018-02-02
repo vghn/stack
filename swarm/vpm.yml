@@ -1,62 +1,6 @@
 version: '3.4'
 
 services:
-  lb:
-    image: traefik:1.4
-    hostname: lb-rhea
-    command: >-
-      --configfile=/dev/null
-      --web --web.address=0.0.0.0:8888
-      --docker --docker.swarmmode --docker.domain=traefik --docker.watch
-      --defaultentrypoints=http,https
-      --entryPoints="Name:http Address::80 Redirect.EntryPoint:https"
-      --entryPoints="Name:https Address::443 TLS"
-      --acme --acme.email=webmaster@ghn.me
-      --acme.domains=rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me
-      --acme.domains=vps159021.vps.ovh.ca
-      --acme.entryPoint=https
-      --acme.storage=/certs/acme.json
-    ports:
-      - '80:80'
-      - '443:443'
-      - mode: host
-        target: 8888
-        published: 8888
-    volumes:
-      - certs:/certs
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - frontend
-      - encrypted
-    labels:
-      container_group: lbs
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-  webhook:
-    image: vladgh/wh:latest
-    hostname: webhook-rhea
-    environment:
-      API_CONFIG: '/run/secrets/webhook.yml'
-    secrets:
-      - source: webhook.yml_v2
-        target: webhook.yml
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - encrypted
-    labels:
-      container_group: webhooks
-    deploy:
-      placement:
-        constraints:
-          - node.labels.role == rhea
-      labels:
-        traefik.tags: 'webhook'
-        traefik.port: '8523'
-        traefik.frontend.rule: 'HostRegexp:vps159021.vps.ovh.ca,{subdomain:[a-z]+}.ghn.me;PathPrefix:/'
-        traefik.backend.loadbalancer.sticky: 'true'
   puppet:
     image: vladgh/ps:latest
     hostname: puppet.ghn.me
@@ -173,7 +117,6 @@ services:
     command: cron
     volumes:
       - /home/ubuntu/.aws:/root/.aws                  # AWS Credentials
-      - certs:/backup/certs                           # LetsEncrypt Certificates
       - ssl:/backup/puppet-ca                         # PuppetCA Certificates
       - /etc/puppetlabs/puppet/ssl:/backup/puppet-ssl # Puppet Agent Certificates
       - /var/lib/docker/swarm:/backup/swarm           # Swarm state
@@ -231,20 +174,12 @@ secrets:
     external: true
   puppetdb_user:
     external: true
-  webhook.yml_v2:
-    external: true
 
 volumes:
   ssl:
   code:
-  certs:
 
 networks:
-  frontend:
-  encrypted:
-    driver: overlay
-    driver_opts:
-      encrypted: ""
   puppet:
     driver: overlay
     driver_opts:
