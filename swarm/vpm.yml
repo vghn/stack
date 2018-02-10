@@ -92,8 +92,13 @@ services:
     hostname: r10k
     environment:
       REMOTE: 'https://github.com/vghn/puppet.git'
+      POSTRUN: '["/run/secrets/notify_slack.sh", "R10K deployed"]'
       CRONTIME: '10 * * * *'
     command: 'deploy environment --puppetfile'
+    secrets:
+      - source: notify_slack.sh
+        target: /run/secrets/notify_slack.sh
+        mode: 0550
     volumes:
       - code:/etc/puppetlabs/code
       - /var/cache/r10k
@@ -167,6 +172,8 @@ secrets:
   eyaml_private_key.pkcs7.pem:
     external: true
   eyaml_public_key.pkcs7.pem:
+    external: true
+  notify_slack.sh:
     external: true
   puppet_csr.yml:
     external: true
