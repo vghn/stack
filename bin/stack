@@ -107,6 +107,11 @@ stack_process_cli(){
           ;;
       esac
       ;;
+    preinstall)
+      if ! git diff --name-only "$TRAVIS_COMMIT_RANGE" | grep -qvE '(.md)|^(CODEOWNERS)|^(LICENSE)|^(docs)'; then
+        echo 'Non-essential files were updated, skipping CI.'; exit
+      fi
+      ;;
     install)
       install_vgs
       ;;
