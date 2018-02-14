@@ -1,5 +1,14 @@
 # Change Log
 
+## [v0.3.2](https://github.com/vghn/stack/tree/v0.3.2) (2018-02-14)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.3.1...v0.3.2)
+
+**Implemented enhancements:**
+
+- Do not run CI for non-essential files [\#150](https://github.com/vghn/stack/issues/150)
+- Add postrun hook to R10K [\#149](https://github.com/vghn/stack/issues/149)
+- Remove load balancer and webhook from the VPM stack [\#148](https://github.com/vghn/stack/issues/148)
+
 ## [v0.3.1](https://github.com/vghn/stack/tree/v0.3.1) (2018-01-29)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.3.0...v0.3.1)
 
