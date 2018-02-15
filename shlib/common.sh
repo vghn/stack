@@ -81,7 +81,7 @@ install_packer(){
 # Validate BASH scripts
 validate_bash(){
   e_info 'Validate BASH scripts'
-  find ./bin -type f -exec shellcheck {} +
+  find ./bin ./shlib ./hooks -type f -exec shellcheck {} +
 }
 
 # Validate CloudFormation templates
