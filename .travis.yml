@@ -19,10 +19,7 @@ before_install: |
     echo 'Non-essential files were updated, skipping CI.'
     travis_terminate 0
   fi
-install:
-- bin/stack install
-script:
-- bin/stack test
+script: find ./bin -type f -exec shellcheck {} +
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
