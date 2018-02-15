@@ -14,8 +14,11 @@ cache:
   directories:
   - vendor/bundle
   - "$HOME/.cache/pip"
-before_install:
-  - bin/stack preinstall
+before_install: |
+  if ! git diff --name-only "$TRAVIS_COMMIT_RANGE" 2>/dev/null | grep -qvE '(.md)|^(CODEOWNERS)|^(LICENSE)|^(docs)'; then
+    echo 'Non-essential files were updated, skipping CI.'
+    travis_terminate 0
+  fi
 install:
 - bin/stack install
 script:
