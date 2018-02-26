@@ -62,7 +62,7 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-        - Sid: AssumeRole1
+        - Sid: AssumeRole
           Effect: Allow
           Principal:
             Service: 'cloudtrail.amazonaws.com'
@@ -72,11 +72,11 @@ Resources:
         PolicyDocument:
           Version: '2012-10-17'
           Statement:
-          - Sid: AWSCloudTrailCreateLogStream2014110
+          - Sid: AWSCloudTrailCreateLogStream
             Effect: Allow
             Action: 'logs:CreateLogStream'
             Resource: !GetAtt 'TrailLogGroup.Arn'
-          - Sid: AWSCloudTrailPutLogEvents20141101
+          - Sid: AWSCloudTrailPutLogEvents
             Effect: Allow
             Action: 'logs:PutLogEvents'
             Resource: !GetAtt 'TrailLogGroup.Arn'
