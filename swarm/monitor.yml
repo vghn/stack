@@ -139,6 +139,7 @@ services:
       LOGROTATE_INTERVAL: 'daily'
       LOGROTATE_COPIES: '90'
       LOGROTATE_COMPRESSION: 'compress'
+      LOGROTATE_OLDDIR: '/data/logs/archive'
       TZ: 'US/Central'
     volumes:
       - data:/data
