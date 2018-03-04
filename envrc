@@ -17,7 +17,7 @@ export SSH_KEY ENCRYPT_KEY PACKER_URL
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
 NOW="$(date +"%Y%m%d_%H%M%S")"
-VERSION=$(git describe --always --tags)
+VERSION=$(git --git-dir="${APPDIR}/.git" --work-tree="${APPDIR}" describe --always --tags)
 PACKER_URL="https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
 AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
 AWS_AMI_PACKER_PATH="${APPDIR}/ami"
