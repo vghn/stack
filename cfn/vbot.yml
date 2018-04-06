@@ -1,0 +1,92 @@
+Description: VBot
+
+Parameters:
+  EnvType:
+    Default: production
+    Description: The environment type
+    Type: String
+  VBotUserName:
+    Description: VBot user name
+    Type: String
+    Default: ''
+  SecretsBucketName:
+    Description: The S3 bucket containing the secrets
+    Type: String
+    Default: ''
+
+Conditions:
+  HasVBotUserName: !Not [!Equals [!Ref VBotUserName, '']]
+  HasS3BucketName: !Not [!Equals [!Ref SecretsBucketName, '']]
+
+Resources:
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !If [HasVBotUserName, !Ref VBotUserName, !Ref 'AWS::NoValue']
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+  AccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref User
+  Secrets:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketName: !If [HasS3BucketName, !Ref SecretsBucketName, !Ref 'AWS::NoValue']
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+  SecretsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: Secrets
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: DenyUnEncryptedInflightOperations
+          Effect: Deny
+          Principal: '*'
+          Action: s3:*
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref Secrets, '/*']]
+          Condition:
+            Bool:
+              aws:SecureTransport: false
+        - Sid: DenyUnEncryptedObjectUploads
+          Effect: Deny
+          Principal: '*'
+          Action:
+          - s3:PutObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref Secrets, '/*']]
+          Condition:
+            StringNotEquals:
+              s3:x-amz-server-side-encryption: AES256
+        - Sid: AllowListing
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt [User, Arn]
+          Action:
+          - s3:ListBucket
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref Secrets]]
+        - Sid: AlowReadOnlyAccesstoSecrets
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt [User, Arn]
+          Action: s3:GetObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref Secrets, '/*']]
+
+Outputs:
+  VBotAccessKey:
+    Description: The VBot User Access Key
+    Value: !Ref AccessKey
+  VBotSecretKey:
+    Description: The VBot User Secret Key
+    Value: !GetAtt AccessKey.SecretAccessKey
+  VBotSecretsBucket:
+    Description: The VBot Secrets Bucket
+    Value: !Ref Secrets

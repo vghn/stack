@@ -87,6 +87,13 @@ depends_on=
       depends_on='vpc2018'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
+    vbot)
+      export AWS_PROFILE='aws2018'
+      name='VBot'
+      file='vbot.yml'
+      depends_on=''
+      A='--capabilities CAPABILITY_NAMED_IAM'
+      ;;
     vgh)
       export AWS_PROFILE='default'
       name='VGH'
