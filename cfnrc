@@ -48,43 +48,43 @@ depends_on=
       P="${P} 'ParameterKey=NotificationEmail,ParameterValue=${NOTIFICATION_EMAIL:-}'"
       ;;
     prometheus)
-      export AWS_PROFILE='aws2017a'
+      export AWS_PROFILE='aws2018'
       name='Prometheus'
       file='prometheus/main.yml'
       depends_on='prometheus-iam,prometheus-sg'
       P="${P} 'ParameterKey=KeyName,ParameterValue=vgh'"
-      P="${P} 'ParameterKey=ImageID,ParameterValue=ami-3dec9947'"
+      P="${P} 'ParameterKey=ImageID,ParameterValue=ami-43a15f3e'"
       # P="${P} 'ParameterKey=ImageID,ParameterValue=\"$(vgs_aws_ec2_get_ubuntu_official_ami_id)\"'"
       P="${P} 'ParameterKey=InstanceType,ParameterValue=t2.micro'"
       ;;
     prometheus-iam)
-      export AWS_PROFILE='aws2017a'
+      export AWS_PROFILE='aws2018'
       name='PrometheusIAM'
       file='prometheus/iam.yml'
       A='--capabilities CAPABILITY_NAMED_IAM'
       P="${P} 'ParameterKey=AssetsBucket,ParameterValue=${PROMETHEUS_ASSETS_BUCKET:-prometheus}'"
       ;;
     prometheus-sg)
-      export AWS_PROFILE='aws2017a'
+      export AWS_PROFILE='aws2018'
       name='PrometheusSG'
       file='prometheus/sg.yml'
-      depends_on='vpc2017a'
+      depends_on='vpc2018'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     puppetdb)
-      export AWS_PROFILE='aws2017a'
+      export AWS_PROFILE='aws2018'
       name='PuppetDB'
       file='puppet/db.yml'
-      depends_on='vpc2017a,puppetsg'
+      depends_on='vpc2018,puppetsg'
       P="${P} 'ParameterKey=DBName,ParameterValue=${PP_DB_NAME:-puppetdb}'"
       P="${P} 'ParameterKey=DBUser,ParameterValue=${PP_DB_USER:-puppetdb}'"
       P="${P} 'ParameterKey=DBPassword,ParameterValue=${PP_DB_PASS:-puppetdb}'"
       ;;
     puppetsg)
-      export AWS_PROFILE='aws2017a'
+      export AWS_PROFILE='aws2018'
       name='PuppetSG'
       file='puppet/sg.yml'
-      depends_on='vpc2017a'
+      depends_on='vpc2018'
       P="${P} 'ParameterKey=TrustedIPs,ParameterValue=\"${TRUSTED_IPS:-\"$(vgs_get_external_ip)/32\"}\"'"
       ;;
     vgh)
@@ -100,6 +100,11 @@ depends_on=
       ;;
     vpc)
       export AWS_PROFILE='default'
+      name='VPC'
+      file='vpc.yml'
+      ;;
+    vpc2018)
+      export AWS_PROFILE='aws2018'
       name='VPC'
       file='vpc.yml'
       ;;

@@ -90,7 +90,7 @@ services:
     hostname: puppetdb.ghn.me
     environment:
       PUPPETDB_CERTNAME: 'puppet.ghn.me'
-      PUPPETDB_HOST: 'pdhmbnpv0r5lty.cwmrzqfvkzxh.us-east-1.rds.amazonaws.com'
+      PUPPETDB_HOST: 'pdty2vb1fexhzo.cnvbtnqtrl6k.us-east-1.rds.amazonaws.com'
       PUPPETDB_JAVA_ARGS: '-Xms128M -Xmx1024M'
     secrets:
       - puppetdb_user

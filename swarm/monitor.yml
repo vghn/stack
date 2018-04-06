@@ -33,7 +33,7 @@ services:
           - node.role == manager
           - node.labels.role == prometheus
   grafana:
-    image: grafana/grafana:5.0.3
+    image: grafana/grafana:5.0.4
     hostname: grafana.ghn.me
     environment:
       GF_PATHS_DATA: '/data/grafana'
@@ -228,7 +228,7 @@ volumes:
     driver: local
     driver_opts:
       type: ext4
-      device: /dev/prometheus/data
+      device: /dev/xvdg
 
 networks:
   frontend:

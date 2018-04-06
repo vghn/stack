@@ -95,7 +95,9 @@ stack_process_cli(){
       fi
       ;;
     env)
+      printf 'Encrypting .env... '
       echo "$TRAVIS_KEY_STACK" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env
+      echo 'Done'
       ;;
     hooks)
       case "$scmd" in
