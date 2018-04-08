@@ -12,6 +12,14 @@ Vtasks::Release.new(
 require 'vtasks/travisci'
 Vtasks::TravisCI.new
 
+# Encrypt dotenv
+desc 'Encrypts .env'
+task :env do
+  print 'Encrypting .env... '
+  system 'echo "$TRAVIS_KEY_STACK" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env'
+  puts 'Done'
+end
+
 # Display version
 desc 'Display version'
 task :version do
