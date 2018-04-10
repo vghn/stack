@@ -217,12 +217,10 @@ Resources:
           Condition:
             StringNotEquals:
               s3:x-amz-server-side-encryption: AES256
-
   OnPremiseGroup:
     Type: AWS::IAM::Group
     Properties:
       GroupName: OnPremise
-
   MiniUser:
     Type: AWS::IAM::User
     Properties:
