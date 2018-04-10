@@ -23,12 +23,14 @@ scrape_configs:
         - 'prometheus.ghn.me:9100'
         - 'rhea.ghn.me:9100'
         - 'vgh.asuscomm.com:9100'
+        - 'vgh.asuscomm.com:9102'
   - job_name: 'containers'
     static_configs:
       - targets:
         - 'cadvisor:8080'
         - 'rhea.ghn.me:9101'
         - 'vgh.asuscomm.com:9101'
+        - 'vgh.asuscomm.com:9103'
 
 alerting:
   alertmanagers:
