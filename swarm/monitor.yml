@@ -64,9 +64,9 @@ services:
     image: prom/prometheus:v2.2.1
     hostname: prometheus.ghn.me
     configs:
-      - source: alertrules.yml_v4
+      - source: alertrules.yml_v8
         target: /etc/prometheus/alertrules.yml
-      - source: prometheus.yml_v2
+      - source: prometheus.yml_v10
         target: /etc/prometheus/prometheus.yml
     volumes:
       - data:/data
@@ -87,7 +87,7 @@ services:
     image: prom/alertmanager:v0.14.0
     hostname: alertmanager.ghn.me
     secrets:
-      - source: alertmanager_config.yml
+      - source: alertmanager_config.yml_v1
         target: /etc/alertmanager/config.yml
     volumes:
       - data:/data
@@ -204,7 +204,7 @@ services:
       mode: global
 
 secrets:
-  alertmanager_config.yml:
+  alertmanager_config.yml_v1:
     external: true
   grafana_env:
     external: true
@@ -218,9 +218,9 @@ secrets:
     external: true
 
 configs:
-  alertrules.yml_v4:
+  alertrules.yml_v8:
     external: true
-  prometheus.yml_v2:
+  prometheus.yml_v10:
     external: true
 
 volumes:
