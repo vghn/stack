@@ -89,7 +89,7 @@ groups:
       description: PuppetDB container is down for more than 5 minutes
       summary: PUPPETDB CONTAINER DOWN
   - alert: irssi_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"mini_irssi_.+"})
+    expr: absent(container_cpu_usage_seconds_total{name=~"vlad_irssi_.+"})
     for: 5m
     labels:
       severity: Critical
