@@ -103,7 +103,7 @@ depends_on=
       P="${P} 'ParameterKey=AssetsBucketName,ParameterValue=${AWS_VGH_ASSETS_BUCKET}'"
       P="${P} 'ParameterKey=BackupBucketName,ParameterValue=${AWS_VGH_BACKUP_BUCKET}'"
       P="${P} 'ParameterKey=SecretsBucketName,ParameterValue=${AWS_VGH_SECRETS_BUCKET}'"
-      P="${P} 'ParameterKey=PrometheusInstanceRoleArn,ParameterValue=\"$(AWS_PROFILE=aws2017a  vgs_aws_cfn_get_output PrometheusIAM InstanceRoleArn)\"'"
+      P="${P} 'ParameterKey=PrometheusInstanceRoleArn,ParameterValue=\"$(AWS_PROFILE=aws2018 vgs_aws_cfn_get_output PrometheusIAM InstanceRoleArn)\"'"
       ;;
     vpc)
       export AWS_PROFILE='default'

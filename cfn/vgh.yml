@@ -29,6 +29,10 @@ Parameters:
     Description: Rhea user name
     Type: String
     Default: rhea
+  ZucuUserName:
+    Description: Zucu user name
+    Type: String
+    Default: zucu
 
 Resources:
   AssetsBucket:
@@ -114,6 +118,18 @@ Resources:
           Prefix: rhea/weekly/
           Status: Enabled
           ExpirationInDays: '30'
+        - Id: Zucu Hourly Rotation
+          Prefix: zucu/hourly/
+          Status: Enabled
+          ExpirationInDays: '1'
+        - Id: Zucu Daily Rotation
+          Prefix: zucu/daily/
+          Status: Enabled
+          ExpirationInDays: '7'
+        - Id: Zucu Weekly Rotation
+          Prefix: zucu/weekly/
+          Status: Enabled
+          ExpirationInDays: '30'
   BackupBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -135,12 +151,14 @@ Resources:
           Principal:
             AWS:
             - !GetAtt [MiniUser, Arn]
+            - !GetAtt [PrometheusUser, Arn]
             - !GetAtt [RheaUser, Arn]
+            - !GetAtt [ZucuUser, Arn]
             - !Ref PrometheusInstanceRoleArn
           Action:
           - s3:ListBucket
           Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName]]
-        - Sid: AlowMini
+        - Sid: AllowMini
           Effect: Allow
           Principal:
             AWS: !GetAtt [MiniUser, Arn]
@@ -149,16 +167,18 @@ Resources:
           - s3:GetObject
           - s3:DeleteObject
           Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/mini/*']]
-        - Sid: AlowPrometheus
+        - Sid: AllowPrometheus
           Effect: Allow
           Principal:
-            AWS: !Ref PrometheusInstanceRoleArn
+            AWS:
+            - !Ref PrometheusInstanceRoleArn
+            - !GetAtt [PrometheusUser, Arn]
           Action:
           - s3:PutObject
           - s3:GetObject
           - s3:DeleteObject
           Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/prometheus/*']]
-        - Sid: AlowRhea
+        - Sid: AllowRhea
           Effect: Allow
           Principal:
             AWS: !GetAtt [RheaUser, Arn]
@@ -167,6 +187,15 @@ Resources:
           - s3:GetObject
           - s3:DeleteObject
           Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/rhea/*']]
+        - Sid: AllowZucu
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt [ZucuUser, Arn]
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          - s3:DeleteObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref BackupBucketName, '/zucu/*']]
   SecretsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -272,6 +301,26 @@ Resources:
     Type: AWS::IAM::AccessKey
     Properties:
       UserName: !Ref RheaUser
+  ZucuUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref ZucuUserName
+      Groups:
+      - !Ref OnPremiseGroup
+      Policies:
+      - PolicyName: ZucuUserPolicies
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - ssm:Get*
+            Effect: Allow
+            Resource: arn:aws:ssm:*:*:parameter/zucu/*
+            Sid: AllowGettingParameters
+  ZucuAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref ZucuUser
 
 Outputs:
   MiniAccessKey:
@@ -292,3 +341,9 @@ Outputs:
   RheaSecretKey:
     Description: The Rhea User Secret Key
     Value: !GetAtt RheaAccessKey.SecretAccessKey
+  ZucuAccessKey:
+    Description: The Zucu User Access Key
+    Value: !Ref ZucuAccessKey
+  ZucuSecretKey:
+    Description: The Zucu User Secret Key
+    Value: !GetAtt ZucuAccessKey.SecretAccessKey
