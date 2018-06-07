@@ -12,7 +12,7 @@ groups:
       description: "Node {{ $labels.node}} has been down for more than 5 minutes. Instance: {{ $labels.instance }}; job: {{ $labels.job }}."
       summary: "INSTANCE DOWN: {{ $labels.instance }}"
   - alert: node_restarted
-    expr: node_time - node_boot_time < 300
+    expr: node_time_seconds - node_boot_time_seconds < 300
     for: 1m
     labels:
       severity: Warning
@@ -28,7 +28,7 @@ groups:
       description: "Node {{ $labels.node}} is under high load. Load is {{ humanize $value }}. Instance: {{ $labels.instance }}; job: {{ $labels.job }}."
       summary: "HIGH LOAD WARNING: {{ $labels.instance }}"
   - alert: node_running_out_of_disk_space
-    expr: node_filesystem_free{mountpoint="/etc/hostname"} < 1e+09
+    expr: node_filesystem_free_bytes{mountpoint="/etc/hostname"} < 1e+09
     for: 5m
     labels:
       severity: Warning
@@ -36,7 +36,7 @@ groups:
       description: "Node {{ $labels.node}} has less than 1GB of free disk space. Free disk space at {{ humanize $value }} GB. Instance: {{ $labels.instance }}; job: {{ $labels.job }}."
       summary: "LOW DISK SPACE WARING: {{ $labels.instance }}"
   - alert: node_low_disk_space
-    expr: 100 * min(node_filesystem_avail / node_filesystem_size{mountpoint=~"/etc/hostname|^/mnt.*|^/data.*"})
+    expr: 100 * min(node_filesystem_avail_bytes / node_filesystem_size_bytes{mountpoint=~"/etc/hostname|^/mnt.*|^/data.*"})
       BY (device, fstype, host, instance, job) < 10
     for: 5m
     labels:
