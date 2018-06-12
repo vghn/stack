@@ -92,12 +92,6 @@ validate_cfn(){
     -- {} \;
 }
 
-# Validate AMIs
-validate_amis(){
-  e_info 'Validate AMIs'
-  eval "${APPDIR}/bin/ami" validate
-}
-
 # Set-up SSH
 ssh_setup(){
   local stack="${1:-}"
