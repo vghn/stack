@@ -173,7 +173,6 @@ deploy_swarm(){
   fi
 
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
-    load_env
     ssh_setup "$stack"
     e_info 'Deploy stack'
     ( eval "$SSH_CMD" "docker stack deploy --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
@@ -188,7 +187,7 @@ install_git_hooks(){
   # Set working directory
   cd "$APPDIR" || exit
 
-  for file in ${APPDIR}/hooks/*-git-hook; do
+  for file in "${APPDIR}"/hooks/*-git-hook; do
     echo "Installing ${file}"
     ln -sfn "$file" "${APPDIR}/.git/hooks/$(basename "${file%-git-hook}")"
   done

@@ -9,7 +9,7 @@ IFS=$'\n\t'
 
 # VARs
 SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
-ENCRYPT_KEY="${ENCRYPT_KEY:-$(echo "$TRAVIS_KEY_STACK" | base64)}"
+ENCRYPT_KEY="${ENCRYPT_KEY:-}"
 PACKER_VERSION='1.2.4'
 export SSH_KEY ENCRYPT_KEY PACKER_URL
 
@@ -23,29 +23,18 @@ AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
 AWS_AMI_PACKER_PATH="${APPDIR}/ami"
 export APPDIR TMPDIR NOW VERSION AWS_CFN_STACKS_PATH AWS_AMI_PACKER_PATH
 
-# Load private environment
-if [[ -s "${APPDIR}/.env" ]]; then
-  # shellcheck disable=1090
-  . "${APPDIR}/.env" 2>/dev/null || true
-elif [[ -s "${APPDIR}/.env.gpg" ]]; then
-  # shellcheck disable=1090
-  . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
-fi
-
 # Load VGS library (https://github.com/vghn/vgs)
 # shellcheck disable=1090
 . ~/vgs/load 2>/dev/null || echo 'VGS library is required' 1>&2
 
+# Load environment
+load_env
+
 # Load functions
 if [[ -d "${APPDIR}/shlib" ]]; then
   # shellcheck disable=1090
-  for file in ${APPDIR}/shlib/*.sh; do . "$file"; done
+  for file in "${APPDIR}"/shlib/*.sh; do . "$file"; done
 fi
-
-# Detect environment
-detect_environment 2>/dev/null || true
-detect_ci_environment 2>/dev/null || true
-ENVTYPE="${ENVTYPE:-production}"
 
 # Load AWS AMI Build environment
 # shellcheck disable=1090
