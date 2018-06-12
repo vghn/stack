@@ -12,7 +12,7 @@ before_install: |
     echo 'Non-essential files were updated, skipping CI.'
     travis_terminate 0
   fi
-install: 
+install:
   # Install a custom version of shellcheck instead of Travis CI's default
   - |
     scversion='stable' # or "v0.4.7", or "latest"
@@ -22,7 +22,7 @@ install:
     shellcheck --version
   # Install gems
   - bundle install --without development --path vendor/bundle
-script: find ./bin ./hooks ./shlib -type f -exec shellcheck {} +
+script: find ./bin ./hooks ./shlib -type f -name '*.sh' -exec shellcheck {} +
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
