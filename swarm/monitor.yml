@@ -61,7 +61,7 @@ services:
         traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
         traefik.backend.loadbalancer.sticky: 'true'
   prometheus:
-    image: prom/prometheus:v2.2.1
+    image: prom/prometheus:v2.3.0
     hostname: prometheus.ghn.me
     configs:
       - source: alertrules.yml_v10
@@ -186,7 +186,7 @@ services:
     deploy:
       mode: global
   cadvisor:
-    image: google/cadvisor:v0.29.0
+    image: google/cadvisor:v0.30.0
     hostname: cadvisor-prometheus
     volumes:
       - /:/rootfs:ro
