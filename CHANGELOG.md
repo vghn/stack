@@ -1,5 +1,23 @@
 # Change Log
 
+## [v0.3.3](https://github.com/vghn/stack/tree/v0.3.3) (2018-06-17)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.3.2...v0.3.3)
+
+**Implemented enhancements:**
+
+- Improve billing alarms [\#159](https://github.com/vghn/stack/issues/159)
+- Create VBot stack [\#157](https://github.com/vghn/stack/issues/157)
+- Migrate to new servers [\#156](https://github.com/vghn/stack/issues/156)
+- Improve the RDS CloudFormation template [\#155](https://github.com/vghn/stack/issues/155)
+- Improve environment [\#154](https://github.com/vghn/stack/issues/154)
+- Change logrotate output directory [\#153](https://github.com/vghn/stack/issues/153)
+- Add Traefik with webhooks [\#152](https://github.com/vghn/stack/issues/152)
+
+**Fixed bugs:**
+
+- Rename metrics for node exporter v16 [\#158](https://github.com/vghn/stack/issues/158)
+- Fix paths for shellcheck script [\#151](https://github.com/vghn/stack/issues/151)
+
 ## [v0.3.2](https://github.com/vghn/stack/tree/v0.3.2) (2018-02-14)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.3.1...v0.3.2)
 
