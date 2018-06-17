@@ -24,10 +24,14 @@ depends_on=
     billing)
       name='BillingAlarms'
       file='billing.yml'
-      local budget=${AWS_BUDGET:-14}
-      P="${P} 'ParameterKey=LowMonthlyExpense,ParameterValue=$((budget/3))'"
-      P="${P} 'ParameterKey=MedMonthlyExpense,ParameterValue=$((budget/2))'"
-      P="${P} 'ParameterKey=MaxMonthlyExpense,ParameterValue=${budget}'"
+      P="${P} 'ParameterKey=AlarmThresholds,ParameterValue=\"1,2,3,4,5\"'"
+      P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL:-}'"
+      ;;
+    billing2018)
+      export AWS_PROFILE='aws2018'
+      name='BillingAlarms'
+      file='billing.yml'
+      P="${P} 'ParameterKey=AlarmThresholds,ParameterValue=\"1,2,3,4,5\"'"
       P="${P} 'ParameterKey=RecipientEmailAddress,ParameterValue=${NOTIFICATION_EMAIL:-}'"
       ;;
     cloudtrail)
