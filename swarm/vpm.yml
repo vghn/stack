@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   lb:
-    image: traefik:1.5
+    image: traefik:1.6
     hostname: lb-rhea
     command: >-
       --configfile=/dev/null --loglevel=INFO
@@ -204,7 +204,7 @@ services:
     deploy:
       mode: global
   cadvisor:
-    image: google/cadvisor:v0.28.3
+    image: google/cadvisor:v0.30.0
     hostname: cadvisor-rhea
     volumes:
       - /:/rootfs:ro
