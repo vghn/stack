@@ -10,7 +10,7 @@ IFS=$'\n\t'
 # VARs
 SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
 ENCRYPT_KEY="${ENCRYPT_KEY:-}"
-PACKER_VERSION='1.2.4'
+PACKER_VERSION='1.2.5'
 export SSH_KEY ENCRYPT_KEY PACKER_URL
 
 # System VARs
