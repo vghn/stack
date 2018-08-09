@@ -8,8 +8,8 @@ cache:
   directories:
   - vendor/bundle
 env:
-  - PACKER_VERSION='1.2.5'
-  - SC_VERSION='stable' # or "v0.4.7", or "latest"
+  PACKER_VERSION: '1.2.5'
+  SC_VERSION: 'stable' # or "v0.4.7", or "latest"
 before_install: |
   if ! git diff --name-only "$TRAVIS_COMMIT_RANGE" 2>/dev/null | grep -qvE '(.md)|^(CODEOWNERS)|^(LICENSE)|^(docs)'; then
     echo 'Non-essential files were updated, skipping CI.'
