@@ -25,10 +25,11 @@ install:
   # Install gems
   - bundle install --without development --path vendor/bundle
   - git clone https://github.com/vghn/vgs.git ~/vgs
-  - pip install --user --upgrade awscli
+  - pip install --user --upgrade awscli && aws --version
   - |
     curl -L -o packer.zip "https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
     unzip -d ~/bin packer.zip
+    packer version
 script: find ./bin ./shlib -type f -exec shellcheck {} +
 notifications:
   webhooks:
