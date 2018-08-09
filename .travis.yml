@@ -29,7 +29,7 @@ install:
   - |
     curl -L -o packer.zip "https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
     unzip -d ~/bin packer.zip
-script: find ./bin ./hooks ./shlib -type f -exec shellcheck {} +
+script: find ./bin ./shlib -type f -exec shellcheck {} +
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
