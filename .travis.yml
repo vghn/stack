@@ -32,7 +32,7 @@ install:
     unzip -d ~/bin packer.zip
     packer version
   - |
-    curl -L -o packer.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
+    curl -L -o terraform.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
     unzip -d ~/bin terraform.zip
     terraform version
 script: find ./bin ./shlib -type f -exec shellcheck {} +
