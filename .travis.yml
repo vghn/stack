@@ -9,6 +9,7 @@ cache:
   - vendor/bundle
 env:
   PACKER_VERSION: '1.2.5'
+  TF_VERSION: '0.11.7'
   SC_VERSION: 'stable' # or "v0.4.7", or "latest"
 before_install: |
   if ! git diff --name-only "$TRAVIS_COMMIT_RANGE" 2>/dev/null | grep -qvE '(.md)|^(CODEOWNERS)|^(LICENSE)|^(docs)'; then
@@ -30,6 +31,10 @@ install:
     curl -L -o packer.zip "https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
     unzip -d ~/bin packer.zip
     packer version
+  - |
+    curl -L -o packer.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
+    unzip -d ~/bin terraform.zip
+    terraform version
 script: find ./bin ./shlib -type f -exec shellcheck {} +
 notifications:
   webhooks:
