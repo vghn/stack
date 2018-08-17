@@ -9,13 +9,8 @@ cache:
   - vendor/bundle
 env:
   PACKER_VERSION: '1.2.5'
-  TF_VERSION: '0.11.7'
+  TF_VERSION: '0.11.8'
   SC_VERSION: 'stable' # or "v0.4.7", or "latest"
-before_install: |
-  if ! git diff --name-only "$TRAVIS_COMMIT_RANGE" 2>/dev/null | grep -qvE '(.md)|^(CODEOWNERS)|^(LICENSE)|^(docs)'; then
-    echo 'Non-essential files were updated, skipping CI.'
-    travis_terminate 0
-  fi
 install:
   # Install a custom version of shellcheck instead of Travis CI's default
   - |
@@ -25,8 +20,9 @@ install:
     shellcheck --version
   # Install gems
   - bundle install --without development --path vendor/bundle
-  - git clone https://github.com/vghn/vgs.git ~/vgs
-  - pip install --user --upgrade awscli && aws --version
+  # Install PIP packages
+  - pip install --user --upgrade awscli aws-amicleaner future && aws --version && amicleaner --version
+  # Install Hashicorp's packages
   - |
     curl -L -o packer.zip "https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
     unzip -d ~/bin packer.zip

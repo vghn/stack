@@ -33,7 +33,7 @@ services:
           - node.role == manager
           - node.labels.role == prometheus
   grafana:
-    image: grafana/grafana:5.2.1
+    image: grafana/grafana:5.2.2
     hostname: grafana.ghn.me
     environment:
       GF_PATHS_DATA: '/data/grafana'
@@ -43,7 +43,8 @@ services:
       GF_SMTP_FROM_ADDRESS: 'admin@ghn.me'
       GF_SMTP_FROM_NAME: 'Prometheus'
     secrets:
-      - grafana_env
+      - source: grafana_env_v1
+        target: grafana_env
     entrypoint: sh -c 'set -o allexport && . /run/secrets/grafana_env && /run.sh'
     volumes:
       - data:/data
@@ -64,9 +65,9 @@ services:
     image: prom/prometheus:v2.3.2
     hostname: prometheus.ghn.me
     configs:
-      - source: alertrules.yml_v10
+      - source: alertrules.yml_v1
         target: /etc/prometheus/alertrules.yml
-      - source: prometheus.yml_v10
+      - source: prometheus.yml_v1
         target: /etc/prometheus/prometheus.yml
     volumes:
       - data:/data
@@ -115,10 +116,14 @@ services:
       TIME_ZONE: 'US/Central'
       REMOTE_LOGS_PATH: '/data/logs'
     secrets:
-      - logs-combined-ca-cert.pem
-      - logs-server-cert.pem
-      - logs-server-key.pem
-      - logzio_token
+      - source: logs-combined-ca-cert.pem_v1
+        target: logs-combined-ca-cert.pem
+      - source: logs-server-cert.pem_v1
+        target: logs-server-cert.pem
+      - source: logs-server-key.pem_v1
+        target: logs-server-key.pem
+      - source: logzio_token_v1
+        target: logzio_token
     volumes:
       - data:/data
     ports:
@@ -155,8 +160,7 @@ services:
     image: vladgh/backup:latest
     hostname: backup-prometheus
     environment:
-      AWS_S3_BUCKET: 'vgbak'
-      AWS_S3_PREFIX: 'prometheus'
+      AWS_S3_BUCKET: 'vgbak-prometheus'
       GPG_RECIPIENT: 'vlad@ghn.me'
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     command: cron
@@ -206,21 +210,21 @@ services:
 secrets:
   alertmanager_config.yml_v1:
     external: true
-  grafana_env:
+  grafana_env_v1:
     external: true
-  logs-combined-ca-cert.pem:
+  logs-combined-ca-cert.pem_v1:
     external: true
-  logs-server-cert.pem:
+  logs-server-cert.pem_v1:
     external: true
-  logs-server-key.pem:
+  logs-server-key.pem_v1:
     external: true
-  logzio_token:
+  logzio_token_v1:
     external: true
 
 configs:
-  alertrules.yml_v10:
+  alertrules.yml_v1:
     external: true
-  prometheus.yml_v10:
+  prometheus.yml_v1:
     external: true
 
 volumes:
@@ -232,4 +236,10 @@ volumes:
 
 networks:
   frontend:
+    ipam:
+      config:
+        - subnet: 10.0.1.0/24 # Should not conflict with the AWS VPC
   backend:
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24

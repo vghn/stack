@@ -90,7 +90,7 @@ services:
     hostname: puppetdb.ghn.me
     environment:
       PUPPETDB_CERTNAME: 'puppet.ghn.me'
-      PUPPETDB_HOST: 'pdty2vb1fexhzo.cnvbtnqtrl6k.us-east-1.rds.amazonaws.com'
+      PUPPETDB_HOST: 'puppetdb.cnvbtnqtrl6k.us-east-1.rds.amazonaws.com'
       PUPPETDB_JAVA_ARGS: '-Xms128M -Xmx1024M'
     secrets:
       - puppetdb_user
@@ -128,7 +128,7 @@ services:
     image: vladgh/s3sync:latest
     hostname: sync-rhea
     environment:
-      S3PATH: 's3://vgast/puppet/ssl'
+      S3PATH: 's3://vgppt/ssl'
     command: sync
     volumes:
       - /home/ubuntu/.aws:/root/.aws
@@ -169,8 +169,7 @@ services:
     image: vladgh/backup:latest
     hostname: backup-rhea
     environment:
-      AWS_S3_BUCKET: 'vgbak'
-      AWS_S3_PREFIX: 'rhea'
+      AWS_S3_BUCKET: 'vgbak-rhea'
       GPG_RECIPIENT: 'vlad@ghn.me'
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     command: cron
@@ -246,15 +245,27 @@ volumes:
 
 networks:
   frontend:
+    ipam:
+      config:
+        - subnet: 10.0.1.0/24 # Should not conflict with the AWS VPC
   encrypted:
     driver: overlay
     driver_opts:
       encrypted: ""
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24 # Should not conflict with the AWS VPC
   puppet:
     driver: overlay
     driver_opts:
       encrypted: ""
+    ipam:
+      config:
+        - subnet: 10.0.3.0/24 # Should not conflict with the AWS VPC
   backend:
     driver: overlay
     driver_opts:
       encrypted: ""
+    ipam:
+      config:
+        - subnet: 10.0.4.0/24 # Should not conflict with the AWS VPC
