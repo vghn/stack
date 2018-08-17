@@ -26,7 +26,7 @@ install:
   # Install gems
   - bundle install --without development --path vendor/bundle
   # Install PIP packages
-  - pip install --user --upgrade awscli aws-amicleaner && aws --version && amicleaner --version
+  - pip3 install --user --upgrade awscli aws-amicleaner && aws --version && amicleaner --version
   # Install Hashicorp's packages
   - |
     curl -L -o packer.zip "https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
