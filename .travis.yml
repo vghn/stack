@@ -3,10 +3,10 @@ group: travis_latest
 language: ruby
 branches:
   except:
-  - "/^v\\d/"
+    - "/^v\\d/"
 cache:
   directories:
-  - vendor/bundle
+    - vendor/bundle
 env:
   PACKER_VERSION: '1.2.5'
   TF_VERSION: '0.11.8'
@@ -41,9 +41,13 @@ jobs:
         ./bin/stack ami validate prometheus
         echo 'Validate Terraform'
         ./bin/stack tf init
-        ./bin/stack tf validate
+        ./bin/stack tf plan
     - stage: "Images"
       script: ./bin/stack ami build prometheus
+    - stage: "Deploy"
+      script: |
+        ./bin/stack tf init
+        ./bin/stack tf apply -auto-approve
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
