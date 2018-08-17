@@ -99,6 +99,7 @@ stack_process_cli(){
       echo 'Validate Packer Images'
       ./bin/stack ami validate prometheus
       echo 'Validate Terraform'
+      ./bin/stack tf init
       ./bin/stack tf validate
       ;;
     *)
