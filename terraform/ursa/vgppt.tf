@@ -110,9 +110,10 @@ data "aws_iam_policy_document" "vgppt_bucket" {
       variable = "aws:userId"
 
       values = [
-        "${aws_iam_user.rhea.unique_id}",
         "${data.aws_caller_identity.ursa.account_id}",
         "${data.aws_iam_user.vlad.user_id}",
+        "${aws_iam_user.travis.unique_id}",
+        "${aws_iam_user.rhea.unique_id}",
       ]
     }
   }

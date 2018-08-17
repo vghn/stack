@@ -84,6 +84,7 @@ data "aws_iam_policy_document" "vgsec_bucket" {
       values = [
         "${data.aws_caller_identity.ursa.account_id}",
         "${data.aws_iam_user.vlad.user_id}",
+        "${aws_iam_user.travis.unique_id}",
       ]
     }
   }
