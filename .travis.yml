@@ -45,8 +45,7 @@ jobs:
       script: |
         find ./bin ./shlib -type f -exec shellcheck {} +
         ./bin/stack ami validate prometheus
-        ./bin/stack tf init
-        ./bin/stack tf plan
+        ./bin/stack tf validate
     - stage: "Images"
       if: branch = master
       script: |
@@ -55,6 +54,7 @@ jobs:
       if: branch = master
       script: |
         ./bin/stack tf init
+        ./bin/stack tf plan
         ./bin/stack tf apply -auto-approve
 notifications:
   webhooks:
