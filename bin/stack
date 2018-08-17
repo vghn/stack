@@ -94,6 +94,8 @@ stack_process_cli(){
       )
       ;;
     test)
+      (
+      cd "$APPDIR" || true
       echo 'Run ShellCheck'
       find ./bin ./shlib -type f -exec shellcheck {} +
       echo 'Validate Packer Images'
@@ -101,6 +103,7 @@ stack_process_cli(){
       echo 'Validate Terraform'
       ./bin/stack tf init
       ./bin/stack tf validate
+      )
       ;;
     *)
       usage
