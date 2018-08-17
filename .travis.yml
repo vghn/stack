@@ -35,19 +35,18 @@ jobs:
   include:
     - stage: "Tests"
       script: |
-        echo 'Run ShellCheck'
         find ./bin ./shlib -type f -exec shellcheck {} +
-        echo 'Validate Packer Images'
         ./bin/stack ami validate prometheus
-        echo 'Validate Terraform'
         ./bin/stack tf init
         ./bin/stack tf plan
     - stage: "Images"
-      script: ./bin/stack ami build prometheus
+      script: |
+        ./bin/stack ami build prometheus
     - stage: "Deploy"
       script: |
         ./bin/stack tf init
         ./bin/stack tf apply -auto-approve
+      if: branch = master
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
