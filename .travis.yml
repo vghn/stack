@@ -34,7 +34,14 @@ install:
 jobs:
   include:
     - stage: "Tests"
-      script: ./bin/stack test
+      script: |
+        echo 'Run ShellCheck'
+        find ./bin ./shlib -type f -exec shellcheck {} +
+        echo 'Validate Packer Images'
+        ./bin/stack ami validate prometheus
+        echo 'Validate Terraform'
+        ./bin/stack tf init
+        ./bin/stack tf validate
     - stage: "Images"
       script: ./bin/stack ami build prometheus
 notifications:
