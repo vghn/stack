@@ -31,7 +31,10 @@ install:
     curl -L -o terraform.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
     unzip -d ~/bin terraform.zip
     terraform version
-script: find ./bin ./shlib -type f -exec shellcheck {} +
+jobs:
+  include:
+    - stage: "Tests"
+      script: ./bin/stack test
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
