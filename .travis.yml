@@ -35,6 +35,8 @@ jobs:
   include:
     - stage: "Tests"
       script: ./bin/stack test
+    - stage: "Images"
+      script: ./bin/stack ami build prometheus
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
