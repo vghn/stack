@@ -7,28 +7,36 @@ IFS=$'\n\t'
 # DEBUG
 [ -z "${DEBUG:-}" ] || set -x
 
-# VARs
-SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
-ENCRYPT_KEY="${ENCRYPT_KEY:-}"
-PACKER_VERSION='1.2.5'
-export SSH_KEY ENCRYPT_KEY PACKER_URL
-
 # System VARs
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
 NOW="$(date +"%Y%m%d_%H%M%S")"
 VERSION=$(git --git-dir="${APPDIR}/.git" --work-tree="${APPDIR}" describe --always --tags)
-PACKER_URL="https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
-AWS_CFN_STACKS_PATH="${APPDIR}/cfn"
-AWS_AMI_PACKER_PATH="${APPDIR}/ami"
-export APPDIR TMPDIR NOW VERSION AWS_CFN_STACKS_PATH AWS_AMI_PACKER_PATH
+export APPDIR TMPDIR NOW VERSION
 
-# Load VGS library (https://github.com/vghn/vgs)
-# shellcheck disable=1090
-. ~/vgs/load 2>/dev/null || echo 'VGS library is required' 1>&2
+# Detect environment
+GIT_BRANCH="${TRAVIS_BRANCH:-$(git symbolic-ref --short HEAD)}"
+if [[ -n "${ENVTYPE:-}" ]]; then
+  ENVTYPE="$ENVTYPE"
+elif [[ -n "${GIT_BRANCH:-}" ]]; then
+  if [[ "$GIT_BRANCH" == 'master' ]]; then
+    ENVTYPE='production'
+  else
+    ENVTYPE="$GIT_BRANCH"
+  fi
+else
+  ENVTYPE=${ENVTYPE:-production}
+fi
+export ENVTYPE GIT_BRANCH
 
-# Load environment
-load_env
+if [[ ${TRAVIS:-false} == true ]] && [[ ${TRAVIS_PULL_REQUEST:-false} == false ]]; then
+  echo 'Configure AWS Credentials'
+  aws configure --profile ursa set region us-east-1
+  aws configure --profile ursa set aws_access_key_id "${TRAVIS_AWS_ACCESS_KEY_ID}"
+  aws configure --profile ursa set aws_secret_access_key "${TRAVIS_AWS_SECRET_ACCESS_KEY}"
+  aws configure --profile orion set role_arn "${TRAVIS_ORION_ROLE_ARN}"
+  aws configure --profile orion set source_profile ursa
+fi
 
 # Load functions
 if [[ -d "${APPDIR}/shlib" ]]; then
@@ -36,10 +44,6 @@ if [[ -d "${APPDIR}/shlib" ]]; then
   for file in "${APPDIR}"/shlib/*.sh; do . "$file"; done
 fi
 
-# Load AWS AMI Build environment
-# shellcheck disable=1090
-. "${APPDIR}/amirc" 2>/dev/null || true
-
-# Load AWS CloudFormation environment
-# shellcheck disable=1090
-. "${APPDIR}/cfnrc" 2>/dev/null || true
+# Get AWS SSM Parameters
+export DEPLOY_RSA
+DEPLOY_RSA="$(aws ssm  --region us-east-1  --profile ursa get-parameter --name /vgh/deploy_rsa --with-decryption --query Parameter.Value --output text)"

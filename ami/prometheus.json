@@ -1,0 +1,67 @@
+{
+  "variables": {
+    "version": "{{env `VERSION`}}",
+    "pp_secret": "",
+    "pp_server": "puppet.ghn.me",
+    "pp_role": "prometheus",
+    "pp_project": "vgh",
+    "pp_application": "monitoring"
+  },
+  "builders": [
+    {
+      "name": "Prometheus",
+      "type": "amazon-ebs",
+      "ami_name": "Prometheus_{{user `version`}}_{{timestamp}}",
+      "ami_description": "Prometheus Image ({{user `version`}})",
+      "source_ami_filter": {
+        "filters": {
+          "architecture": "x86_64",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm",
+          "block-device-mapping.volume-type": "gp2",
+          "name": "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
+      "instance_type": "t2.micro",
+      "ssh_username": "ubuntu",
+      "run_tags": {
+        "Name": "Prometheus AMI",
+        "Group": "vgh",
+        "Project": "vgh"
+      },
+      "tags": {
+        "Name": "Prometheus AMI",
+        "Group": "vgh",
+        "Project": "vgh"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "inline": "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 5; done",
+      "type": "shell"
+    },{
+      "inline": [
+        "sudo apt-get -y update && sudo apt-get -y dist-upgrade && sudo apt-get -y autoremove --purge"
+      ],
+      "type": "shell"
+    },{
+      "environment_vars": [
+        "PP_SERVER={{user `pp_server`}}",
+        "PP_ROLE={{user `pp_role`}}",
+        "PP_PROJECT={{user `pp_project`}}",
+        "PP_APPLICATION={{user `pp_application`}}",
+        "PP_SECRET={{user `pp_secret`}}"
+      ],
+      "execute_command": "{{ .Vars }} sudo -E bash -e '{{ .Path }}'",
+      "inline": [
+        "export PP_CERTNAME=\"$(curl --max-time 2 -s http://169.254.169.254/latest/meta-data/instance-id || hostname)\"",
+        "wget -qO- 'https://raw.githubusercontent.com/vghn/puppet/production/bin/bootstrap' | sudo -E bash"
+      ],
+      "type": "shell",
+      "only": ["Prometheus"]
+    }
+  ]
+}

@@ -13,21 +13,12 @@ usage(){
   echo 'Commands:'
   echo ''
   echo '  - ami [build | clean | validate] [NAME]'
-  echo ''
-  echo '  - cfn [create | update | delete | validate] [STACK]'
-  echo '    * Check the cfnrc file for available stacks'
+  echo '    * Allowed AMIs: prometheus'
   echo ''
   echo '  - deploy [stack name]'
+  echo '    * Allowed stacks: vpm, monitor'
   echo ''
-  echo '  - env'
-  echo ''
-  echo '  - hooks [install]'
-  echo ''
-  echo '  - install'
-  echo ''
-  echo '  - secret [create]'
-  echo ''
-  echo '  - test'
+  echo '  - tf [COMMAND]'
   echo ''
   echo '----------------------------------------------'
   echo 'For more information please consult the README'
@@ -40,78 +31,67 @@ stack_process_cli(){
   if [[ -z $1 ]]; then usage; fi
 
   export cmd="${1:-}"; shift || true
-  export scmd="${1:-}"; shift || true
 
   trap 'bye $?' EXIT HUP INT QUIT TERM
   case "$cmd" in
     ami)
-      process_ami_build "${@:-}"
+      local scmd ami V
+      scmd="${1:-}"
+      ami="${2:-}"
+      V=''
+      case "$ami" in
+        prometheus)
+          export AWS_PROFILE='orion'
+          AMI_FILE='ami/prometheus.json'
+          AMI_NAME='Prometheus'
+          V="${V} -var 'pp_secret=$(aws ssm get-parameter --with-decryption --name /puppet/vgh/secret --region us-east-1 --query Parameter.Value --output text --profile ursa)'"
+          ;;
+        *)
+          usage
+          ;;
+      esac
       case "$scmd" in
         build)
-          ami_build
+          eval packer build "$V" "$AMI_FILE"
+          ;;
+        validate)
+          eval packer validate "$V" "$AMI_FILE"
           ;;
         clean)
-          ami_clean
-          ;;
-        validate)
-          ami_validate
+          eval amicleaner --mapping-key name --mapping-values "${AMI_NAME}" --full-report --keep-previous 1
           ;;
         *)
           usage
           ;;
       esac
-      clear_ami
-      ;;
-    cfn)
-      process_cfn "${@:-}"
-      case "$scmd" in
-        create)
-          cfn_validate_stack
-          cfn_create_stack
-          cfn_wait_for_stack
-          ;;
-        update)
-          cfn_validate_stack
-          cfn_update_stack
-          cfn_wait_for_stack
-          ;;
-        delete)
-          cfn_delete_stack
-          ;;
-        validate)
-          cfn_validate_stack
-          ;;
-        *)
-          usage
-          ;;
-      esac
-      clear_cfn
       ;;
     deploy)
-      if [[ -n "$scmd" ]]; then
-        deploy_swarm "$scmd"
-      else
-        usage
-      fi
-      ;;
-    hooks)
-      case "$scmd" in
-        install)
-          install_git_hooks
+      local stack="${1:-}"
+      case "$stack" in
+        vpm)
+          export SSH_HOST='rhea.ghn.me'
+          deploy_swarm "$stack"
+          ;;
+        monitor)
+          export SSH_HOST='prometheus.ghn.me'
+          deploy_swarm "$stack"
           ;;
         *)
           usage
-          ;;
       esac
       ;;
-    install)
-      install_vgs
-      ;;
-    secret)
-      create_secret "${@:-}"
-      ;;
-    test)
-      validate_bash
+    tf)
+      (
+        cd "${APPDIR}/terraform" || true
+        case "${1:-}" in
+          apply|import|plan|push|refresh|validate)
+            terraform "${@:-}"
+            ;;
+          *)
+            terraform "${@:-}"
+            ;;
+        esac
+      )
       ;;
     *)
       usage

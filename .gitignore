@@ -2,6 +2,14 @@
 .env
 swarm/*-secrets
 
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+!/terraform/backend/terraform.tfstate
+
 # Other
 .bundle/
 .vagrant/
