@@ -70,7 +70,7 @@ services:
       - puppet_csr.yml
     entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for certificates and R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
-      - /home/ubuntu/.aws:/root/.aws
+      - /root/.aws:/root/.aws
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
     ports:
@@ -131,7 +131,7 @@ services:
       S3PATH: 's3://vgppt/ssl'
     command: sync
     volumes:
-      - /home/ubuntu/.aws:/root/.aws
+      - /root/.aws:/root/.aws
       - ssl:/sync
     networks:
       - backend
@@ -176,7 +176,7 @@ services:
     volumes:
       - certs:/backup/certs                           # LetsEncrypt Certificates
       - ssl:/backup/puppet-ca                         # PuppetCA Certificates
-      - /home/ubuntu/.aws:/root/.aws                  # AWS Credentials
+      - /root/.aws:/root/.aws                  # AWS Credentials
       - /etc/puppetlabs/puppet/ssl:/backup/puppet-ssl # Puppet Agent Certificates
       - /var/lib/docker/swarm:/backup/swarm           # Swarm state
     networks:
