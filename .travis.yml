@@ -45,12 +45,12 @@ jobs:
       script: |
         find ./bin ./shlib -type f -exec shellcheck {} +
     - stage: "Images"
-      if: branch = master
+      if: branch = master AND type = push
       script: |
         ./bin/stack ami validate prometheus
         ./bin/stack ami build prometheus
     - stage: "Deploy"
-      if: branch = master
+      if: branch = master AND type = push
       script: |
         ./bin/stack tf init
         ./bin/stack tf validate
