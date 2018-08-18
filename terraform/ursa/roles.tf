@@ -22,6 +22,7 @@ resource "aws_iam_role_policy" "prometheus" {
 }
 
 data "aws_iam_policy_document" "prometheus_role" {
+  # AWS SSM Parameter Store
   statement {
     sid       = "AllowListingParameters"
     actions   = ["ssm:DescribeParameters"]
@@ -32,5 +33,28 @@ data "aws_iam_policy_document" "prometheus_role" {
     sid       = "AllowGettingParameters"
     actions   = ["ssm:Get*"]
     resources = ["arn:aws:ssm:*:*:parameter/prometheus/*"]
+  }
+
+  # Grafana
+  statement {
+    sid = "AllowReadingMetricsFromCloudWatch"
+
+    actions = [
+      "cloudwatch:ListMetrics",
+      "cloudwatch:GetMetricStatistics",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "AllowReadingTagsFromEC2"
+
+    actions = [
+      "ec2:DescribeTags",
+      "ec2:DescribeInstances",
+    ]
+
+    resources = ["*"]
   }
 }

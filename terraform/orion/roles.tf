@@ -81,6 +81,29 @@ data "aws_iam_policy_document" "prometheus_role" {
       "arn:aws:s3:::${var.prometheus_backup_bucket}/*",
     ]
   }
+
+  # Grafana
+  statement {
+    sid = "AllowReadingMetricsFromCloudWatch"
+
+    actions = [
+      "cloudwatch:ListMetrics",
+      "cloudwatch:GetMetricStatistics",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "AllowReadingTagsFromEC2"
+
+    actions = [
+      "ec2:DescribeTags",
+      "ec2:DescribeInstances",
+    ]
+
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role" "travis" {
