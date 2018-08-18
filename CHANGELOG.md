@@ -1,5 +1,15 @@
 # Change Log
 
+## [v0.4.0](https://github.com/vghn/stack/tree/v0.4.0) (2018-08-18)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.3.3...v0.4.0)
+
+**Implemented enhancements:**
+
+- Install Terraform on CI [\#161](https://github.com/vghn/stack/issues/161)
+- Install the required software for TravisCI [\#160](https://github.com/vghn/stack/issues/160)
+- Use CI stages [\#163](https://github.com/vghn/stack/pull/163) ([vladgh](https://github.com/vladgh))
+- Major refactor - Switch to Terraform [\#162](https://github.com/vghn/stack/pull/162) ([vladgh](https://github.com/vladgh))
+
 ## [v0.3.3](https://github.com/vghn/stack/tree/v0.3.3) (2018-06-17)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.3.2...v0.3.3)
 
