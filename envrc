@@ -29,15 +29,6 @@ else
 fi
 export ENVTYPE GIT_BRANCH
 
-if [[ ${TRAVIS:-false} == true ]] && [[ ${TRAVIS_PULL_REQUEST:-false} == false ]]; then
-  echo 'Configure AWS Credentials'
-  aws configure --profile ursa set region us-east-1
-  aws configure --profile ursa set aws_access_key_id "${TRAVIS_AWS_ACCESS_KEY_ID}"
-  aws configure --profile ursa set aws_secret_access_key "${TRAVIS_AWS_SECRET_ACCESS_KEY}"
-  aws configure --profile orion set role_arn "${TRAVIS_ORION_ROLE_ARN}"
-  aws configure --profile orion set source_profile ursa
-fi
-
 # Load functions
 if [[ -d "${APPDIR}/shlib" ]]; then
   # shellcheck disable=1090

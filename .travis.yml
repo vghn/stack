@@ -3,10 +3,10 @@ group: travis_latest
 language: ruby
 branches:
   except:
-  - "/^v\\d/"
+    - "/^v\\d/"
 cache:
   directories:
-  - vendor/bundle
+    - vendor/bundle
 env:
   PACKER_VERSION: '1.2.5'
   TF_VERSION: '0.11.8'
@@ -31,7 +31,31 @@ install:
     curl -L -o terraform.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
     unzip -d ~/bin terraform.zip
     terraform version
-script: find ./bin ./shlib -type f -exec shellcheck {} +
+before_script: |
+  if [[ ${TRAVIS_PULL_REQUEST:-false} == false ]]; then
+    aws configure --profile ursa set region us-east-1
+    aws configure --profile ursa set aws_access_key_id "${TRAVIS_AWS_ACCESS_KEY_ID}"
+    aws configure --profile ursa set aws_secret_access_key "${TRAVIS_AWS_SECRET_ACCESS_KEY}"
+    aws configure --profile orion set role_arn "${TRAVIS_ORION_ROLE_ARN}"
+    aws configure --profile orion set source_profile ursa
+  fi
+jobs:
+  include:
+    - stage: "Tests"
+      script: |
+        find ./bin ./shlib -type f -exec shellcheck {} +
+    - stage: "Images"
+      if: branch = master AND type != pull_request
+      script: |
+        ./bin/stack ami validate prometheus
+        ./bin/stack ami build prometheus
+    - stage: "Deploy"
+      if: branch = master AND type != pull_request
+      script: |
+        ./bin/stack tf init
+        ./bin/stack tf validate
+        ./bin/stack tf plan
+        ./bin/stack tf apply -auto-approve
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis

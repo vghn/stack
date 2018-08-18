@@ -42,6 +42,7 @@ stack_process_cli(){
       case "$ami" in
         prometheus)
           export AWS_PROFILE='orion'
+          export AWS_DEFAULT_REGION='us-east-1'
           AMI_FILE='ami/prometheus.json'
           AMI_NAME='Prometheus'
           V="${V} -var 'pp_secret=$(aws ssm get-parameter --with-decryption --name /puppet/vgh/secret --region us-east-1 --query Parameter.Value --output text --profile ursa)'"

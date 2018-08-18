@@ -9,6 +9,7 @@ module "backup_rhea" {
   user_ids = [
     "${data.aws_caller_identity.ursa.account_id}",
     "${data.aws_iam_user.vlad.user_id}",
+    "${aws_iam_user.travis.unique_id}",
     "${aws_iam_user.rhea.unique_id}",
   ]
 }
@@ -24,6 +25,7 @@ module "backup_prometheus" {
   user_ids = [
     "${data.aws_caller_identity.ursa.account_id}",
     "${data.aws_iam_user.vlad.user_id}",
+    "${aws_iam_user.travis.unique_id}",
     "${var.prometheus_role_id}:*",
   ]
 }
@@ -39,6 +41,7 @@ module "backup_mini" {
   user_ids = [
     "${data.aws_caller_identity.ursa.account_id}",
     "${data.aws_iam_user.vlad.user_id}",
+    "${aws_iam_user.travis.unique_id}",
     "${aws_iam_user.mini.unique_id}",
   ]
 }
@@ -54,6 +57,7 @@ module "backup_zucu" {
   user_ids = [
     "${data.aws_caller_identity.ursa.account_id}",
     "${data.aws_iam_user.vlad.user_id}",
+    "${aws_iam_user.travis.unique_id}",
     "${aws_iam_user.zucu.unique_id}",
   ]
 }

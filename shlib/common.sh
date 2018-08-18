@@ -54,7 +54,7 @@ clean_up() {
       rm -rf "${APPDIR:?}/.env"
     fi
 
-    if [[ -s "$SSH_KEY" ]]; then
+    if [[ -s "${SSH_KEY:-}" ]]; then
       if [[ "$SSH_KEY" =~ tmp. ]]; then
         e_info 'Removing temporary ssh key'
         rm -rf "${SSH_KEY:?}"
