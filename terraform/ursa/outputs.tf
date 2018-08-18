@@ -10,12 +10,12 @@ output "mini_user_arn" {
 
 output "mini_access_key_id" {
   description = "Mini access key id"
-  value       = "${aws_iam_access_key.mini.id}"
+  value       = "${aws_iam_access_key.mini_v1.id}"
 }
 
 output "mini_secret_access_key" {
   description = "Mini secret access key"
-  value       = "${aws_iam_access_key.mini.secret}"
+  value       = "${aws_iam_access_key.mini_v1.secret}"
 }
 
 output "rhea_user_arn" {
@@ -25,12 +25,12 @@ output "rhea_user_arn" {
 
 output "rhea_access_key_id" {
   description = "Rhea access key id"
-  value       = "${aws_iam_access_key.rhea.id}"
+  value       = "${aws_iam_access_key.rhea_v1.id}"
 }
 
 output "rhea_secret_access_key" {
   description = "Rhea secret access key"
-  value       = "${aws_iam_access_key.rhea.secret}"
+  value       = "${aws_iam_access_key.rhea_v1.secret}"
 }
 
 output "travis_user_arn" {
@@ -40,12 +40,12 @@ output "travis_user_arn" {
 
 output "travis_access_key_id" {
   description = "TravisCI access key id"
-  value       = "${aws_iam_access_key.travis.id}"
+  value       = "${aws_iam_access_key.travis_v1.id}"
 }
 
 output "travis_secret_access_key" {
   description = "TravisCI secret access key"
-  value       = "${aws_iam_access_key.travis.secret}"
+  value       = "${aws_iam_access_key.travis_v1.secret}"
 }
 
 output "zucu_user_arn" {
@@ -55,12 +55,12 @@ output "zucu_user_arn" {
 
 output "zucu_access_key_id" {
   description = "Zucu access key id"
-  value       = "${aws_iam_access_key.zucu.id}"
+  value       = "${aws_iam_access_key.zucu_v1.id}"
 }
 
 output "zucu_secret_access_key" {
   description = "Zucu secret access key"
-  value       = "${aws_iam_access_key.zucu.secret}"
+  value       = "${aws_iam_access_key.zucu_v1.secret}"
 }
 
 # VBot
@@ -71,12 +71,12 @@ output "vbot_user_arn" {
 
 output "vbot_access_key_id" {
   description = "VBot access key id"
-  value       = "${aws_iam_access_key.vbot.id}"
+  value       = "${aws_iam_access_key.vbot_v1.id}"
 }
 
 output "vbot_secret_access_key" {
   description = "VBot secret access key"
-  value       = "${aws_iam_access_key.vbot.secret}"
+  value       = "${aws_iam_access_key.vbot_v1.secret}"
 }
 
 output "prometheus_role_arn" {

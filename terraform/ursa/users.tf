@@ -2,7 +2,7 @@ resource "aws_iam_user" "mini" {
   name = "mini"
 }
 
-resource "aws_iam_access_key" "mini" {
+resource "aws_iam_access_key" "mini_v1" {
   user = "${aws_iam_user.mini.name}"
 }
 
@@ -10,7 +10,7 @@ resource "aws_iam_user" "zucu" {
   name = "zucu"
 }
 
-resource "aws_iam_access_key" "zucu" {
+resource "aws_iam_access_key" "zucu_v1" {
   user = "${aws_iam_user.zucu.name}"
 }
 
@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "rhea_user" {
   }
 }
 
-resource "aws_iam_access_key" "rhea" {
+resource "aws_iam_access_key" "rhea_v1" {
   user = "${aws_iam_user.rhea.name}"
 }
 
@@ -45,7 +45,7 @@ resource "aws_iam_user_policy_attachment" "administrator_access" {
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-resource "aws_iam_access_key" "travis" {
+resource "aws_iam_access_key" "travis_v1" {
   user = "${aws_iam_user.travis.name}"
 }
 
@@ -67,6 +67,6 @@ data "aws_iam_policy_document" "vbot_user" {
   }
 }
 
-resource "aws_iam_access_key" "vbot" {
+resource "aws_iam_access_key" "vbot_v1" {
   user = "${aws_iam_user.vbot.name}"
 }
