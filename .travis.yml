@@ -44,10 +44,10 @@ jobs:
     - stage: "Tests"
       script: |
         find ./bin ./shlib -type f -exec shellcheck {} +
-        ./bin/stack ami validate prometheus
     - stage: "Images"
       if: branch = master
       script: |
+        ./bin/stack ami validate prometheus
         ./bin/stack ami build prometheus
     - stage: "Deploy"
       if: branch = master
