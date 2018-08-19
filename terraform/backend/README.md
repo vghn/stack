@@ -21,9 +21,8 @@ will be stored in source control as part of your state.
 ```sh
 terraform apply \
   -var 'env=production' \
-  -var 's3_bucket=vgtf' \
-  -var 's3_bucket_name="Terraform State Store"' \
-  -var 'dynamodb_table=vgtf'
+  -var 'bucket=vgtf' \
+  -var 'table=vgtf'
 ```
 
 You can now configure your Terraform environments to use this backend:
