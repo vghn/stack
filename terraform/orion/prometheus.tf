@@ -127,9 +127,14 @@ export PP_CERTNAME="$$(curl --max-time 2 -s http://169.254.169.254/latest/meta-d
 echo 'Run Puppet'
 wget -qO- 'https://raw.githubusercontent.com/vghn/puppet/production/bin/bootstrap' | sudo -E bash
 
+echo 'Mount EBS & EFS'
+sudo mkdir -p /mnt/data && sudo mount /dev/xvdg /mnt/data
+sudo mkdir -p /mnt/efs && sudo mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1
+048576,hard,timeo=600,retrans=2,noresvport ${aws_efs_file_system.prometheus.dns_name}:/ /mnt/efs
+
 echo 'Restore Docker Swarm state'
 sudo service docker stop
-rm -rf /var/lib/docker/swarm && mkdir -p /var/lib/docker/swarm
+sudo rm -rf /var/lib/docker/swarm && sudo mkdir -p /var/lib/docker/swarm
 aws s3 cp --no-progress s3://${aws_s3_bucket.prometheus.id}/swarm.tar.xz.gpg - | gpg --batch --yes --pinentry-mode loopback --passphrase "$$(aws --region us-east-1 ssm get-parameter --with-decryption --name /prometheus/encryption_key  --query Parameter.Value --output text --profile ursa)" --decrypt | sudo tar xJ -C /var/lib/docker/swarm
 sudo service docker start
 
