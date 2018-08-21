@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "on_premise_group" {
   statement {
     sid       = "AllowGettingParameters"
     actions   = ["ssm:Get*"]
-    resources = ["arn:aws:ssm:*:*:parameter/$${aws:username}/*"]
+    resources = ["arn:aws:ssm:*:*:parameter/&{aws:username}/*"]
   }
 }
 
