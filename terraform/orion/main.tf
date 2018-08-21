@@ -1,16 +1,22 @@
 module "notifications" {
   source = "../notifications"
   email  = "${var.email}"
+
+  common_tags = "${var.common_tags}"
 }
 
 module "billing" {
   source                  = "../billing"
   notifications_topic_arn = "${module.notifications.topic_arn}"
   thresholds              = ["1", "2", "3", "4", "5"]
+
+  common_tags = "${var.common_tags}"
 }
 
 module "cloudtrail" {
   source = "../cloudtrail"
+
+  common_tags = "${var.common_tags}"
 }
 
 module "vpc" {
@@ -26,10 +32,7 @@ module "vpc" {
   azs            = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"]
   public_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24"]
 
-  tags {
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags = "${var.common_tags}"
 }
 
 data "aws_caller_identity" "orion" {}

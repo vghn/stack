@@ -31,6 +31,8 @@ resource "aws_s3_bucket" "vgbak" {
       days = "30"
     }
   }
+
+  tags = "${var.common_tags}"
 }
 
 resource "aws_s3_bucket_policy" "vgbak" {

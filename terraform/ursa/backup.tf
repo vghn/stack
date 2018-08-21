@@ -12,6 +12,8 @@ module "backup_rhea" {
     "${aws_iam_user.travis.unique_id}",
     "${aws_iam_user.rhea.unique_id}",
   ]
+
+  common_tags = "${var.common_tags}"
 }
 
 module "backup_prometheus" {
@@ -28,6 +30,8 @@ module "backup_prometheus" {
     "${aws_iam_user.travis.unique_id}",
     "${var.prometheus_role_id}:*",
   ]
+
+  common_tags = "${var.common_tags}"
 }
 
 module "backup_mini" {
@@ -44,6 +48,8 @@ module "backup_mini" {
     "${aws_iam_user.travis.unique_id}",
     "${aws_iam_user.mini.unique_id}",
   ]
+
+  common_tags = "${var.common_tags}"
 }
 
 module "backup_zucu" {
@@ -60,24 +66,22 @@ module "backup_zucu" {
     "${aws_iam_user.travis.unique_id}",
     "${aws_iam_user.zucu.unique_id}",
   ]
+
+  common_tags = "${var.common_tags}"
 }
 
 resource "aws_s3_bucket" "vgbak" {
   bucket = "vgbak"
   acl    = "private"
-
-  tags {
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags   = "${var.common_tags}"
 }
 
 resource "aws_s3_bucket_policy" "vgbak" {
   bucket = "${aws_s3_bucket.vgbak.id}"
-  policy = "${data.aws_iam_policy_document.vgbak_secrets_bucket.json}"
+  policy = "${data.aws_iam_policy_document.vgbak_bucket.json}"
 }
 
-data "aws_iam_policy_document" "vgbak_secrets_bucket" {
+data "aws_iam_policy_document" "vgbak_bucket" {
   statement {
     sid       = "DenyUnEncryptedInflightOperations"
     effect    = "Deny"

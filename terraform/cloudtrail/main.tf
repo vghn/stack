@@ -5,6 +5,8 @@ resource "aws_cloudtrail" "cloudtrail" {
   is_multi_region_trail         = true
   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail.arn}"
   cloud_watch_logs_role_arn     = "${aws_iam_role.cloudtrail.arn}"
+
+  tags = "${var.common_tags}"
 }
 
 resource "random_id" "cloudtrail" {
@@ -14,6 +16,8 @@ resource "random_id" "cloudtrail" {
 resource "aws_s3_bucket" "cloudtrail" {
   bucket = "cloudtrail-${random_id.cloudtrail.hex}"
   policy = "${data.aws_iam_policy_document.cloudtrail_bucket.json}"
+
+  tags = "${var.common_tags}"
 }
 
 data "aws_iam_policy_document" "cloudtrail_bucket" {
@@ -49,6 +53,8 @@ data "aws_iam_policy_document" "cloudtrail_bucket" {
 resource "aws_cloudwatch_log_group" "cloudtrail" {
   name              = "CloudTrail"
   retention_in_days = "${var.log_retention}"
+
+  tags = "${var.common_tags}"
 }
 
 resource "aws_iam_role" "cloudtrail" {

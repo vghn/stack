@@ -1,6 +1,8 @@
 resource "aws_cloudformation_stack" "notifications" {
   name = "notifications"
 
+  tags = "${var.common_tags}"
+
   parameters {
     NotificationEmail = "${var.email}"
   }

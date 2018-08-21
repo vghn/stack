@@ -2,10 +2,7 @@ resource "aws_s3_bucket" "vgast" {
   bucket = "vgast"
   acl    = "private"
 
-  tags {
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags = "${var.common_tags}"
 }
 
 resource "aws_s3_bucket_policy" "vgast" {

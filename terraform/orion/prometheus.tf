@@ -15,9 +15,7 @@ resource "aws_s3_bucket" "prometheus" {
     }
   }
 
-  tags {
-    Name = "Prometheus assets bucket"
-  }
+  tags = "${var.common_tags}"
 }
 
 # Prometheus Security Group
@@ -59,6 +57,8 @@ module "prometheus_sg" {
   }]
 
   egress_rules = ["all-all"]
+
+  tags = "${var.common_tags}"
 }
 
 resource "aws_iam_instance_profile" "prometheus" {
@@ -86,6 +86,13 @@ resource "aws_eip" "prometheus" {
   vpc        = true
   instance   = "${aws_instance.prometheus.id}"
   depends_on = ["module.vpc"]
+
+  tags = "${merge(
+    var.common_tags,
+    map(
+      "Name", "Prometheus"
+    )
+  )}"
 }
 
 resource "aws_instance" "prometheus" {
@@ -149,11 +156,12 @@ echo '3 * * * * root bash /usr/local/sbin/docker_swarm_state' | sudo tee /etc/cr
 echo "FINISHED @ $(date "+%m-%d-%Y %T")" | sudo tee /var/lib/cloud/instance/deployed
 DATA
 
-  tags {
-    Name    = "Prometheus"
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags = "${merge(
+    var.common_tags,
+    map(
+      "Name", "Prometheus"
+    )
+  )}"
 }
 
 resource "aws_ebs_volume" "prometheus_data" {
@@ -163,11 +171,12 @@ resource "aws_ebs_volume" "prometheus_data" {
 
   snapshot_id = "snap-0d96a2beb91b7b82d"
 
-  tags {
-    Name    = "Prometheus Data"
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags = "${merge(
+    var.common_tags,
+    map(
+      "Name", "Prometheus"
+    )
+  )}"
 }
 
 resource "aws_volume_attachment" "prometheus_data_attachment" {

@@ -38,9 +38,7 @@ resource "aws_s3_bucket" "vbot_secrets" {
     }
   }
 
-  tags {
-    Name = "VBot secrets bucket"
-  }
+  tags = "${var.common_tags}"
 }
 
 # VBot Secrets S3 Bucket Policy

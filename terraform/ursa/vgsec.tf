@@ -14,10 +14,7 @@ resource "aws_s3_bucket" "vgsec" {
     }
   }
 
-  tags {
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags = "${var.common_tags}"
 }
 
 resource "aws_s3_bucket_policy" "vgsec" {

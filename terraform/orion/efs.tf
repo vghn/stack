@@ -1,9 +1,10 @@
 resource "aws_efs_file_system" "prometheus" {
-  tags {
-    Name    = "prometheus"
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags = "${merge(
+    var.common_tags,
+    map(
+      "Name", "Prometheus"
+    )
+  )}"
 }
 
 resource "aws_efs_mount_target" "prometheus1" {
@@ -48,4 +49,6 @@ module "prometheus_efs_sg" {
   }]
 
   egress_rules = ["all-all"]
+
+  tags = "${var.common_tags}"
 }

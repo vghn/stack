@@ -10,6 +10,14 @@ terraform {
   }
 }
 
+locals {
+  common_tags = {
+    Terraform = "true"
+    Group     = "vgh"
+    Project   = "vgh"
+  }
+}
+
 provider "aws" {
   version = "~> 1.28"
   profile = "ursa"
@@ -23,6 +31,13 @@ module "ursa" {
   prometheus_role_arn = "${module.orion.prometheus_role_arn}"
   prometheus_role_id  = "${module.orion.prometheus_role_id}"
   vbot_role_arn       = "${module.orion.vbot_role_arn}"
+
+  common_tags = "${merge(
+    local.common_tags,
+    map(
+      "Account", "ursa"
+    )
+  )}"
 }
 
 provider "aws" {
@@ -47,6 +62,13 @@ module "orion" {
   vbot_trusted_user_arn    = "${module.ursa.vbot_user_arn}"
   ursa_prometheus_role     = "${module.ursa.prometheus_role_arn}"
   prometheus_backup_bucket = "${module.ursa.prometheus_backup_bucket}"
+
+  common_tags = "${merge(
+    local.common_tags,
+    map(
+      "Account", "ursa"
+    )
+  )}"
 }
 
 provider "cloudflare" {

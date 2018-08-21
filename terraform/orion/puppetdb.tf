@@ -38,10 +38,7 @@ module "puppetdb" {
   backup_window             = "03:00-06:00"
   final_snapshot_identifier = "demodb"
 
-  tags = {
-    Group   = "vgh"
-    Project = "vgh"
-  }
+  tags = "${var.common_tags}"
 }
 
 # Get latest snapshot for PuppetDB
@@ -65,4 +62,6 @@ module "puppetdb_sg" {
       cidr_blocks = "149.56.110.113/32"
     },
   ]
+
+  tags = "${var.common_tags}"
 }

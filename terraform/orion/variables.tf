@@ -29,3 +29,9 @@ variable "puppetdb_pass" {
 variable "prometheus_backup_bucket" {
   description = "The Prometheus backup bucket"
 }
+
+variable "common_tags" {
+  description = "Tags that should be applied to all resources"
+  type        = "map"
+  default     = {}
+}
