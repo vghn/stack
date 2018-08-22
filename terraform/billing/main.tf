@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_metric_alarm" "billing" {
   count               = "${length(var.thresholds)}"
-  alarm_name          = "Billing${count.index}"
+  alarm_name          = "Billing${count.index + 1}"
   alarm_description   = "Account Billing Alert for $$${var.thresholds[count.index]}"
   alarm_actions       = ["${var.notifications_topic_arn}"]
   comparison_operator = "GreaterThanThreshold"
