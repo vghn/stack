@@ -96,7 +96,7 @@ resource "aws_eip" "prometheus" {
 }
 
 resource "aws_instance" "prometheus" {
-  instance_type               = "t2.micro"
+  instance_type               = "t3.micro"
   ami                         = "${data.aws_ami.prometheus.id}"
   subnet_id                   = "${element(module.vpc.public_subnets, 0)}"
   vpc_security_group_ids      = ["${module.prometheus_sg.this_security_group_id}"]
