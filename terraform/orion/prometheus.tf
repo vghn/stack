@@ -135,7 +135,7 @@ echo 'Run Puppet'
 wget -qO- 'https://raw.githubusercontent.com/vghn/puppet/production/bin/bootstrap' | sudo -E bash
 
 echo 'Mount EBS & EFS'
-sudo mkdir -p /mnt/data && sudo mount /dev/xvdg /mnt/data
+sudo mkdir -p /mnt/data && sudo mount /dev/nvme1n1 /mnt/data
 sudo mkdir -p /mnt/efs && sudo mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${aws_efs_file_system.prometheus.dns_name}:/ /mnt/efs
 
 echo 'Restore Docker Swarm state'
