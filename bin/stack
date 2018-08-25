@@ -59,7 +59,7 @@ stack_process_cli(){
           eval packer validate "$V" "$AMI_FILE"
           ;;
         clean)
-          eval amicleaner --mapping-key name --mapping-values "${AMI_NAME}" --full-report --keep-previous 1
+          eval amicleaner --mapping-key name --mapping-values "${AMI_NAME}" --full-report --keep-previous 1 --check-orphans
           ;;
         *)
           usage
