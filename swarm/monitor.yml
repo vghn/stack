@@ -33,7 +33,7 @@ services:
           - node.role == manager
           - node.labels.role == prometheus
   grafana:
-    image: grafana/grafana:5.2.2
+    image: grafana/grafana:5.2.3
     hostname: grafana.ghn.me
     environment:
       GF_PATHS_DATA: '/data/grafana'
@@ -85,7 +85,7 @@ services:
         constraints:
           - node.labels.role == prometheus
   alertmanager:
-    image: prom/alertmanager:v0.15.1
+    image: prom/alertmanager:v0.15.2
     hostname: alertmanager.ghn.me
     secrets:
       - source: alertmanager_config.yml_v1
