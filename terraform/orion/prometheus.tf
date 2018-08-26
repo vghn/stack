@@ -114,8 +114,9 @@ IFS=$$'\n\t'
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 echo 'Update APT'
+export DEBIAN_FRONTEND=noninteractive
 while ! apt-get -y update; do sleep 1; done
-apt-get -qy upgrade
+sudo apt-get -q -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" --force-yes upgrade
 
 echo 'Configure AWS Credentials'
 aws configure --profile ursa set region us-east-1

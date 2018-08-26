@@ -46,7 +46,8 @@
       "type": "shell"
     },{
       "inline": [
-        "sudo apt-get -y update && sudo apt-get -y dist-upgrade && sudo apt-get -y autoremove --purge"
+        "export DEBIAN_FRONTEND=noninteractive",
+        "sudo apt-get update && sudo apt-get -q -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" --force-yes dist-upgrade && sudo apt-get -y autoremove --purge"
       ],
       "type": "shell"
     },{
@@ -59,6 +60,7 @@
       ],
       "execute_command": "{{ .Vars }} sudo -E bash -e '{{ .Path }}'",
       "inline": [
+        "export DEBIAN_FRONTEND=noninteractive",
         "export PP_CERTNAME=\"$(curl --max-time 2 -s http://169.254.169.254/latest/meta-data/instance-id || hostname)\"",
         "wget -qO- 'https://raw.githubusercontent.com/vghn/puppet/production/bin/bootstrap' | sudo -E bash"
       ],
