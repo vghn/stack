@@ -95,6 +95,13 @@ resource "aws_eip" "prometheus" {
   )}"
 }
 
+resource "cloudflare_record" "prometheus" {
+  domain = "ghn.me"
+  name   = "prometheus"
+  value  = "${aws_instance.prometheus.public_dns}"
+  type   = "CNAME"
+}
+
 resource "aws_instance" "prometheus" {
   instance_type               = "t2.micro"
   ami                         = "${data.aws_ami.prometheus.id}"

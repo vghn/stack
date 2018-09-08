@@ -65,3 +65,10 @@ module "puppetdb_sg" {
 
   tags = "${var.common_tags}"
 }
+
+resource "cloudflare_record" "rds" {
+  domain = "ghn.me"
+  name   = "rds"
+  value  = "${module.puppetdb.this_db_instance_address}"
+  type   = "CNAME"
+}
