@@ -33,7 +33,7 @@ services:
           - node.role == manager
           - node.labels.role == prometheus
   grafana:
-    image: grafana/grafana:5.2.3
+    image: grafana/grafana:5.2.4
     hostname: grafana.ghn.me
     environment:
       GF_PATHS_DATA: '/data/grafana'
@@ -190,7 +190,7 @@ services:
     deploy:
       mode: global
   cadvisor:
-    image: google/cadvisor:v0.30.2
+    image: google/cadvisor:v0.31.0
     hostname: cadvisor-prometheus
     volumes:
       - /:/rootfs:ro
