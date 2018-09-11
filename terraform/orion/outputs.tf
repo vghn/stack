@@ -10,9 +10,14 @@ output "puppetdb_instance_address" {
 }
 
 # Prometheus
-output "prometheus_instance_address" {
-  description = "The address of the Prometheus instance"
+output "prometheus_instance_public_ip" {
+  description = "The IP address of the Prometheus instance"
   value       = "${aws_eip.prometheus.public_ip}"
+}
+
+output "prometheus_instance_public_dns" {
+  description = "The DNS address of the Prometheus instance"
+  value       = "${data.null_data_source.prometheus.outputs["public_dns"]}"
 }
 
 output "prometheus_role_arn" {

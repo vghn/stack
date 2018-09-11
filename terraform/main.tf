@@ -80,3 +80,7 @@ provider "cloudflare" {
 provider "random" {
   version = "~> 1.3"
 }
+
+provider "null" {
+  version = "~> 1.0"
+}

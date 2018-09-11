@@ -95,10 +95,16 @@ resource "aws_eip" "prometheus" {
   )}"
 }
 
+data "null_data_source" "prometheus" {
+  inputs = {
+    public_dns = "ec2-${replace(join("", aws_eip.prometheus.*.public_ip), ".", "-")}.${data.aws_region.default.name == "us-east-1" ? "compute-1" : "${data.aws_region.default.name}.compute"}.amazonaws.com"
+  }
+}
+
 resource "cloudflare_record" "prometheus" {
   domain = "ghn.me"
   name   = "prometheus"
-  value  = "${aws_instance.prometheus.public_dns}"
+  value  = "${data.null_data_source.prometheus.outputs["public_dns"]}"
   type   = "CNAME"
 }
 

@@ -1,3 +1,11 @@
+data "aws_region" "default" {}
+
+data "aws_caller_identity" "orion" {}
+
+data "aws_iam_role" "vlad" {
+  name = "vlad"
+}
+
 module "notifications" {
   source = "../notifications"
   email  = "${var.email}"
@@ -33,10 +41,4 @@ module "vpc" {
   public_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24"]
 
   tags = "${var.common_tags}"
-}
-
-data "aws_caller_identity" "orion" {}
-
-data "aws_iam_role" "vlad" {
-  name = "vlad"
 }

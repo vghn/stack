@@ -17,9 +17,14 @@ output "puppetdb_instance_address" {
 }
 
 # Prometheus
-output "prometheus_instance_address" {
-  description = "The address of the Prometheus instance"
-  value       = "${module.orion.prometheus_instance_address}"
+output "prometheus_instance_public_ip" {
+  description = "The IP address of the Prometheus instance"
+  value       = "${module.orion.prometheus_instance_public_ip}"
+}
+
+output "prometheus_instance_public_dns" {
+  description = "The DNS address of the Prometheus instance"
+  value       = "${module.orion.prometheus_instance_public_dns}"
 }
 
 output "prometheus_efs_dns" {
