@@ -88,22 +88,6 @@ groups:
     annotations:
       description: PuppetDB container is down for more than 5 minutes
       summary: PUPPETDB CONTAINER DOWN
-  - alert: irssi_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"vlad_irssi_.+"})
-    for: 5m
-    labels:
-      severity: Critical
-    annotations:
-      description: IRSSI container is down for more than 5 minutes
-      summary: IRSII CONTAINER DOWN
-  - alert: deluge_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"mini_deluge_.+"})
-    for: 5m
-    labels:
-      severity: Critical
-    annotations:
-      description: Deluge container is down for more than 5 minutes
-      summary: DELUGE CONTAINER DOWN
 ################################################################################
 
   # - alert: TESTING_high_load_on_node
