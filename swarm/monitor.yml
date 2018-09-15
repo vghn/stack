@@ -62,7 +62,7 @@ services:
         traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
         traefik.backend.loadbalancer.sticky: 'true'
   prometheus:
-    image: prom/prometheus:v2.3.2
+    image: prom/prometheus:v2.4.0
     hostname: prometheus.ghn.me
     configs:
       - source: alertrules.yml_v2
