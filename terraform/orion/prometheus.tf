@@ -15,6 +15,14 @@ resource "aws_s3_bucket" "prometheus" {
     }
   }
 
+  lifecycle_rule {
+    enabled = true
+
+    noncurrent_version_expiration {
+      days = 7
+    }
+  }
+
   tags = "${var.common_tags}"
 }
 
