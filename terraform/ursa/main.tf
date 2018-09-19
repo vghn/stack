@@ -9,6 +9,7 @@ module "billing" {
   source                  = "../billing"
   notifications_topic_arn = "${module.notifications.topic_arn}"
   thresholds              = ["1", "2", "3", "4", "5"]
+  account                 = "Ursa"
 
   common_tags = "${var.common_tags}"
 }

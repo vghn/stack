@@ -12,3 +12,8 @@ variable "common_tags" {
   type        = "map"
   default     = {}
 }
+
+variable "account" {
+  description = "The account name"
+  default     = "Main"
+}
