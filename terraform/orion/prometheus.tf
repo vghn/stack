@@ -16,6 +16,8 @@ resource "aws_s3_bucket" "prometheus" {
   }
 
   lifecycle_rule {
+    id      = "Remove old versions"
+    prefix  = ""
     enabled = true
 
     noncurrent_version_expiration {
