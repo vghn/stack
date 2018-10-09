@@ -13,6 +13,7 @@ services:
       --entryPoints="Name:https Address::443 TLS"
       --acme --acme.email=webmaster@ghn.me
       --acme.domains=prometheus.ghn.me,logs.ghn.me,monitor.ghn.me
+      --acme.tlsChallenge
       --acme.entryPoint=https
       --acme.storage=/data/lecerts/acme.json
     ports:
@@ -62,7 +63,7 @@ services:
         traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
         traefik.backend.loadbalancer.sticky: 'true'
   prometheus:
-    image: prom/prometheus:v2.4.0
+    image: prom/prometheus:v2.4.3
     hostname: prometheus.ghn.me
     configs:
       - source: alertrules.yml_v2
