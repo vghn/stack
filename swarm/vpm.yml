@@ -1,65 +1,11 @@
 version: '3.7'
 
 services:
-  lb:
-    image: traefik:1.7
-    hostname: lb-rhea
-    command: >-
-      --configfile=/dev/null --loglevel=INFO
-      --api --api.dashboard=true
-      --docker --docker.swarmmode --docker.domain=traefik --docker.watch
-      --defaultentrypoints=http,https
-      --entryPoints="Name:http Address::80 Redirect.EntryPoint:https"
-      --entryPoints="Name:https Address::443 TLS"
-      --acme --acme.email=webmaster@ghn.me
-      --acme.domains=rhea.ghn.me,puppet.ghn.me,puppetca.ghn.me
-      --acme.domains=vps159021.vps.ovh.ca
-      --acme.entryPoint=https
-      --acme.httpChallenge.entryPoint=http
-      --acme.storage=/certs/acme.json
-    ports:
-      - '80:80'
-      - '443:443'
-      - mode: host
-        target: 8080
-        published: 8888
-    volumes:
-      - certs:/certs
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - frontend
-      - encrypted
-    labels:
-      container_group: lbs
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-  webhook:
-    image: almir/webhook:latest
-    hostname: webhook-rhea
-    secrets:
-      - source: webhooks.json_v2
-        target: /etc/webhooks/webhooks.json
-    command: -verbose -hooks=/etc/webhooks/webhooks.json -hotreload
-    networks:
-      - encrypted
-    labels:
-      container_group: webhooks
-    deploy:
-      placement:
-        constraints:
-          - node.labels.role == rhea
-      labels:
-        traefik.tags: 'webhook'
-        traefik.port: '9000'
-        traefik.frontend.rule: 'HostRegexp:vps159021.vps.ovh.ca,{subdomain:[a-z]+}.ghn.me;PathPrefix:/'
-        traefik.backend.loadbalancer.stickiness: 'true'
   puppet:
     image: vladgh/ps:latest
     hostname: puppet.ghn.me
     environment:
-      AUTOSIGN_CFG: '/run/secrets/puppet_csr.yml'
+      PUPPETDB: 'true'
       DNS_ALT_NAMES: 'puppet,puppet.ghn.me,puppetca,puppetca.ghn.me,puppetdb,puppetdb.ghn.me' # these will be reused by puppetdb
       PUPPETSERVER_JAVA_ARGS: '-Xms128M -Xmx1024M'
     secrets:
@@ -67,10 +13,9 @@ services:
         target: /etc/puppetlabs/puppet/eyaml/eyaml_private_key.pkcs7.pem
       - source: eyaml_public_key.pkcs7.pem
         target: /etc/puppetlabs/puppet/eyaml/eyaml_public_key.pkcs7.pem
-      - puppet_csr.yml
     entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for certificates and R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
     volumes:
-      - /root/.aws:/root/.aws
+      - /root/.aws:/opt/puppetlabs/server/data/puppetserver/.aws
       - ssl:/etc/puppetlabs/puppet/ssl
       - code:/etc/puppetlabs/code
     ports:
@@ -174,7 +119,6 @@ services:
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     command: cron
     volumes:
-      - certs:/backup/certs                           # LetsEncrypt Certificates
       - ssl:/backup/puppet-ca                         # PuppetCA Certificates
       - /root/.aws:/root/.aws                  # AWS Credentials
       - /etc/puppetlabs/puppet/ssl:/backup/puppet-ssl # Puppet Agent Certificates
@@ -217,6 +161,10 @@ services:
         published: 9101
     networks:
       - backend
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://logs.ghn.me:10514"
     labels:
       container_group: monitoring
     deploy:
@@ -229,43 +177,27 @@ secrets:
     external: true
   notify_slack.sh:
     external: true
-  puppet_csr.yml:
-    external: true
   puppetdb_pass:
     external: true
   puppetdb_user:
-    external: true
-  webhooks.json_v2:
     external: true
 
 volumes:
   ssl:
   code:
-  certs:
 
 networks:
-  frontend:
-    ipam:
-      config:
-        - subnet: 10.0.1.0/24 # Should not conflict with the AWS VPC
-  encrypted:
-    driver: overlay
-    driver_opts:
-      encrypted: ""
-    ipam:
-      config:
-        - subnet: 10.0.2.0/24 # Should not conflict with the AWS VPC
   puppet:
     driver: overlay
     driver_opts:
       encrypted: ""
     ipam:
       config:
-        - subnet: 10.0.3.0/24 # Should not conflict with the AWS VPC
+        - subnet: 10.0.1.0/24 # Should not conflict with the AWS VPC
   backend:
     driver: overlay
     driver_opts:
       encrypted: ""
     ipam:
       config:
-        - subnet: 10.0.4.0/24 # Should not conflict with the AWS VPC
+        - subnet: 10.0.2.0/24 # Should not conflict with the AWS VPC
