@@ -30,6 +30,12 @@ data "aws_iam_policy_document" "rhea_user" {
     actions   = ["ec2:Describe*"]
     resources = ["*"]
   }
+
+  statement {
+    sid       = "AllowGettingPuppetParameters"
+    actions   = ["ssm:Get*"]
+    resources = ["arn:aws:ssm:*:*:parameter/puppet/*"]
+  }
 }
 
 resource "aws_iam_access_key" "rhea_v1" {
