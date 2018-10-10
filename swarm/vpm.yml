@@ -13,7 +13,7 @@ services:
         target: /etc/puppetlabs/puppet/eyaml/eyaml_private_key.pkcs7.pem
       - source: eyaml_public_key.pkcs7.pem
         target: /etc/puppetlabs/puppet/eyaml/eyaml_public_key.pkcs7.pem
-    entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for certificates and R10K..."; sleep 5; done; /entrypoint.sh puppetserver foreground'
+    entrypoint: /sbin/tini -- sh -c 'until [ -s /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem ] && [ -s /etc/puppetlabs/code/environments/production/.r10k-deploy.json ]; do echo "Waiting for certificates and R10K..."; sleep 5; done; chown -R puppet:puppet /opt/puppetlabs/server/data/puppetserver/.aws; /entrypoint.sh puppetserver foreground'
     volumes:
       - /root/.aws:/opt/puppetlabs/server/data/puppetserver/.aws
       - ssl:/etc/puppetlabs/puppet/ssl
