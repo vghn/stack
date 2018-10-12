@@ -1,5 +1,29 @@
 # Change Log
 
+## [v0.4.1](https://github.com/vghn/stack/tree/v0.4.1) (2018-10-12)
+[Full Changelog](https://github.com/vghn/stack/compare/v0.4.0...v0.4.1)
+
+**Implemented enhancements:**
+
+- Specify account name in the billing alarms [\#174](https://github.com/vghn/stack/issues/174)
+- Compose Prometheus' public dns from the ip [\#173](https://github.com/vghn/stack/issues/173)
+- Add CloudFlare records for Prometheus and PuppetDB [\#172](https://github.com/vghn/stack/issues/172)
+- Use the new t3 instance [\#169](https://github.com/vghn/stack/issues/169)
+- Tag everything [\#168](https://github.com/vghn/stack/issues/168)
+- Improve S3 bucket policies [\#167](https://github.com/vghn/stack/issues/167)
+- Mount EFS and EBS when Prometheus starts [\#166](https://github.com/vghn/stack/issues/166)
+- Clean Terraform backend module [\#165](https://github.com/vghn/stack/issues/165)
+- Allow Grafana access to both accounts [\#164](https://github.com/vghn/stack/issues/164)
+
+**Fixed bugs:**
+
+- Fix hostnames conflicts in docker [\#178](https://github.com/vghn/stack/issues/178)
+- Allow Rhea access to Puppet Parameters [\#177](https://github.com/vghn/stack/issues/177)
+- Own AWS credentials [\#176](https://github.com/vghn/stack/issues/176)
+- Fix LetsEncrypt certificates [\#175](https://github.com/vghn/stack/issues/175)
+- Improve bootstrap scripts [\#171](https://github.com/vghn/stack/issues/171)
+- T3 instances expose EBS volumes as NVMe block devices  [\#170](https://github.com/vghn/stack/issues/170)
+
 ## [v0.4.0](https://github.com/vghn/stack/tree/v0.4.0) (2018-08-18)
 [Full Changelog](https://github.com/vghn/stack/compare/v0.3.3...v0.4.0)
 
