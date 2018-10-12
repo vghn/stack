@@ -35,7 +35,7 @@ services:
           - node.labels.role == prometheus
   grafana:
     image: grafana/grafana:5.3.0
-    hostname: grafana.ghn.me
+    hostname: grafana
     environment:
       GF_PATHS_DATA: '/data/grafana'
       GF_SERVER_ROOT_URL: 'https://prometheus.ghn.me'
@@ -64,7 +64,7 @@ services:
         traefik.backend.loadbalancer.sticky: 'true'
   prometheus:
     image: prom/prometheus:v2.4.3
-    hostname: prometheus.ghn.me
+    hostname: prometheus
     configs:
       - source: alertrules.yml_v2
         target: /etc/prometheus/alertrules.yml
@@ -87,7 +87,7 @@ services:
           - node.labels.role == prometheus
   alertmanager:
     image: prom/alertmanager:v0.15.2
-    hostname: alertmanager.ghn.me
+    hostname: alertmanager
     secrets:
       - source: alertmanager_config.yml_v1
         target: /etc/alertmanager/config.yml
@@ -243,4 +243,4 @@ networks:
   backend:
     ipam:
       config:
-        - subnet: 10.0.2.0/24
+        - subnet: 10.0.2.0/24 # Should not conflict with the AWS VPC
