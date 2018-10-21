@@ -1,5 +1,5 @@
 module "backup_rhea" {
-  source = "../backup"
+  source = "../modules/backup"
   bucket = "vgbak-rhea"
 
   principals = [
@@ -17,7 +17,7 @@ module "backup_rhea" {
 }
 
 module "backup_prometheus" {
-  source = "../backup"
+  source = "../modules/backup"
   bucket = "vgbak-prometheus"
 
   principals = [
@@ -35,7 +35,7 @@ module "backup_prometheus" {
 }
 
 module "backup_mini" {
-  source = "../backup"
+  source = "../modules/backup"
   bucket = "vgbak-mini"
 
   principals = [
@@ -53,7 +53,7 @@ module "backup_mini" {
 }
 
 module "backup_zucu" {
-  source = "../backup"
+  source = "../modules/backup"
   bucket = "vgbak-zucu"
 
   principals = [

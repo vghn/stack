@@ -7,14 +7,14 @@ data "aws_iam_role" "vlad" {
 }
 
 module "notifications" {
-  source = "../notifications"
+  source = "../modules/notifications"
   email  = "${var.email}"
 
   common_tags = "${var.common_tags}"
 }
 
 module "billing" {
-  source                  = "../billing"
+  source                  = "../modules/billing"
   notifications_topic_arn = "${module.notifications.topic_arn}"
   thresholds              = ["1", "2", "3", "4", "5"]
   account                 = "Orion"
@@ -23,7 +23,7 @@ module "billing" {
 }
 
 module "cloudtrail" {
-  source = "../cloudtrail"
+  source = "../modules/cloudtrail"
 
   common_tags = "${var.common_tags}"
 }
