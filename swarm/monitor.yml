@@ -34,7 +34,7 @@ services:
           - node.role == manager
           - node.labels.role == prometheus
   grafana:
-    image: grafana/grafana:5.3.0
+    image: grafana/grafana:5.3.1
     hostname: grafana
     environment:
       GF_PATHS_DATA: '/data/grafana'
