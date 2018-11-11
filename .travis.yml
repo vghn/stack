@@ -48,6 +48,7 @@ jobs:
       script: |
         ./bin/stack ami validate prometheus
         ./bin/stack ami build prometheus
+        ./bin/stack ami clean prometheus
     - stage: "Deploy"
       if: branch = master AND type != pull_request
       script: |
