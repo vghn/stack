@@ -48,7 +48,6 @@ jobs:
       script: |
         ./bin/stack ami validate prometheus
         ./bin/stack ami build prometheus
-        ./bin/stack ami clean prometheus
     - stage: "Deploy"
       if: branch = master AND type != pull_request
       script: |
@@ -56,6 +55,10 @@ jobs:
         ./bin/stack tf validate
         ./bin/stack tf plan
         ./bin/stack tf apply -auto-approve
+    - stage: "Clean"
+      if: branch = master AND type != pull_request
+      script: |
+        ./bin/stack ami clean prometheus
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
