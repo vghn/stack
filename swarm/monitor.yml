@@ -34,7 +34,7 @@ services:
           - node.role == manager
           - node.labels.role == prometheus
   grafana:
-    image: grafana/grafana:5.3.2
+    image: grafana/grafana:5.3.4
     hostname: grafana
     environment:
       GF_PATHS_DATA: '/data/grafana'
@@ -63,7 +63,7 @@ services:
         traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
         traefik.backend.loadbalancer.sticky: 'true'
   prometheus:
-    image: prom/prometheus:v2.4.3
+    image: prom/prometheus:v2.5.0
     hostname: prometheus
     configs:
       - source: alertrules.yml_v2
@@ -86,7 +86,7 @@ services:
         constraints:
           - node.labels.role == prometheus
   alertmanager:
-    image: prom/alertmanager:v0.15.2
+    image: prom/alertmanager:v0.15.3
     hostname: alertmanager
     secrets:
       - source: alertmanager_config.yml_v1
@@ -191,7 +191,7 @@ services:
     deploy:
       mode: global
   cadvisor:
-    image: google/cadvisor:v0.31.0
+    image: google/cadvisor:v0.32.0
     hostname: cadvisor-prometheus
     volumes:
       - /:/rootfs:ro

@@ -147,7 +147,7 @@ services:
     deploy:
       mode: global
   cadvisor:
-    image: google/cadvisor:v0.31.0
+    image: google/cadvisor:v0.32.0
     hostname: cadvisor-rhea
     volumes:
       - /:/rootfs:ro
