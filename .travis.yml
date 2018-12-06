@@ -10,7 +10,7 @@ env:
   global:
     - SC_VERSION=stable # or "v0.4.7", or "latest"
   matrix:
-    - STACK=prometheus
+    - STACK=monitor
     - STACK=unifi
 install:
   # Install a custom version of shellcheck instead of Travis CI's default
