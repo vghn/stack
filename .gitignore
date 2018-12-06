@@ -2,20 +2,12 @@
 .env
 swarm/*-secrets
 
-# Terraform
-**/.terraform/*
-*.tfstate
-*.tfstate.*
-crash.log
-*.tfvars
-!/terraform/backend/terraform.tfstate
-
-# Other
+# Ruby
 .bundle/
-.vagrant/
-pkg/
-tmp/
 vendor/
-*.log
 Gemfile.lock
 gems.locked
+
+# Other
+pkg/
+tmp/

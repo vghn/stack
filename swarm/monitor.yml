@@ -15,13 +15,13 @@ services:
       --acme.domains=prometheus.ghn.me,logs.ghn.me,monitor.ghn.me
       --acme.tlsChallenge
       --acme.entryPoint=https
-      --acme.storage=/data/lecerts/acme.json
+      --acme.storage=/certs/acme.json
     ports:
       - '80:80'
       - '443:443'
       - '8888:8888'
     volumes:
-      - data:/data
+      - /data/certs:/certs
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - frontend
@@ -33,22 +33,31 @@ services:
         constraints:
           - node.role == manager
           - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
   grafana:
-    image: grafana/grafana:5.3.4
+    image: grafana/grafana:5.4.0
     hostname: grafana
     environment:
-      GF_PATHS_DATA: '/data/grafana'
-      GF_SERVER_ROOT_URL: 'https://prometheus.ghn.me'
+      GF_SERVER_ROOT_URL: https://prometheus.ghn.me
       GF_SMTP_ENABLED: 'true'
-      GF_SMTP_HOST: 'smtp.sendgrid.net:587'
-      GF_SMTP_FROM_ADDRESS: 'admin@ghn.me'
-      GF_SMTP_FROM_NAME: 'Prometheus'
+      GF_SMTP_HOST: smtp.sendgrid.net:587
+      GF_SMTP_FROM_ADDRESS: admin@ghn.me
+      GF_SMTP_FROM_NAME: Prometheus
+      GF_SECURITY_ADMIN_PASSWORD_FILE: /run/secrets/grafana_security_admin_password
+      GF_SMTP_USER_FILE: /run/secrets/grafana_smtp_user
+      GF_SMTP_PASSWORD_FILE: /run/secrets/grafana_smtp_password
     secrets:
-      - source: grafana_env_v1
-        target: grafana_env
-    entrypoint: sh -c 'set -o allexport && . /run/secrets/grafana_env && /run.sh'
+      - source: grafana_security_admin_password_v1
+        target: grafana_security_admin_password
+      - source: grafana_smtp_user_v1
+        target: grafana_smtp_user
+      - source: grafana_smtp_password_v1
+        target: grafana_smtp_password
     volumes:
-      - data:/data
+      - /data/grafana:/var/lib/grafana
     networks:
       - backend
     labels:
@@ -57,6 +66,10 @@ services:
       placement:
         constraints:
           - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
       labels:
         traefik.tags: 'grafana'
         traefik.port: '3000'
@@ -66,15 +79,16 @@ services:
     image: prom/prometheus:v2.5.0
     hostname: prometheus
     configs:
-      - source: alertrules.yml_v2
+      - source: alertrules.yml_v4
         target: /etc/prometheus/alertrules.yml
-      - source: prometheus.yml_v2
+      - source: prometheus.yml_v4
         target: /etc/prometheus/prometheus.yml
     volumes:
-      - data:/data
+      - /data/prometheus:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/data/prometheus'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=15d'
     ports:
       - '9090:9090'
     networks:
@@ -85,6 +99,10 @@ services:
       placement:
         constraints:
           - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
   alertmanager:
     image: prom/alertmanager:v0.15.3
     hostname: alertmanager
@@ -92,9 +110,9 @@ services:
       - source: alertmanager_config.yml_v1
         target: /etc/alertmanager/config.yml
     volumes:
-      - data:/data
+      - /data/alertmanager:/alertmanager
     command:
-      - '--storage.path=/data/alertmanager'
+      - '--storage.path=/alertmanager'
       - '--config.file=/etc/alertmanager/config.yml'
     ports:
       - '9093:9093'
@@ -106,6 +124,10 @@ services:
       placement:
         constraints:
           - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
   rsyslog:
     image: vladgh/rs:latest
     hostname: logs.ghn.me
@@ -126,7 +148,7 @@ services:
       - source: logzio_token_v1
         target: logzio_token
     volumes:
-      - data:/data
+      - /data/logs:/data/logs
     ports:
       - '10514:10514'
     networks:
@@ -137,6 +159,10 @@ services:
       placement:
         constraints:
           - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
   logrotate:
     image: blacklabelops/logrotate:1.2
     hostname: logrotate-prometheus
@@ -148,7 +174,7 @@ services:
       LOGROTATE_OLDDIR: '/data/logs/archive'
       TZ: 'US/Central'
     volumes:
-      - data:/data
+      - /data/logs:/data/logs
     networks:
       - backend
     labels:
@@ -157,6 +183,10 @@ services:
       placement:
         constraints:
           - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
   backup:
     image: vladgh/backup:latest
     hostname: backup-prometheus
@@ -166,7 +196,7 @@ services:
       GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
     command: cron
     volumes:
-      - data:/backup # Data
+      - /data:/backup
     networks:
       - backend
     labels:
@@ -175,6 +205,10 @@ services:
       placement:
         constraints:
           - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
   log:
     image: vladgh/ls:latest
     hostname: logs-prometheus
@@ -190,6 +224,10 @@ services:
       container_group: logs
     deploy:
       mode: global
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
   cadvisor:
     image: google/cadvisor:v0.32.0
     hostname: cadvisor-prometheus
@@ -200,18 +238,26 @@ services:
       - /var/run:/var/run:rw
       - /var/lib/docker/:/var/lib/docker:ro
     ports:
-      - '8080:8080'
+      - '9101:8080'
     networks:
       - backend
     labels:
       container_group: monitoring
     deploy:
       mode: global
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
 
 secrets:
   alertmanager_config.yml_v1:
     external: true
-  grafana_env_v1:
+  grafana_security_admin_password_v1:
+    external: true
+  grafana_smtp_password_v1:
+    external: true
+  grafana_smtp_user_v1:
     external: true
   logs-combined-ca-cert.pem_v1:
     external: true
@@ -223,17 +269,10 @@ secrets:
     external: true
 
 configs:
-  alertrules.yml_v2:
+  alertrules.yml_v4:
     external: true
-  prometheus.yml_v2:
+  prometheus.yml_v4:
     external: true
-
-volumes:
-  data:
-    driver: local
-    driver_opts:
-      type: ext4
-      device: /dev/xvdg
 
 networks:
   frontend:

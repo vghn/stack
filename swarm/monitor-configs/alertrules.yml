@@ -65,29 +65,13 @@ groups:
       description: Rsyslog container is down for more than 5 minutes
       summary: RSYSLOG CONTAINER DOWN
   - alert: unifi_controller_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"unifi_controller_.+"})
+    expr: absent(container_cpu_usage_seconds_total{name=~"unifi_controller\\..+"})
     for: 5m
     labels:
       severity: Critical
     annotations:
       description: Unifi controller container is down for more than 5 minutes
       summary: UNIFI CONTROLLER CONTAINER DOWN
-  - alert: puppet_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"vpm_puppet\\..+"})
-    for: 5m
-    labels:
-      severity: Critical
-    annotations:
-      description: Puppet container is down for more than 5 minutes
-      summary: PUPPET CONTAINER DOWN
-  - alert: puppetdb_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"vpm_puppetdb\\..+"})
-    for: 5m
-    labels:
-      severity: Critical
-    annotations:
-      description: PuppetDB container is down for more than 5 minutes
-      summary: PUPPETDB CONTAINER DOWN
 ################################################################################
 
   # - alert: TESTING_high_load_on_node

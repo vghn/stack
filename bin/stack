@@ -8,17 +8,12 @@
 # Usage
 usage(){
   echo '---------------------------------------------'
-  echo "USAGE: ${BASH_SOURCE[0]} [COMMAND] [SUBCOMMAND] [OPTIONS]"
+  echo "USAGE: ${BASH_SOURCE[0]} [COMMAND] [OPTIONS]"
   echo '---------------------------------------------'
   echo 'Commands:'
   echo ''
-  echo '  - ami [build | clean | validate] [NAME]'
-  echo '    * Allowed AMIs: prometheus'
-  echo ''
   echo '  - deploy [stack name]'
-  echo '    * Allowed stacks: vpm, monitor'
-  echo ''
-  echo '  - tf [COMMAND]'
+  echo '    * Allowed stacks: monitor, unifi'
   echo ''
   echo '----------------------------------------------'
   echo 'For more information please consult the README'
@@ -28,71 +23,29 @@ usage(){
 
 # Process Stack CLI
 stack_process_cli(){
+  trap 'bye $?' EXIT HUP INT QUIT TERM
   if [[ -z $1 ]]; then usage; fi
 
-  export cmd="${1:-}"; shift || true
+  local cmd stack
+  cmd="${1:-}"; shift || true
+  stack="${1:-}"; shift || true
 
-  trap 'bye $?' EXIT HUP INT QUIT TERM
+  # Defaults
+  export SSH_USER='deploy'
+
   case "$cmd" in
-    ami)
-      local scmd ami V
-      scmd="${1:-}"
-      ami="${2:-}"
-      V=''
-      case "$ami" in
-        prometheus)
-          export AWS_PROFILE='orion'
-          export AWS_DEFAULT_REGION='us-east-1'
-          AMI_FILE='ami/prometheus.json'
-          AMI_NAME='Prometheus'
-          V="${V} -var 'pp_secret=$(aws ssm get-parameter --with-decryption --name /puppet/vgh/secret --region us-east-1 --query Parameter.Value --output text --profile ursa)'"
-          ;;
-        *)
-          usage
-          ;;
-      esac
-      case "$scmd" in
-        build)
-          eval packer build "$V" "$AMI_FILE"
-          ;;
-        validate)
-          eval packer validate "$V" "$AMI_FILE"
-          ;;
-        clean)
-          amicleaner --mapping-key name --mapping-values "${AMI_NAME}" --force-delete --full-report --keep-previous 1 --check-orphans
-          ;;
-        *)
-          usage
-          ;;
-      esac
-      ;;
     deploy)
-      local stack="${1:-}"
       case "$stack" in
-        vpm)
-          export SSH_HOST='rhea.ghn.me'
-          deploy_swarm "$stack"
-          ;;
         monitor)
           export SSH_HOST='prometheus.ghn.me'
-          deploy_swarm "$stack"
+          ;;
+        unifi)
+          export SSH_HOST='unifi.mec7.com'
           ;;
         *)
           usage
       esac
-      ;;
-    tf)
-      (
-        cd "${APPDIR}/terraform" || true
-        case "${1:-}" in
-          apply|import|plan|push|refresh|validate)
-            terraform "${@:-}"
-            ;;
-          *)
-            terraform "${@:-}"
-            ;;
-        esac
-      )
+      deploy_swarm "$stack"
       ;;
     *)
       usage

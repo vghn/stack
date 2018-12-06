@@ -8,14 +8,6 @@ e_error() { printf "  ✖  %s\\n" "$@" ;}
 e_warn()  { printf "    %s\\n" "$@" ;}
 e_abort() { e_error "$1"; return "${2:-1}" ;}
 
-# Get Terraform output
-tf_output(){
-  (
-    cd "${APPDIR}/terraform" || return
-    terraform output "${1:-}"
-  )
-}
-
 # Set-up SSH
 ssh_setup(){
   e_info 'Set-up SSH key'

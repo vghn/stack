@@ -29,20 +29,24 @@ scrape_configs:
           - 'prometheus.ghn.me:9100'
         labels:
           node: Prometheus
+          group: vgh
       - targets:
-          - 'rhea.ghn.me:9100'
+          - 'unifi.mec7.com:9100'
         labels:
-          node: Rhea
+          node: Unifi
+          group: cosmin
   - job_name: 'containers'
     static_configs:
       - targets:
-          - 'cadvisor:8080'
+          - 'prometheus.ghn.me:9101'
         labels:
           node: Prometheus
+          group: vgh
       - targets:
-          - 'rhea.ghn.me:9101'
+          - 'unifi.mec7.com:9101'
         labels:
-          node: Rhea
+          node: Unifi
+          group: cosmin
 
 alerting:
   alertmanagers:

@@ -1,0 +1,92 @@
+version: '3.7'
+
+services:
+  controller:
+    image: jacobalberty/unifi:stable
+    hostname: unifi.mec7.com
+    environment:
+      TZ: 'MST'
+      RUNAS_UID0: 'false'
+    volumes:
+      - /data/unifi:/unifi
+      - /etc/ssl/mec7:/unifi/cert
+    ports:
+      - '6789:6789'
+      - '8080:8080'
+      - '8443:8443'
+      - '8880:8880'
+      - '3478:3478/udp'
+      - '10001:10001/udp'
+    networks:
+      - frontend
+    labels:
+      container_group: unifi
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.role == unifi
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 750M
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
+  log:
+    image: vladgh/ls:latest
+    hostname: logs-unifi
+    environment:
+      BACKLOG: 'false'
+      EXCLUDE_LABEL: 'logspout.exclude'
+    command: syslog+tls://logs.ghn.me:10514
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backend
+    labels:
+      container_group: logs
+    deploy:
+      mode: global
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
+  cadvisor:
+    image: google/cadvisor:v0.32.0
+    hostname: cadvisor-unifi
+    volumes:
+      - /:/rootfs:ro
+      - /dev/disk/:/dev/disk:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:rw
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - '9101:8080'
+    networks:
+      - backend
+    labels:
+      container_group: monitoring
+    deploy:
+      mode: global
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
+
+networks:
+  frontend:
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+    ipam:
+      config:
+        - subnet: 10.0.1.0/24 # Should not conflict with the AWS VPC
+  backend:
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24 # Should not conflict with the AWS VPC

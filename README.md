@@ -1,10 +1,10 @@
 # VGH Stack
 
-  [![Build Status](https://travis-ci.org/vghn/stack.svg?branch=master)](https://travis-ci.org/vghn/stack)
+  [![Build Status](https://travis-ci.com/vghn/stack.svg?branch=master)](https://travis-ci.com/vghn/stack)
 
 ## Overview
 
-Vlad's Stack.
+Vlad's Stack
 
 ## Contribute
 
