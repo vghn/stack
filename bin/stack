@@ -13,7 +13,7 @@ usage(){
   echo 'Commands:'
   echo ''
   echo '  - deploy [stack name]'
-  echo '    * Allowed stacks: monitor, unifi'
+  echo '    * Allowed stacks: monitor'
   echo ''
   echo '----------------------------------------------'
   echo 'For more information please consult the README'
@@ -38,9 +38,6 @@ stack_process_cli(){
       case "$stack" in
         monitor)
           export SSH_HOST='prometheus.ghn.me'
-          ;;
-        unifi)
-          export SSH_HOST='unifi.mec7.com'
           ;;
         *)
           usage

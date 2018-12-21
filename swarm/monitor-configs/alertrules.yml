@@ -64,14 +64,6 @@ groups:
     annotations:
       description: Rsyslog container is down for more than 5 minutes
       summary: RSYSLOG CONTAINER DOWN
-  - alert: unifi_controller_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"unifi_controller\\..+"})
-    for: 5m
-    labels:
-      severity: Critical
-    annotations:
-      description: Unifi controller container is down for more than 5 minutes
-      summary: UNIFI CONTROLLER CONTAINER DOWN
 ################################################################################
 
   # - alert: TESTING_high_load_on_node
