@@ -3,50 +3,60 @@ global:
   evaluation_interval: 1m
   scrape_timeout: 10s
   external_labels:
-    monitor: 'vgh'
+    monitor: vgh
 
 rule_files:
-  - 'alertrules.yml'
+  - alertrules.yml
 
 scrape_configs:
-  - job_name: 'prometheus'
+  - job_name: prometheus
     static_configs:
       - targets:
-          - 'localhost:9090'
+          - prometheus:9090
         labels:
           alias: Prometheus
           node: Prometheus
-  - job_name: 'grafana'
+  - job_name: grafana
     static_configs:
       - targets:
-          - 'grafana:3000'
+          - grafana:3000
         labels:
           alias: Grafana
           node: Prometheus
-  - job_name: 'nodes'
+  - job_name: nodes
     static_configs:
       - targets:
-          - 'prometheus.ghn.me:9100'
+          - prometheus.ghn.me:9100
         labels:
           node: Prometheus
           group: vgh
       - targets:
-          - 'unifi.mec7.com:9100'
+          - vgh.asuscomm.com:9100
         labels:
-          node: Unifi
-          group: cosmin
-  - job_name: 'containers'
+          node: VNuc
+          group: vgh
+      - targets:
+          - vgh.asuscomm.com:9102
+        labels:
+          node: Mini
+          group: vgh
+  - job_name: containers
     static_configs:
       - targets:
-          - 'prometheus.ghn.me:9101'
+          - cadvisor:8080
         labels:
           node: Prometheus
           group: vgh
       - targets:
-          - 'unifi.mec7.com:9101'
+          - vgh.asuscomm.com:9101
         labels:
-          node: Unifi
-          group: cosmin
+          node: VNuc
+          group: vgh
+      - targets:
+          - vgh.asuscomm.com:9103
+        labels:
+          node: Mini
+          group: vgh
 
 alerting:
   alertmanagers:
