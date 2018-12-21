@@ -37,9 +37,13 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 64M
   grafana:
-    image: grafana/grafana:5.4.0
-    hostname: grafana
+    image: grafana/grafana:5.4.2
+    hostname: grafana-prometheus
     environment:
       GF_SERVER_ROOT_URL: https://prometheus.ghn.me
       GF_SMTP_ENABLED: 'true'
@@ -70,18 +74,22 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 64M
       labels:
         traefik.tags: 'grafana'
         traefik.port: '3000'
         traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
         traefik.backend.loadbalancer.sticky: 'true'
   prometheus:
-    image: prom/prometheus:v2.5.0
-    hostname: prometheus
+    image: prom/prometheus:v2.6.0
+    hostname: prometheus-prometheus
     configs:
-      - source: alertrules.yml_v4
+      - source: alertrules.yml_v5
         target: /etc/prometheus/alertrules.yml
-      - source: prometheus.yml_v4
+      - source: prometheus.yml_v12
         target: /etc/prometheus/prometheus.yml
     volumes:
       - /data/prometheus:/prometheus
@@ -103,9 +111,13 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 512M
   alertmanager:
     image: prom/alertmanager:v0.15.3
-    hostname: alertmanager
+    hostname: alertmanager-prometheus
     secrets:
       - source: alertmanager_config.yml_v1
         target: /etc/alertmanager/config.yml
@@ -128,6 +140,10 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 32M
   rsyslog:
     image: vladgh/rs:latest
     hostname: logs.ghn.me
@@ -163,6 +179,10 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 64M
   logrotate:
     image: blacklabelops/logrotate:1.2
     hostname: logrotate-prometheus
@@ -187,28 +207,10 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
-  backup:
-    image: vladgh/backup:latest
-    hostname: backup-prometheus
-    environment:
-      AWS_S3_BUCKET: 'vgbak-prometheus'
-      GPG_RECIPIENT: 'vlad@ghn.me'
-      GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
-    command: cron
-    volumes:
-      - /data:/backup
-    networks:
-      - backend
-    labels:
-      container_group: backup
-    deploy:
-      placement:
-        constraints:
-          - node.labels.role == prometheus
-      restart_policy:
-        delay: 10s
-        max_attempts: 10
-        window: 60s
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 32M
   log:
     image: vladgh/ls:latest
     hostname: logs-prometheus
@@ -228,6 +230,10 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 32M
   cadvisor:
     image: google/cadvisor:v0.32.0
     hostname: cadvisor-prometheus
@@ -235,8 +241,11 @@ services:
       - /:/rootfs:ro
       - /dev/disk/:/dev/disk:ro
       - /sys:/sys:ro
-      - /var/run:/var/run:rw
+      - /var/run:/var/run:ro
       - /var/lib/docker/:/var/lib/docker:ro
+    command:
+      - '--housekeeping_interval=1m'
+      - '--global_housekeeping_interval=2m'
     ports:
       - '9101:8080'
     networks:
@@ -249,6 +258,36 @@ services:
         delay: 10s
         max_attempts: 10
         window: 60s
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 64M
+  backup:
+    image: vladgh/backup:latest
+    hostname: backup-prometheus
+    environment:
+      AWS_S3_BUCKET: 'vgbak-prometheus'
+      GPG_RECIPIENT: 'vlad@ghn.me'
+      GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
+    command: cron
+    volumes:
+      - /data/backup:/backup
+    networks:
+      - backend
+    labels:
+      container_group: backup
+    deploy:
+      placement:
+        constraints:
+          - node.labels.role == prometheus
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 32M
 
 secrets:
   alertmanager_config.yml_v1:
@@ -269,17 +308,17 @@ secrets:
     external: true
 
 configs:
-  alertrules.yml_v4:
+  alertrules.yml_v5:
     external: true
-  prometheus.yml_v4:
+  prometheus.yml_v12:
     external: true
 
 networks:
   frontend:
     ipam:
       config:
-        - subnet: 10.0.1.0/24 # Should not conflict with the AWS VPC
+        - subnet: 10.1.0.0/24 # Should not conflict with the AWS VPC
   backend:
     ipam:
       config:
-        - subnet: 10.0.2.0/24 # Should not conflict with the AWS VPC
+        - subnet: 10.2.0.0/24 # Should not conflict with the AWS VPC

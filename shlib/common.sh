@@ -32,7 +32,7 @@ deploy_swarm(){
   if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     e_info 'Deploy stack'
     ssh_setup
-    ( eval "$SSH_CMD" "docker stack deploy --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
+    ( eval "$SSH_CMD" "docker stack deploy --prune --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
   else
     e_warn 'Deployment is only allowed in production!'
   fi
