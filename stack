@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# Stack CLI
+
+# Usage
+usage(){
+  echo '---------------------------------------------'
+  echo "USAGE: ${BASH_SOURCE[0]} [COMMAND] [OPTIONS]"
+  echo '---------------------------------------------'
+  echo 'Commands:'
+  echo ''
+  echo '  - deploy [NAME]'
+  echo ''
+  echo '----------------------------------------------'
+  echo 'For more information please consult the README'
+  echo '----------------------------------------------'
+  exit 1
+}
+
+# Bash strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# Debug
+[ -z "${DEBUG:-}" ] || set -x
+
+# System VARs
+NOW="$(date +"%Y%m%d_%H%M%S")"
+TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmp')
+APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+VERSION=$(git --git-dir="${APPDIR}/.git" --work-tree="${APPDIR}" describe --always --tags)
+export NOW TMPDIR APPDIR VERSION
+
+# Load encrypted environment
+# shellcheck disable=1090
+. <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 .env.gpg ) 2>/dev/null || true
+
+# Output
+e_ok()    { printf "  ✔  %s\\n" "$@" ;}
+e_info()  { printf "  ➜  %s\\n" "$@" ;}
+e_error() { printf "  ✖  %s\\n" "$@" ;}
+e_warn()  { printf "    %s\\n" "$@" ;}
+e_abort() { e_error "$1"; return "${2:-1}" ;}
+
+# Set-up SSH
+ssh_setup(){
+  e_info 'Set-up SSH key'
+
+  SSH_USER="${SSH_USER:-ubuntu}"
+  SSH_KEY=$(mktemp 2>/dev/null || mktemp -t 'tmp')
+
+  echo "${DEPLOY_RSA:-}" | base64 --decode --ignore-garbage > "$SSH_KEY"
+  chmod 600 "$SSH_KEY"
+
+  SSH_CMD="ssh -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -i ${SSH_KEY} ${SSH_USER}@${SSH_HOST}"
+}
+
+# Deploy Swarm
+deploy_swarm(){
+  local stack="${1:-}"
+
+  if [[ -z "$stack" ]]; then
+    e_warn 'Stack name is required'
+  fi
+
+  if [[ "$ENVTYPE" == 'production' ]] && [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
+    e_info 'Deploy stack'
+    ssh_setup
+    ( eval "$SSH_CMD" "docker stack deploy --prune --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
+  else
+    e_warn 'Deployment is only allowed in production!'
+  fi
+}
+
+# Clean-up
+clean_up() {
+  if [[ "${CI:-false}" == 'true' ]]; then
+    if [[ -s "${APPDIR}/.env" ]]; then
+      e_info 'Removing .env'
+      shred -fu "${APPDIR:?}/.env"
+    fi
+
+    if [[ -s "${SSH_KEY:-}" ]] && [[ "$SSH_KEY" =~ tmp. ]]; then
+      e_info 'Removing temporary ssh key'
+      shred -fu "${SSH_KEY:?}"
+    fi
+  fi
+}
+
+# Process CLI
+process_cli(){
+  trap 'clean_up' EXIT HUP INT QUIT TERM
+  if [[ -z $1 ]]; then usage; fi
+
+  local cmd stack
+  cmd="${1:-}"; shift || true
+  stack="${1:-}"; shift || true
+
+  # Defaults
+  export SSH_USER='deploy'
+
+  case "$stack" in
+    monitor)
+      export SSH_HOST='prometheus.ghn.me'
+      ;;
+    *)
+      echo 'Stack name not recognized!'
+      echo 'Allowed stack: monitor'
+      exit 1
+      ;;
+  esac
+
+  case "$cmd" in
+    deploy)
+      deploy_swarm "$stack"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+}
+
+process_cli "${@:-}"

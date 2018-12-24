@@ -1,42 +1,11 @@
 dist: xenial
-language: ruby
-branches:
-  except:
-    - "/^v\\d/"
-cache:
-  directories:
-    - vendor/bundle
 env:
   global:
-    - SC_VERSION=stable # or "v0.4.7", or "latest"
+    GIT_BRANCH: "$TRAVIS_BRANCH" # Specify the branch name manually when on a detached HEAD
   matrix:
     - STACK=monitor
-install:
-  # Install a custom version of shellcheck instead of Travis CI's default
-  - |
-    wget "https://storage.googleapis.com/shellcheck/shellcheck-${SC_VERSION}.linux.x86_64.tar.xz"
-    tar --xz -xvf "shellcheck-${SC_VERSION}.linux.x86_64.tar.xz"
-    shellcheck() { "shellcheck-${SC_VERSION}/shellcheck" "$@"; }
-    shellcheck --version
-  # Install gems
-  - bundle install --without development --path vendor/bundle
-  # Install PIP packages
-  - pip install --user --upgrade awscli && aws --version
-before_script: |
-  . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 .env.gpg ) 2>/dev/null || true
-  if [[ ${TRAVIS_PULL_REQUEST:-false} == false ]]; then
-    aws configure --profile default set aws_access_key_id "${TRAVIS_AWS_ACCESS_KEY_ID}"
-    aws configure --profile default set aws_secret_access_key "${TRAVIS_AWS_SECRET_ACCESS_KEY}"
-    aws configure --profile ursa set role_arn "${TRAVIS_AWS_URSA_ROLE_ARN}"
-    aws configure --profile ursa set source_profile default
-    aws configure --profile ursa set region us-east-1
-  fi
 script:
-  - find ./bin ./shlib -type f -exec shellcheck {} +
-  - |
-    if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then
-      ./bin/stack deploy "$STACK"
-    fi
+  - if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then ./stack deploy "$STACK"; fi
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis

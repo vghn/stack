@@ -2,12 +2,5 @@
 .env
 swarm/*-secrets
 
-# Ruby
-.bundle/
-vendor/
-Gemfile.lock
-gems.locked
-
 # Other
-pkg/
 tmp/
