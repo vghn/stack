@@ -83,6 +83,17 @@ services:
         traefik.port: '3000'
         traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
         traefik.backend.loadbalancer.sticky: 'true'
+        traefik.frontend.headers.browserXSSFilter: 'true'
+        traefik.frontend.headers.contentTypeNosniff: 'true'
+        traefik.frontend.headers.referrerPolicy: 'no-referrer'
+        traefik.frontend.headers.frameDeny: 'true'
+        traefik.frontend.headers.contentSecurityPolicy: "default-src https: blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        traefik.frontend.headers.SSLRedirect: 'true'
+        traefik.frontend.headers.STSSeconds: '31536000'
+        traefik.frontend.headers.forceSTSHeader: 'true'
+        traefik.frontend.headers.SSLHost: 'prometheus.ghn.me'
+        traefik.frontend.headers.STSIncludeSubdomains: 'true'
+        traefik.frontend.headers.STSPreload: 'true'
   prometheus:
     image: prom/prometheus:v2.6.0
     hostname: prometheus-prometheus
