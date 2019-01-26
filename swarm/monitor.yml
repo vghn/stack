@@ -100,7 +100,7 @@ services:
     configs:
       - source: alertrules.yml_v5
         target: /etc/prometheus/alertrules.yml
-      - source: prometheus.yml_v12
+      - source: prometheus.yml_v14
         target: /etc/prometheus/prometheus.yml
     volumes:
       - /data/prometheus:/prometheus
@@ -321,7 +321,7 @@ secrets:
 configs:
   alertrules.yml_v5:
     external: true
-  prometheus.yml_v12:
+  prometheus.yml_v14:
     external: true
 
 networks:

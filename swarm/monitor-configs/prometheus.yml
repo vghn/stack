@@ -31,14 +31,9 @@ scrape_configs:
           node: Prometheus
           group: vgh
       - targets:
-          - vgh.asuscomm.com:9100
+          - home.ghn.me:9100
         labels:
           node: VNuc
-          group: vgh
-      - targets:
-          - vgh.asuscomm.com:9102
-        labels:
-          node: Mini
           group: vgh
   - job_name: containers
     static_configs:
@@ -48,14 +43,9 @@ scrape_configs:
           node: Prometheus
           group: vgh
       - targets:
-          - vgh.asuscomm.com:9101
+          - home.ghn.me:9101
         labels:
           node: VNuc
-          group: vgh
-      - targets:
-          - vgh.asuscomm.com:9103
-        labels:
-          node: Mini
           group: vgh
 
 alerting:
