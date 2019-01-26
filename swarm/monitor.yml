@@ -42,7 +42,7 @@ services:
           cpus: '0.05'
           memory: 64M
   grafana:
-    image: grafana/grafana:5.4.2
+    image: grafana/grafana:5.4.3
     hostname: grafana-prometheus
     environment:
       GF_SERVER_ROOT_URL: https://prometheus.ghn.me
@@ -95,7 +95,7 @@ services:
         traefik.frontend.headers.STSIncludeSubdomains: 'true'
         traefik.frontend.headers.STSPreload: 'true'
   prometheus:
-    image: prom/prometheus:v2.6.0
+    image: prom/prometheus:v2.6.1
     hostname: prometheus-prometheus
     configs:
       - source: alertrules.yml_v5
@@ -127,7 +127,7 @@ services:
           cpus: '0.30'
           memory: 512M
   alertmanager:
-    image: prom/alertmanager:v0.15.3
+    image: prom/alertmanager:v0.16.0
     hostname: alertmanager-prometheus
     secrets:
       - source: alertmanager_config.yml_v1
