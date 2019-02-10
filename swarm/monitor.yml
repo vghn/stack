@@ -54,12 +54,9 @@ services:
       GF_SMTP_USER_FILE: /run/secrets/grafana_smtp_user
       GF_SMTP_PASSWORD_FILE: /run/secrets/grafana_smtp_password
     secrets:
-      - source: grafana_security_admin_password_v1
-        target: grafana_security_admin_password
-      - source: grafana_smtp_user_v1
-        target: grafana_smtp_user
-      - source: grafana_smtp_password_v1
-        target: grafana_smtp_password
+      - grafana_security_admin_password
+      - grafana_smtp_user
+      - grafana_smtp_password
     volumes:
       - /data/grafana:/var/lib/grafana
     networks:
@@ -95,19 +92,19 @@ services:
         traefik.frontend.headers.STSIncludeSubdomains: 'true'
         traefik.frontend.headers.STSPreload: 'true'
   prometheus:
-    image: prom/prometheus:v2.6.1
+    image: prom/prometheus:v2.7.1
     hostname: prometheus-prometheus
     configs:
-      - source: alertrules.yml_v5
+      - source: alertrules.yml
         target: /etc/prometheus/alertrules.yml
-      - source: prometheus.yml_v14
+      - source: prometheus.yml
         target: /etc/prometheus/prometheus.yml
     volumes:
       - /data/prometheus:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention=15d'
+      - '--storage.tsdb.retention.time=15d'
     ports:
       - '9090:9090'
     networks:
@@ -127,16 +124,15 @@ services:
           cpus: '0.30'
           memory: 512M
   alertmanager:
-    image: prom/alertmanager:v0.16.0
+    image: prom/alertmanager:v0.16.1
     hostname: alertmanager-prometheus
     secrets:
-      - source: alertmanager_config.yml_v1
-        target: /etc/alertmanager/config.yml
+      - alertmanager_config.yml
     volumes:
       - /data/alertmanager:/alertmanager
     command:
       - '--storage.path=/alertmanager'
-      - '--config.file=/etc/alertmanager/config.yml'
+      - '--config.file=/run/secrets/alertmanager_config.yml'
     ports:
       - '9093:9093'
     networks:
@@ -166,14 +162,10 @@ services:
       TIME_ZONE: 'US/Central'
       REMOTE_LOGS_PATH: '/data/logs'
     secrets:
-      - source: logs-combined-ca-cert.pem_v1
-        target: logs-combined-ca-cert.pem
-      - source: logs-server-cert.pem_v1
-        target: logs-server-cert.pem
-      - source: logs-server-key.pem_v1
-        target: logs-server-key.pem
-      - source: logzio_token_v1
-        target: logzio_token
+      - logs-combined-ca-cert.pem
+      - logs-server-cert.pem
+      - logs-server-key.pem
+      - logzio_token
     volumes:
       - /data/logs:/data/logs
     ports:
@@ -301,27 +293,37 @@ services:
           memory: 32M
 
 secrets:
-  alertmanager_config.yml_v1:
+  alertmanager_config.yml:
+    name: alertmanager_config.yml_v1
     external: true
-  grafana_security_admin_password_v1:
+  grafana_security_admin_password:
+    name: grafana_security_admin_password_v1
     external: true
-  grafana_smtp_password_v1:
+  grafana_smtp_password:
+    name: grafana_smtp_password_v1
     external: true
-  grafana_smtp_user_v1:
+  grafana_smtp_user:
+    name: grafana_smtp_user_v1
     external: true
-  logs-combined-ca-cert.pem_v1:
+  logs-combined-ca-cert.pem:
+    name: logs-combined-ca-cert.pem_v1
     external: true
-  logs-server-cert.pem_v1:
+  logs-server-cert.pem:
+    name: logs-server-cert.pem_v1
     external: true
-  logs-server-key.pem_v1:
+  logs-server-key.pem:
+    name: logs-server-key.pem_v1
     external: true
-  logzio_token_v1:
+  logzio_token:
+    name: logzio_token_v1
     external: true
 
 configs:
-  alertrules.yml_v5:
+  alertrules.yml:
+    name: alertrules.yml_v5
     external: true
-  prometheus.yml_v14:
+  prometheus.yml:
+    name: prometheus.yml_v14
     external: true
 
 networks:
