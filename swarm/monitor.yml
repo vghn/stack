@@ -323,7 +323,7 @@ configs:
     name: alertrules.yml_v5
     external: true
   prometheus.yml:
-    name: prometheus.yml_v14
+    name: prometheus.yml_v15
     external: true
 
 networks:

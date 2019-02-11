@@ -5,6 +5,12 @@ global:
   external_labels:
     monitor: vgh
 
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets:
+        - alertmanager:9093
+
 rule_files:
   - alertrules.yml
 
@@ -47,9 +53,3 @@ scrape_configs:
         labels:
           node: VNuc
           group: vgh
-
-alerting:
-  alertmanagers:
-    - static_configs:
-      - targets:
-        - alertmanager:9093
