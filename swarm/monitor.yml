@@ -12,7 +12,7 @@ services:
       --entryPoints="Name:http Address::80 Redirect.EntryPoint:https"
       --entryPoints="Name:https Address::443 TLS"
       --acme --acme.email=webmaster@ghn.me
-      --acme.domains=prometheus.ghn.me,logs.ghn.me,monitor.ghn.me
+      --acme.domains=prometheus.ghn.me
       --acme.tlsChallenge
       --acme.entryPoint=https
       --acme.storage=/certs/acme.json
@@ -42,7 +42,7 @@ services:
           cpus: '0.05'
           memory: 64M
   grafana:
-    image: grafana/grafana:5.4.3
+    image: grafana/grafana:6.0.0
     hostname: grafana-prometheus
     environment:
       GF_SERVER_ROOT_URL: https://prometheus.ghn.me
@@ -78,7 +78,7 @@ services:
       labels:
         traefik.tags: 'grafana'
         traefik.port: '3000'
-        traefik.frontend.rule: 'Host:prometheus.ghn.me,logs.ghn.me,monitor.ghn.me;PathPrefix:/'
+        traefik.frontend.rule: 'Host:prometheus.ghn.me;PathPrefix:/'
         traefik.backend.loadbalancer.sticky: 'true'
         traefik.frontend.headers.browserXSSFilter: 'true'
         traefik.frontend.headers.contentTypeNosniff: 'true'
@@ -92,7 +92,7 @@ services:
         traefik.frontend.headers.STSIncludeSubdomains: 'true'
         traefik.frontend.headers.STSPreload: 'true'
   prometheus:
-    image: prom/prometheus:v2.7.1
+    image: prom/prometheus:v2.7.2
     hostname: prometheus-prometheus
     configs:
       - source: alertrules.yml
@@ -238,7 +238,7 @@ services:
           cpus: '0.05'
           memory: 32M
   cadvisor:
-    image: google/cadvisor:v0.32.0
+    image: google/cadvisor:v0.33.0
     hostname: cadvisor-prometheus
     volumes:
       - /:/rootfs:ro
