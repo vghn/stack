@@ -61,18 +61,22 @@ ssh_setup(){
   SSH_CMD="ssh -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null ${SSH_USER}@${SSH_HOST}"
 }
 
-# Deploy Swarm
-deploy_swarm(){
-  local stack="${1:-}"
-
-  if [[ -z "$stack" ]]; then
-    e_warn 'Stack name is required'
-  fi
+# Deploy
+deploy(){
+  local stack="${1:-?Stack name is required}"
 
   ssh_setup
 
   e_info 'Deploy stack'
-  ( eval "$SSH_CMD" "docker stack deploy --prune --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
+  case "$STACK_TYPE" in
+    swarm)
+      ( eval "$SSH_CMD" "sudo docker stack deploy --prune --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
+      ;;
+    compose)
+      ( envsubst < "${APPDIR}/compose/${stack}.yml" | eval "$SSH_CMD" "sudo docker-compose --project-name ${stack} --file - pull" )
+      ( envsubst < "${APPDIR}/compose/${stack}.yml" | eval "$SSH_CMD" "sudo docker-compose --project-name ${stack} --file - up -d --remove-orphans" )
+      ;;
+  esac
 }
 
 # Clean-up
@@ -105,17 +109,22 @@ process_cli(){
   case "$stack" in
     monitor)
       export SSH_HOST='prometheus.ghn.me'
+      export STACK_TYPE='swarm'
+      ;;
+    vault)
+      export SSH_HOST='prometheus.ghn.me'
+      export STACK_TYPE='compose'
+      echo 'Stack not available'; exit
       ;;
     *)
-      echo 'Stack name not recognized!'
-      echo 'Allowed stack: monitor'
-      exit 1
+      echo 'Stack name not recognized!';
+      usage
       ;;
   esac
 
   case "$cmd" in
     deploy)
-      deploy_swarm "$stack"
+      deploy "$stack"
       ;;
     *)
       usage
