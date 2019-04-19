@@ -151,92 +151,6 @@ services:
         limits:
           cpus: '0.05'
           memory: 32M
-  rsyslog:
-    image: vladgh/rs:latest
-    hostname: logs.ghn.me
-    environment:
-      LOGZIO_TOKEN_FILE: '/run/secrets/logzio_token'
-      CA_CERT: '/run/secrets/logs-combined-ca-cert.pem'
-      SERVER_CERT: '/run/secrets/logs-server-cert.pem'
-      SERVER_KEY: '/run/secrets/logs-server-key.pem'
-      TIME_ZONE: 'US/Central'
-      REMOTE_LOGS_PATH: '/data/logs'
-    secrets:
-      - logs-combined-ca-cert.pem
-      - logs-server-cert.pem
-      - logs-server-key.pem
-      - logzio_token
-    volumes:
-      - /data/logs:/data/logs
-    ports:
-      - '10514:10514'
-    networks:
-      - frontend
-    labels:
-      container_group: logs
-    deploy:
-      placement:
-        constraints:
-          - node.labels.role == prometheus
-      restart_policy:
-        delay: 10s
-        max_attempts: 10
-        window: 60s
-      resources:
-        limits:
-          cpus: '0.10'
-          memory: 64M
-  logrotate:
-    image: blacklabelops/logrotate:1.2
-    hostname: logrotate-prometheus
-    environment:
-      LOGS_DIRECTORIES: '/data/logs'
-      LOGROTATE_INTERVAL: 'daily'
-      LOGROTATE_COPIES: '90'
-      LOGROTATE_COMPRESSION: 'compress'
-      LOGROTATE_OLDDIR: '/data/logs/archive'
-      TZ: 'US/Central'
-    volumes:
-      - /data/logs:/data/logs
-    networks:
-      - backend
-    labels:
-      container_group: logs
-    deploy:
-      placement:
-        constraints:
-          - node.labels.role == prometheus
-      restart_policy:
-        delay: 10s
-        max_attempts: 10
-        window: 60s
-      resources:
-        limits:
-          cpus: '0.05'
-          memory: 32M
-  log:
-    image: vladgh/ls:latest
-    hostname: logs-prometheus
-    environment:
-      BACKLOG: 'false'
-      EXCLUDE_LABEL: 'logspout.exclude'
-    command: syslog+tls://logs.ghn.me:10514
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - backend
-    labels:
-      container_group: logs
-    deploy:
-      mode: global
-      restart_policy:
-        delay: 10s
-        max_attempts: 10
-        window: 60s
-      resources:
-        limits:
-          cpus: '0.05'
-          memory: 32M
   cadvisor:
     image: google/cadvisor:v0.33.0
     hostname: cadvisor-prometheus
@@ -324,6 +238,9 @@ configs:
     external: true
   prometheus.yml:
     name: prometheus.yml_v17
+    external: true
+  VladGhCARoot.crt:
+    name: VladGhCARoot.crt_v1
     external: true
 
 networks:
