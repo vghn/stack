@@ -20,7 +20,7 @@ groups:
       description: "Warning: node {{ $labels.node }} was restarted at {{ $value }} seconds ago. Instance: {{ $labels.instance }}; job: {{ $labels.job }}."
       summary: "NODE RESTARTED WARNING: {{ $labels.instance }}"
   - alert: node_high_load
-    expr: node_load1 > 1
+    expr: node_load1 > 2
     for: 5m
     labels:
       severity: Warning
@@ -56,14 +56,14 @@ groups:
     annotations:
       description: '{{ $labels.name }} on {{ $labels.node}} is using a LOT of CPU. CPU usage is {{ humanize $value}}%.'
       summary: "HIGH CPU USAGE WARNING: CONTAINER '{{ $labels.name }}' on '{{ $labels.node}}'"
-  - alert: rsyslog_container_down
-    expr: absent(container_cpu_usage_seconds_total{name=~"monitor_rsyslog\\..+"})
-    for: 5m
-    labels:
-      severity: Critical
-    annotations:
-      description: Rsyslog container is down for more than 5 minutes
-      summary: RSYSLOG CONTAINER DOWN
+  # - alert: rsyslog_container_down
+  #   expr: absent(container_cpu_usage_seconds_total{name=~"monitor_rsyslog\\..+"})
+  #   for: 5m
+  #   labels:
+  #     severity: Critical
+  #   annotations:
+  #     description: Rsyslog container is down for more than 5 minutes
+  #     summary: RSYSLOG CONTAINER DOWN
 ################################################################################
 
   # - alert: TESTING_high_load_on_node
