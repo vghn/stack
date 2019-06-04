@@ -241,32 +241,6 @@ services:
         limits:
           cpus: '0.20'
           memory: 64M
-  backup:
-    image: vladgh/backup:latest
-    hostname: backup-prometheus
-    environment:
-      AWS_S3_BUCKET: 'vgbak-prometheus'
-      GPG_RECIPIENT: 'vlad@ghn.me'
-      GPG_KEY_URL: 'https://keybase.io/vgh/key.asc'
-    command: cron
-    volumes:
-      - /data/backup:/backup
-    networks:
-      - backend
-    labels:
-      container_group: backup
-    deploy:
-      placement:
-        constraints:
-          - node.labels.role == prometheus
-      restart_policy:
-        delay: 10s
-        max_attempts: 10
-        window: 60s
-      resources:
-        limits:
-          cpus: '0.05'
-          memory: 32M
 
 secrets:
   alertmanager_config.yml:
