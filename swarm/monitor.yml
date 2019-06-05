@@ -213,6 +213,25 @@ services:
         limits:
           cpus: '0.05'
           memory: 32M
+  logrotate:
+    image: vladgh/logrotate:latest
+    hostname: logrotate-prometheus
+    volumes:
+      - /data/logs:/logs
+    networks:
+      - backend
+    labels:
+      container_group: logs
+    deploy:
+      mode: global
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 32M
   cadvisor:
     image: google/cadvisor:v0.33.0
     hostname: cadvisor-prometheus
