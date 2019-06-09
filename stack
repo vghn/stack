@@ -30,10 +30,6 @@ APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 VERSION=$(git --git-dir="${APPDIR}/.git" --work-tree="${APPDIR}" describe --always --tags)
 export NOW TMPDIR APPDIR VERSION
 
-# Load encrypted environment
-# shellcheck disable=1090
-. <( gpg --decrypt --passphrase "$(echo "$ENCRYPT_KEY" | base64 --decode)" --batch --yes .env.gpg ) 2>/dev/null || true
-
 # Output
 e_ok()    { printf "  ✔  %s\\n" "$@" ;}
 e_info()  { printf "  ➜  %s\\n" "$@" ;}
@@ -41,31 +37,13 @@ e_error() { printf "  ✖  %s\\n" "$@" ;}
 e_warn()  { printf "    %s\\n" "$@" ;}
 e_abort() { e_error "$1"; return "${2:-1}" ;}
 
-# Set-up SSH
-ssh_setup(){
-  e_info 'Set-up SSH'
-
-  SSH_HOST="${SSH_HOST:-?Must specify SSH_HOST}"
-  SSH_USER="${SSH_USER:-ubuntu}"
-
-  # Register new SSH agent instance
-  if ! ps -p "${SSH_AGENT_PID:-''}" >/dev/null 2>&1; then
-    eval "$(ssh-agent -s)"
-    NEW_SSH_AGENT_PID="$SSH_AGENT_PID"
-  fi
-
-  # Add SSH key to agent
-  ssh-add - <<<"$(echo "${DEPLOY_RSA:-}" | base64 --decode --ignore-garbage)"
-
-  #
-  SSH_CMD="ssh -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null ${SSH_USER}@${SSH_HOST}"
-}
-
 # Deploy
 deploy(){
   local stack="${1:-?Stack name is required}"
 
-  ssh_setup
+  SSH_HOST="${SSH_HOST:-?Must specify SSH_HOST}"
+  SSH_USER="${SSH_USER:-ubuntu}"
+  SSH_CMD="ssh -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null ${SSH_USER}@${SSH_HOST}"
 
   e_info 'Deploy stack'
   case "$STACK_TYPE" in
@@ -87,11 +65,6 @@ clean_up() {
       shred -fu "${APPDIR:?}/.env"
     fi
   fi
-
-  if [[ -n "${NEW_SSH_AGENT_PID:-}" ]]; then
-    e_info 'Stopping SSH Agent instance'
-    kill "$NEW_SSH_AGENT_PID"
-  fi
 }
 
 # Process CLI
@@ -104,16 +77,16 @@ process_cli(){
   stack="${1:-}"; shift || true
 
   # Defaults
-  export SSH_USER='deploy'
+  SSH_USER='ansible'
 
   case "$stack" in
     monitor)
-      export SSH_HOST='prometheus.ghn.me'
-      export STACK_TYPE='swarm'
+      SSH_HOST='prometheus.ghn.me'
+      STACK_TYPE='swarm'
       ;;
     vault)
-      export SSH_HOST='prometheus.ghn.me'
-      export STACK_TYPE='compose'
+      SSH_HOST='prometheus.ghn.me'
+      STACK_TYPE='compose'
       echo 'Stack not available'; exit
       ;;
     *)
