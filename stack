@@ -48,7 +48,7 @@ deploy(){
   e_info 'Deploy stack'
   case "$STACK_TYPE" in
     swarm)
-      ( eval "$SSH_CMD" "sudo docker stack deploy --prune --compose-file /dev/stdin ${stack}" ) < "${APPDIR}/swarm/${stack}.yml"
+      ( envsubst < "${APPDIR}/swarm/${stack}.yml" | eval "$SSH_CMD" "sudo docker stack deploy --prune --compose-file - ${stack}" )
       ;;
     compose)
       ( envsubst < "${APPDIR}/compose/${stack}.yml" | eval "$SSH_CMD" "sudo docker-compose --project-name ${stack} --file - pull" )
