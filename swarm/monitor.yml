@@ -92,7 +92,7 @@ services:
         traefik.frontend.headers.STSIncludeSubdomains: 'true'
         traefik.frontend.headers.STSPreload: 'true'
   prometheus:
-    image: prom/prometheus:v2.10.0
+    image: prom/prometheus:v2.11.0
     hostname: prometheus-prometheus
     configs:
       - source: alertrules.yml
@@ -124,7 +124,7 @@ services:
           cpus: '0.30'
           memory: 512M
   alertmanager:
-    image: prom/alertmanager:v0.17.0
+    image: prom/alertmanager:v0.18.0
     hostname: alertmanager-prometheus
     secrets:
       - alertmanager_config.yml
