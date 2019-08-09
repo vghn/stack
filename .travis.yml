@@ -3,7 +3,7 @@ env:
   global:
     GIT_BRANCH: "$TRAVIS_BRANCH" # Specify the branch name manually when on a detached HEAD
     VAULT_ADDR: 'https://vault.ghn.me:8200'
-    VAULT_VERSION: '1.1.3'
+    VAULT_VERSION: '1.2.1'
   matrix:
     - STACK=monitor
 install:
