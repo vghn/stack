@@ -37,19 +37,24 @@ scrape_configs:
           node: Prometheus
           group: vgh
       - targets:
-          - home.ghn.me:9100
+          - home.ghn.me:9101
         labels:
-          node: VNuc
-          group: vgh
+          node: VDev
+          group: vgh.local
+      - targets:
+          - home.ghn.me:9102
+        labels:
+          node: VDS
+          group: vgh.local
+      - targets:
+          - home.ghn.me:9103
+        labels:
+          node: VPI
+          group: vgh.local
   - job_name: containers
     static_configs:
       - targets:
           - cadvisor:8080
         labels:
           node: Prometheus
-          group: vgh
-      - targets:
-          - home.ghn.me:9101
-        labels:
-          node: VNuc
           group: vgh
