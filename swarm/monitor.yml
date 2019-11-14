@@ -42,7 +42,7 @@ services:
           cpus: '0.05'
           memory: 64M
   grafana:
-    image: grafana/grafana:6.4.3
+    image: grafana/grafana:6.4.4
     hostname: grafana-prometheus
     environment:
       GF_SERVER_ROOT_URL: https://prometheus.ghn.me
@@ -292,7 +292,7 @@ configs:
     name: alertrules.yml_v6
     external: true
   prometheus.yml:
-    name: prometheus.yml_v19
+    name: prometheus.yml_v20
     external: true
   VladGhCARoot.crt:
     name: VladGhCARoot.crt_v1
