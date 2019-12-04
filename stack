@@ -84,11 +84,6 @@ process_cli(){
       SSH_HOST='prometheus.ghn.me'
       STACK_TYPE='swarm'
       ;;
-    vault)
-      SSH_HOST='prometheus.ghn.me'
-      STACK_TYPE='compose'
-      echo 'Stack not available'; exit
-      ;;
     *)
       echo 'Stack name not recognized!';
       usage
