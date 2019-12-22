@@ -42,7 +42,7 @@ services:
           cpus: '0.05'
           memory: 64M
   grafana:
-    image: grafana/grafana:6.5.1
+    image: grafana/grafana:6.5.2
     hostname: grafana-prometheus
     environment:
       GF_SERVER_ROOT_URL: https://prometheus.ghn.me
@@ -125,7 +125,7 @@ services:
           cpus: '0.30'
           memory: 512M
   alertmanager:
-    image: prom/alertmanager:v0.19.0
+    image: prom/alertmanager:v0.20.0
     hostname: alertmanager-prometheus
     secrets:
       - alertmanager_config.yml
