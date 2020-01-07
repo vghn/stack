@@ -79,7 +79,7 @@ process_cli(){
   case "$stack" in
     monitor)
       SSH_HOST='prometheus.ghn.me'
-      SSH_USER='ansible'
+      SSH_USER='vlad'
       STACK_TYPE='swarm'
       ;;
     *)
