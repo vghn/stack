@@ -14,7 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stack: prometheus
+        stack:
+          - prometheus
     steps:
     - uses: actions/checkout@v2
     - name: Install Vault
