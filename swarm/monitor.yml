@@ -92,7 +92,7 @@ services:
         traefik.frontend.headers.STSIncludeSubdomains: 'true'
         traefik.frontend.headers.STSPreload: 'true'
   prometheus:
-    image: prom/prometheus:v2.15.1
+    image: prom/prometheus:v2.15.2
     hostname: prometheus-prometheus
     configs:
       - source: alertrules.yml
@@ -194,18 +194,6 @@ secrets:
   grafana_smtp_user:
     name: grafana_smtp_user_v1
     external: true
-  logs_combined_ca_cert.pem:
-    name: logs_combined_ca_cert.pem_v1
-    external: true
-  logs_server_cert.pem:
-    name: logs_server_cert.pem_v1
-    external: true
-  logs_server_key.pem:
-    name: logs_server_key.pem_v1
-    external: true
-  logs_logzio_token:
-    name: logs_logzio_token_v1
-    external: true
 
 configs:
   alertrules.yml:
@@ -213,9 +201,6 @@ configs:
     external: true
   prometheus.yml:
     name: prometheus.yml_v20
-    external: true
-  VladGhCARoot.crt:
-    name: VladGhCARoot.crt_v1
     external: true
 
 networks:
