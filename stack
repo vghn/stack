@@ -11,8 +11,6 @@ usage(){
   echo '  - deploy [NAME]'
   echo ''
   echo '----------------------------------------------'
-  echo 'For more information please consult the README'
-  echo '----------------------------------------------'
   exit 1
 }
 
@@ -30,38 +28,24 @@ APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 VERSION=$(git --git-dir="${APPDIR}/.git" --work-tree="${APPDIR}" describe --always --tags)
 export NOW TMPDIR APPDIR VERSION
 
-# Output
-e_ok()    { printf "  ✔  %s\\n" "$@" ;}
-e_info()  { printf "  ➜  %s\\n" "$@" ;}
-e_error() { printf "  ✖  %s\\n" "$@" ;}
-e_warn()  { printf "    %s\\n" "$@" ;}
-e_abort() { e_error "$1"; return "${2:-1}" ;}
-
 # Deploy
 deploy(){
   local stack="${1:-?Stack name is required}"
 
   SSH_HOST="${SSH_HOST:-?Must specify SSH_HOST}"
   SSH_USER="${SSH_USER:-ubuntu}"
-  SSH_CMD="ssh -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null ${SSH_USER}@${SSH_HOST}"
+  SSH_KEY="${SSH_KEY:-~/.ssh/id_rsa}"
+  SSH_CMD="ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -i ${SSH_KEY} ${SSH_USER}@${SSH_HOST}"
 
-  e_info 'Deploy stack'
-  case "$STACK_TYPE" in
-    swarm)
-      ( envsubst < "${APPDIR}/swarm/${stack}.yml" | eval "$SSH_CMD" "sudo docker stack deploy --prune --compose-file - ${stack}" )
-      ;;
-    compose)
-      ( envsubst < "${APPDIR}/compose/${stack}.yml" | eval "$SSH_CMD" "sudo docker-compose --project-name ${stack} --file - pull" )
-      ( envsubst < "${APPDIR}/compose/${stack}.yml" | eval "$SSH_CMD" "sudo docker-compose --project-name ${stack} --file - up -d --remove-orphans" )
-      ;;
-  esac
+  echo "Deploying stack ${stack}"
+  ( envsubst < "${APPDIR}/swarm/${stack}.yml" | eval "$SSH_CMD" "sudo docker stack deploy --prune --compose-file - ${stack}" )
 }
 
 # Clean-up
 clean_up() {
   if [[ "${CI:-false}" == 'true' ]]; then
     if [[ -s "${APPDIR}/.env" ]]; then
-      e_info 'Removing .env'
+      echo 'Removing .env'
       shred -fu "${APPDIR:?}/.env"
     fi
   fi
@@ -77,10 +61,10 @@ process_cli(){
   stack="${1:-}"; shift || true
 
   case "$stack" in
-    monitor)
+    prometheus)
       SSH_HOST='prometheus.ghn.me'
       SSH_USER='ansible'
-      STACK_TYPE='swarm'
+      SSH_KEY='deploy_rsa'
       ;;
     *)
       echo 'Stack name not recognized!';
