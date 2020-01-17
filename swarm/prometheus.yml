@@ -2,33 +2,52 @@ version: '3.7'
 
 services:
   lb:
-    image: traefik:1.7
+    image: traefik:2.1
     hostname: lb-prometheus
-    command: >-
-      --configfile=/dev/null
-      --web --web.address=0.0.0.0:8888
-      --docker --docker.swarmmode --docker.domain=traefik --docker.watch
-      --defaultentrypoints=http,https
-      --entryPoints="Name:http Address::80 Redirect.EntryPoint:https"
-      --entryPoints="Name:https Address::443 TLS"
-      --acme --acme.email=webmaster@ghn.me
-      --acme.domains=prometheus.ghn.me
-      --acme.tlsChallenge
-      --acme.entryPoint=https
-      --acme.storage=/certs/acme.json
+    command:
+      - "--api=true"
+      - "--api.dashboard=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=webmaster@ghn.me"
+      - "--certificatesresolvers.le.acme.storage=/certs/acme.json"
     ports:
       - '80:80'
       - '443:443'
-      - '8888:8888'
+    secrets:
+      - traefik_dashboard_users
     volumes:
       - /data/certs:/certs
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - frontend
       - backend
     labels:
       container_group: monitoring
     deploy:
+      labels:
+        - "traefik.enable=true"
+        # Global Redirect to HTTPS
+        - "traefik.http.routers.https-redirect.entrypoints=web"
+        - "traefik.http.routers.https-redirect.rule=HostRegexp(`{any:.*}`)"
+        - "traefik.http.routers.https-redirect.middlewares=https-redirect"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+        # The router rule defined for Traefik must match the path prefixes /api and /dashboard. We recommend to use a "Host Based rule" as Host(`traefik.domain.com`) to match everything on the host domain, or to make sure that the defined rule captures both prefixes
+        # https://docs.traefik.io/operations/dashboard/#dashboard-router-rule
+        - "traefik.http.routers.api.rule=Host(`traefik.prometheus.ghn.me`)"
+        - "traefik.http.routers.api.service=api@internal"
+        - "traefik.http.routers.api.tls=true"
+        - "traefik.http.routers.api.tls.certresolver=le"
+        # Authentication
+        - "traefik.http.routers.api.middlewares=auth"
+        - "traefik.http.middlewares.auth.basicauth.usersfile=/run/secrets/traefik_dashboard_users"
+        # Dummy service for Swarm port detection. The port can be any valid integer value.
+        - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
       placement:
         constraints:
           - node.role == manager
@@ -76,21 +95,29 @@ services:
           cpus: '0.10'
           memory: 64M
       labels:
-        traefik.tags: 'grafana'
-        traefik.port: '3000'
-        traefik.frontend.rule: 'Host:prometheus.ghn.me;PathPrefix:/'
-        traefik.backend.loadbalancer.sticky: 'true'
-        traefik.frontend.headers.browserXSSFilter: 'true'
-        traefik.frontend.headers.contentTypeNosniff: 'true'
-        traefik.frontend.headers.referrerPolicy: 'no-referrer'
-        traefik.frontend.headers.frameDeny: 'true'
-        traefik.frontend.headers.contentSecurityPolicy: "default-src https: blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
-        traefik.frontend.headers.SSLRedirect: 'true'
-        traefik.frontend.headers.STSSeconds: '31536000'
-        traefik.frontend.headers.forceSTSHeader: 'true'
-        traefik.frontend.headers.SSLHost: 'prometheus.ghn.me'
-        traefik.frontend.headers.STSIncludeSubdomains: 'true'
-        traefik.frontend.headers.STSPreload: 'true'
+        - "traefik.enable=true"
+        # Routers
+        - "traefik.http.routers.grafana.rule=Host(`prometheus.ghn.me`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.tls.certresolver=le"
+        - "traefik.http.routers.grafana.tls=true"
+        # Services
+        - "traefik.http.routers.grafana.service=grafana-svc"
+        - "traefik.http.services.grafana-svc.loadbalancer.server.port=3000"
+        # Middlewares
+        - "traefik.http.routers.grafana.middlewares=security"
+        - "traefik.http.middlewares.security.headers.framedeny=true"
+        - "traefik.http.middlewares.security.headers.sslredirect=true"
+        - "traefik.http.middlewares.security.headers.browserXssFilter=true"
+        - "traefik.http.middlewares.security.headers.contentTypeNosniff=true"
+        - "traefik.http.middlewares.security.headers.referrerPolicy=no-referrer"
+        - "traefik.http.middlewares.security.headers.forceSTSHeader=true"
+        - "traefik.http.middlewares.security.headers.stsSeconds=31536000"
+        - "traefik.http.middlewares.security.headers.sslHost=prometheus.ghn.me"
+        - "traefik.http.middlewares.security.headers.stsIncludeSubdomains=true"
+        - "traefik.http.middlewares.security.headers.stsPreload=true"
+        - "traefik.http.middlewares.security.headers.contentSecurityPolicy=default-src https: blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        - "traefik.http.middlewares.security.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
   prometheus:
     image: prom/prometheus:v2.15.2
     hostname: prometheus-prometheus
@@ -193,6 +220,9 @@ secrets:
     external: true
   grafana_smtp_user:
     name: grafana_smtp_user_v1
+    external: true
+  traefik_dashboard_users:
+    name: traefik_dashboard_users_v1
     external: true
 
 configs:
