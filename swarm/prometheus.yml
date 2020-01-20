@@ -230,7 +230,7 @@ configs:
     name: alertrules.yml_v6
     external: true
   prometheus.yml:
-    name: prometheus.yml_v21
+    name: prometheus.yml_v22
     external: true
 
 networks:

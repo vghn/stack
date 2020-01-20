@@ -51,6 +51,21 @@ scrape_configs:
         labels:
           node: VDS
           group: vgh.local
+      - targets:
+          - home.ghn.me:9103
+        labels:
+          node: VBS
+          group: vgh.local
+      - targets:
+          - home.ghn.me:9104
+        labels:
+          node: VPH
+          group: vgh.local
+      - targets:
+          - home.ghn.me:9105
+        labels:
+          node: VMS
+          group: vgh.local
   - job_name: containers
     static_configs:
       - targets:
