@@ -119,7 +119,7 @@ services:
         - "traefik.http.middlewares.security.headers.contentSecurityPolicy=default-src https: blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
         - "traefik.http.middlewares.security.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
   prometheus:
-    image: prom/prometheus:v2.15.2
+    image: prom/prometheus:v2.16.0
     hostname: prometheus-prometheus
     configs:
       - source: alertrules.yml
