@@ -32,10 +32,8 @@ jobs:
             echo ::set-env name=VAULT_TOKEN::$VAULT_TOKEN
     - name: Get deploy key from Vault
       run: |
-            vault kv get -field=id_rsa vgh/deploy > ./deploy_rsa
+            vault kv get -field=id_rsa vgh/deploy > ~/.ssh/id_rsa
             chmod 400 ./deploy_rsa
     - name: Deploy stack
       run: |
-            eval "$(ssh-agent -s)"
-            ssh-add ./deploy_rsa
             docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
