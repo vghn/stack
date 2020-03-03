@@ -34,7 +34,7 @@ jobs:
       run: |
             mkdir -p ~/.ssh/
             vault kv get -field=id_rsa vgh/deploy > ~/.ssh/id_rsa
-            chmod 400 ./deploy_rsa
+            chmod 400 ~/.ssh/id_rsa
     - name: Deploy stack
       run: |
             docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
