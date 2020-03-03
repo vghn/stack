@@ -34,7 +34,10 @@ jobs:
       run: |
             vault kv get -field=id_rsa vgh/deploy > ./deploy_rsa
             chmod 400 ./deploy_rsa
+    - name: Start SSH agent
+      run: |
+            eval "$(ssh-agent -s)"
+            ssh-add ./deploy_rsa
     - name: Deploy stack
       run: |
-            ssh-add ./deploy_rsa
             docker -H ssh://ansible@${{ matrix.stack.host }}stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
