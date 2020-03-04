@@ -36,8 +36,9 @@ jobs:
             chmod 400 deploy_rsa
     - name: Deploy stack
       run: |
-            # eval "$(ssh-agent -s)"
-            # ssh-add deploy_rsa
+            eval "$(ssh-agent -s)"
+            ssh-add deploy_rsa
             # ssh-keyscan -t rsa prometheus.ghn.me
-            ssh -i ./deploy_rsa -l ansible -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null prometheus.ghn.me 'whoami'
+            # ssh -i ./deploy_rsa -l ansible -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null prometheus.ghn.me 'whoami'
+            ssh -l ansible -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null prometheus.ghn.me 'whoami'
             # sudo docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
