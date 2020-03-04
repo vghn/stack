@@ -62,9 +62,9 @@ process_cli(){
 
   case "$stack" in
     prometheus)
-      SSH_HOST='prometheus.ghn.me'
-      SSH_USER='ansible'
-      SSH_KEY='deploy_rsa'
+      SSH_HOST="${SSH_HOST:-prometheus.ghn.me}"
+      SSH_USER="${SSH_USER:-ansible}"
+      SSH_KEY="${SSH_KEY:-deploy_rsa}"
       ;;
     *)
       echo 'Stack name not recognized!';
