@@ -32,10 +32,10 @@ jobs:
             echo ::set-env name=VAULT_TOKEN::$VAULT_TOKEN
     - name: Set-up SSH
       run: |
-            mkdir -p ~/.ssh
-            echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no" > ~/.ssh/config
-            vault kv get -field=id_rsa vgh/deploy > ~/.ssh/id_rsa
-            chmod 400 ~/.ssh/id_rsa
+            sudo mkdir -p /root/.ssh
+            sudo echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" > ~/.ssh/config
+            sudo vault kv get -field=id_rsa vgh/deploy > /root/.ssh/id_rsa
+            sudo chmod 400 /root/.ssh/id_rsa
     - name: Deploy stack
       run: |
-            sudo -H docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
+            sudo docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
