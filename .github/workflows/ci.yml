@@ -33,6 +33,7 @@ jobs:
     - name: Get deploy key from Vault
       run: |
             vault kv get -field=id_rsa vgh/deploy > deploy_rsa
+            chmod 400 deploy_rsa
     - name: Deploy stack
       run: |
             eval "$(ssh-agent -s)"
