@@ -39,4 +39,5 @@ jobs:
     - name: Deploy stack
       run: |
             sudo docker ps -a
-            docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
+            sudo docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
+            sudo docker ps -a
