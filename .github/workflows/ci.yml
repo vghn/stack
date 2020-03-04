@@ -38,5 +38,5 @@ jobs:
             ssh-keyscan ${{ matrix.stack.host }} >> ~/.ssh/known_hosts
     - name: Deploy stack
       run: |
-            docker ps -a
+            sudo docker ps -a
             docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
