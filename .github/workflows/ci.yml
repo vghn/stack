@@ -33,12 +33,15 @@ jobs:
     - name: Get deploy key from Vault
       run: |
             vault kv get -field=id_rsa vgh/deploy > deploy_rsa
-            chmod 400 deploy_rsa
-    - name: Deploy stack
+    - name: Set-up SSH
       run: |
-            eval "$(ssh-agent -s)"
-            ssh-add deploy_rsa
+            mkdir -p ~/.ssh
+            echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no" > ~/.ssh/config
+            mv deploy_rsa ~/.ssh/id_rsa
+            chmod 400 ~/.ssh/id_rsa
             # ssh-keyscan -t rsa prometheus.ghn.me
             # ssh -i ./deploy_rsa -l ansible -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null prometheus.ghn.me 'whoami'
-            ssh -l ansible -o StrictHostKeyChecking=no prometheus.ghn.me 'whoami'
+            ssh prometheus.ghn.me 'whoami'
+    - name: Deploy stack
+      run: |
             # sudo docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
