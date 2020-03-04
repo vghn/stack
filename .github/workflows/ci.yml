@@ -38,4 +38,5 @@ jobs:
       run: |
             eval "$(ssh-agent -s)"
             ssh-add deploy_rsa
-            sudo docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
+            ssh -l ansible prometheus.ghn.me
+            # sudo docker -H ssh://ansible@${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
