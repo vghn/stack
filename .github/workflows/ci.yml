@@ -33,7 +33,7 @@ jobs:
     - name: Set-up SSH
       run: |
             sudo mkdir -p /root/.ssh
-            sudo echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" > ~/.ssh/config
+            sudo echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" > /root/.ssh/config
             sudo vault kv get -field=id_rsa vgh/deploy > /root/.ssh/id_rsa
             sudo chmod 400 /root/.ssh/id_rsa
     - name: Deploy stack
