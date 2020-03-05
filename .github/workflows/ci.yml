@@ -46,7 +46,7 @@ jobs:
       run: |
             docker ps -a
             sudo docker ps -a
-            docker -H ssh://${{ matrix.stack.host }} ps -a
+            sudo docker -H ssh://${{ matrix.stack.host }} ps -a
     - name: Deploy stack
       run: |
             sudo docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
