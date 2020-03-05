@@ -30,12 +30,12 @@ jobs:
             VAULT_TOKEN=$(vault write -field=token auth/approle/login role_id=${{ secrets.VAULT_ROLE_ID }} secret_id=${{ secrets.VAULT_SECRET_ID }})
             echo ::add-mask::$VAULT_TOKEN
             echo ::set-env name=VAULT_TOKEN::$VAULT_TOKEN
-    - name: Set-up SSH
-      run: |
-            sudo mkdir -p /root/.ssh
-            echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" | sudo tee /root/.ssh/config
-            vault kv get -field=id_rsa vgh/deploy | sudo tee /root/.ssh/id_rsa > /dev/null
-            sudo chmod 400 /root/.ssh/id_rsa
+    # - name: Set-up SSH
+    #   run: |
+    #         sudo mkdir -p /root/.ssh
+    #         echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" | sudo tee /root/.ssh/config
+    #         vault kv get -field=id_rsa vgh/deploy | sudo tee /root/.ssh/id_rsa > /dev/null
+    #         sudo chmod 400 /root/.ssh/id_rsa
     - name: Set-up SSH
       run: |
             mkdir -p ~/.ssh
@@ -44,9 +44,8 @@ jobs:
             sudo chmod 400 ~/.ssh/id_rsa
     - name: Test
       run: |
-            docker ps -a
             docker context create prometheus --docker "host=ssh://prometheus.ghn.me"
-            sudo docker --context prometheus ps -a
+            docker --context prometheus ps -a
             # sudo docker ps -a
             # sudo docker -H ssh://${{ matrix.stack.host }} ps -a
     - name: Deploy stack
