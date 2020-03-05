@@ -30,16 +30,17 @@ jobs:
             VAULT_TOKEN=$(vault write -field=token auth/approle/login role_id=${{ secrets.VAULT_ROLE_ID }} secret_id=${{ secrets.VAULT_SECRET_ID }})
             echo ::add-mask::$VAULT_TOKEN
             echo ::set-env name=VAULT_TOKEN::$VAULT_TOKEN
-    - name: Test
-      run: |
-            docker ps -a
-            sudo docker ps -a
     - name: Set-up SSH
       run: |
             sudo mkdir -p /root/.ssh
             echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" | sudo tee /root/.ssh/config
             vault kv get -field=id_rsa vgh/deploy | sudo tee /root/.ssh/id_rsa > /dev/null
             sudo chmod 400 /root/.ssh/id_rsa
+    - name: Test
+      run: |
+            docker ps -a
+            sudo docker ps -a
+            docker -H ssh://${{ matrix.stack.host }} ps -a
     - name: Deploy stack
       run: |
             sudo docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
