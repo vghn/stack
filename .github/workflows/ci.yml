@@ -45,8 +45,10 @@ jobs:
     - name: Test
       run: |
             docker ps -a
-            sudo docker ps -a
-            sudo docker -H ssh://${{ matrix.stack.host }} ps -a
+            docker context create prometheus --docker "host=ssh://prometheus"
+            docker --context prometheus ps -a
+            # sudo docker ps -a
+            # sudo docker -H ssh://${{ matrix.stack.host }} ps -a
     - name: Deploy stack
       run: |
             sudo docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
