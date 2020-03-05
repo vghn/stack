@@ -42,12 +42,12 @@ jobs:
             echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" > ~/.ssh/config
             vault kv get -field=id_rsa vgh/deploy > ~/.ssh/id_rsa
             sudo chmod 400 ~/.ssh/id_rsa
-    - name: Test
-      run: |
-            docker context create prometheus --docker "host=ssh://prometheus.ghn.me"
-            docker --context prometheus ps -a
-            # sudo docker ps -a
-            # sudo docker -H ssh://${{ matrix.stack.host }} ps -a
+    # - name: Test
+    #   run: |
+    #         docker context create prometheus --docker "host=ssh://prometheus.ghn.me"
+    #         docker --context prometheus ps -a
+    #         # sudo docker ps -a
+    #         # sudo docker -H ssh://${{ matrix.stack.host }} ps -a
     - name: Deploy stack
       run: |
-            sudo docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
+            docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
