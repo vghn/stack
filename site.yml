@@ -1,0 +1,2 @@
+---
+- import_playbook: swarm/prometheus/stack.yml

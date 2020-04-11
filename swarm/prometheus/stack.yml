@@ -1,0 +1,293 @@
+---
+- name: Prometheus stack
+  hosts: prometheus
+  become: yes
+  vars:
+    pip_package: python3-pip
+    pip_install_packages:
+      - name: docker
+        state: latest
+      - name: jsondiff
+        state: latest
+      - name: pyyaml
+        state: latest
+    docker_swarm_secrets:
+      alertmanager_config.yml: alertmanager_config.yml_v1
+      grafana_security_admin_password: grafana_security_admin_password_v1
+      grafana_smtp_password: grafana_smtp_password_v1
+      grafana_smtp_user: grafana_smtp_user_v1
+      traefik_dashboard_users: traefik_dashboard_users_v2
+  pre_tasks:
+    - name: Ensure Pip is installed.
+      package:
+        name: "{{ pip_package }}"
+        state: present
+    - name: Ensure pip_install_packages are installed
+      pip:
+        name: "{{ item.name | default(item) }}"
+        version: "{{ item.version | default(omit) }}"
+        state: "{{ item.state | default(omit) }}"
+        executable: "{{ 'pip3' if pip_package.startswith('python3') else 'pip' }}"
+      with_items: "{{ pip_install_packages }}"
+  tasks:
+    - name: Manage configs
+      docker_config:
+        name: "{{ item | basename }}"
+        data: "{{ lookup('file', item) | b64encode }}"
+        data_is_b64: true
+        state: present
+      with_fileglob:
+        - "configs/*"
+    - name: Manage secrets
+      docker_secret:
+        name: "{{ item.value }}"
+        data: "{{ lookup('hashi_vault', 'secret=vgh/data/stack/prometheus:data')[item.value] | b64encode }}"
+        data_is_b64: true
+        state: present
+      with_dict: "{{ docker_swarm_secrets }}"
+    - name: Deploy stack
+      docker_stack:
+        state: present
+        prune: yes
+        name: prometheus
+        compose:
+          - version: '3.7'
+            services:
+              lb:
+                image: traefik:2.2
+                hostname: lb-prometheus
+                command:
+                  - "--api=true"
+                  - "--api.dashboard=true"
+                  - "--entrypoints.web.address=:80"
+                  - "--entrypoints.websecure.address=:443"
+                  - "--providers.docker=true"
+                  - "--providers.docker.swarmMode=true"
+                  - "--providers.docker.exposedbydefault=false"
+                  - "--certificatesresolvers.le.acme.tlschallenge=true"
+                  - "--certificatesresolvers.le.acme.email=webmaster@ghn.me"
+                  - "--certificatesresolvers.le.acme.storage=/certs/acme.json"
+                ports:
+                  - '80:80'
+                  - '443:443'
+                secrets:
+                  - traefik_dashboard_users
+                volumes:
+                  - /data/certs:/certs
+                  - /var/run/docker.sock:/var/run/docker.sock:ro
+                networks:
+                  - frontend
+                  - backend
+                labels:
+                  container_group: monitoring
+                deploy:
+                  labels:
+                    - "traefik.enable=true"
+                    # Global Redirect to HTTPS
+                    - "traefik.http.routers.https-redirect.entrypoints=web"
+                    - "traefik.http.routers.https-redirect.rule=HostRegexp(`{any:.*}`)"
+                    - "traefik.http.routers.https-redirect.middlewares=https-redirect"
+                    - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+                    - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+                    # The router rule defined for Traefik must match the path prefixes /api and /dashboard. We recommend to use a "Host Based rule" as Host(`traefik.domain.com`) to match everything on the host domain, or to make sure that the defined rule captures both prefixes
+                    # https://docs.traefik.io/operations/dashboard/#dashboard-router-rule
+                    - "traefik.http.routers.api.rule=Host(`traefik.prometheus.ghn.me`)"
+                    - "traefik.http.routers.api.service=api@internal"
+                    - "traefik.http.routers.api.tls=true"
+                    - "traefik.http.routers.api.tls.certresolver=le"
+                    # Authentication
+                    - "traefik.http.routers.api.middlewares=auth"
+                    - "traefik.http.middlewares.auth.basicauth.usersfile=/run/secrets/traefik_dashboard_users"
+                    # Dummy service for Swarm port detection. The port can be any valid integer value.
+                    - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
+                  placement:
+                    constraints:
+                      - node.role == manager
+                      - node.labels.role == prometheus
+                  restart_policy:
+                    delay: 10s
+                    max_attempts: 10
+                    window: 60s
+                  resources:
+                    limits:
+                      cpus: '0.05'
+                      memory: 64M
+              grafana:
+                image: grafana/grafana:6.7.2
+                hostname: grafana-prometheus
+                environment:
+                  GF_SERVER_ROOT_URL: https://prometheus.ghn.me
+                  GF_SMTP_ENABLED: 'true'
+                  GF_SMTP_HOST: smtp.sendgrid.net:587
+                  GF_SMTP_FROM_ADDRESS: admin@ghn.me
+                  GF_SMTP_FROM_NAME: Prometheus
+                  GF_SECURITY_ADMIN_PASSWORD_FILE: /run/secrets/grafana_security_admin_password
+                  GF_SMTP_USER_FILE: /run/secrets/grafana_smtp_user
+                  GF_SMTP_PASSWORD_FILE: /run/secrets/grafana_smtp_password
+                secrets:
+                  - grafana_security_admin_password
+                  - grafana_smtp_user
+                  - grafana_smtp_password
+                volumes:
+                  - /data/grafana:/var/lib/grafana
+                networks:
+                  - backend
+                labels:
+                  container_group: monitoring
+                deploy:
+                  placement:
+                    constraints:
+                      - node.labels.role == prometheus
+                  restart_policy:
+                    delay: 10s
+                    max_attempts: 10
+                    window: 60s
+                  resources:
+                    limits:
+                      cpus: '0.10'
+                      memory: 64M
+                  labels:
+                    - "traefik.enable=true"
+                    # Routers
+                    - "traefik.http.routers.grafana.rule=Host(`prometheus.ghn.me`)"
+                    - "traefik.http.routers.grafana.entrypoints=websecure"
+                    - "traefik.http.routers.grafana.tls.certresolver=le"
+                    - "traefik.http.routers.grafana.tls=true"
+                    # Services
+                    - "traefik.http.routers.grafana.service=grafana-svc"
+                    - "traefik.http.services.grafana-svc.loadbalancer.server.port=3000"
+                    # Middlewares
+                    - "traefik.http.routers.grafana.middlewares=security"
+                    - "traefik.http.middlewares.security.headers.framedeny=true"
+                    - "traefik.http.middlewares.security.headers.sslredirect=true"
+                    - "traefik.http.middlewares.security.headers.browserXssFilter=true"
+                    - "traefik.http.middlewares.security.headers.contentTypeNosniff=true"
+                    - "traefik.http.middlewares.security.headers.referrerPolicy=no-referrer"
+                    - "traefik.http.middlewares.security.headers.forceSTSHeader=true"
+                    - "traefik.http.middlewares.security.headers.stsSeconds=31536000"
+                    - "traefik.http.middlewares.security.headers.sslHost=prometheus.ghn.me"
+                    - "traefik.http.middlewares.security.headers.stsIncludeSubdomains=true"
+                    - "traefik.http.middlewares.security.headers.stsPreload=true"
+                    - "traefik.http.middlewares.security.headers.contentSecurityPolicy=default-src https: blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
+                    - "traefik.http.middlewares.security.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+              prometheus:
+                image: prom/prometheus:v2.17.1
+                hostname: prometheus-prometheus
+                configs:
+                  - source: alertrules.yml
+                    target: /etc/prometheus/alertrules.yml
+                  - source: prometheus.yml
+                    target: /etc/prometheus/prometheus.yml
+                volumes:
+                  - /data/prometheus:/prometheus
+                command:
+                  - '--config.file=/etc/prometheus/prometheus.yml'
+                  - '--storage.tsdb.path=/prometheus'
+                  - '--storage.tsdb.retention.time=15d'
+                  - '--web.enable-admin-api'
+                ports:
+                  - '9090:9090'
+                networks:
+                  - backend
+                labels:
+                  container_group: monitoring
+                deploy:
+                  placement:
+                    constraints:
+                      - node.labels.role == prometheus
+                  restart_policy:
+                    delay: 10s
+                    max_attempts: 10
+                    window: 60s
+                  resources:
+                    limits:
+                      cpus: '0.30'
+                      memory: 512M
+              alertmanager:
+                image: prom/alertmanager:v0.20.0
+                hostname: alertmanager-prometheus
+                secrets:
+                  - alertmanager_config.yml
+                volumes:
+                  - /data/alertmanager:/alertmanager
+                command:
+                  - '--storage.path=/alertmanager'
+                  - '--config.file=/run/secrets/alertmanager_config.yml'
+                ports:
+                  - '9093:9093'
+                networks:
+                  - backend
+                labels:
+                  container_group: monitoring
+                deploy:
+                  placement:
+                    constraints:
+                      - node.labels.role == prometheus
+                  restart_policy:
+                    delay: 10s
+                    max_attempts: 10
+                    window: 60s
+                  resources:
+                    limits:
+                      cpus: '0.05'
+                      memory: 32M
+              cadvisor:
+                image: gcr.io/google-containers/cadvisor:v0.35.0
+                hostname: cadvisor-prometheus
+                volumes:
+                  - /:/rootfs:ro
+                  - /dev/disk/:/dev/disk:ro
+                  - /sys:/sys:ro
+                  - /var/run:/var/run:ro
+                  - /var/lib/docker/:/var/lib/docker:ro
+                command:
+                  - '--housekeeping_interval=1m'
+                  - '--global_housekeeping_interval=2m'
+                ports:
+                  - '9101:8080'
+                networks:
+                  - backend
+                labels:
+                  container_group: monitoring
+                deploy:
+                  mode: global
+                  restart_policy:
+                    delay: 10s
+                    max_attempts: 10
+                    window: 60s
+                  resources:
+                    limits:
+                      cpus: '0.20'
+                      memory: 64M
+            secrets:
+              alertmanager_config.yml:
+                name:  "{{ docker_swarm_secrets['alertmanager_config.yml'] }}"
+                external: true
+              grafana_security_admin_password:
+                name: "{{ docker_swarm_secrets.grafana_security_admin_password }}"
+                external: true
+              grafana_smtp_password:
+                name: "{{ docker_swarm_secrets.grafana_smtp_password }}"
+                external: true
+              grafana_smtp_user:
+                name: "{{ docker_swarm_secrets.grafana_smtp_user }}"
+                external: true
+              traefik_dashboard_users:
+                name: "{{ docker_swarm_secrets.traefik_dashboard_users }}"
+                external: true
+            configs:
+              alertrules.yml:
+                name: "{{ lookup('fileglob', 'configs/alertrules.yml_*', wantlist=True) | last | basename }}"
+                external: true
+              prometheus.yml:
+                name: "{{ lookup('fileglob', 'configs/prometheus.yml_*', wantlist=True) | last | basename }}"
+                external: true
+            networks:
+              frontend:
+                ipam:
+                  config:
+                    - subnet: 10.1.0.0/24 # Should not conflict with the AWS VPC
+              backend:
+                ipam:
+                  config:
+                    - subnet: 10.2.0.0/24 # Should not conflict with the AWS VPC

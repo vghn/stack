@@ -1,6 +1,8 @@
 # Private
 .env
-swarm/*-secrets
+
+# Ansible
+deploy_rsa
 
 # Other
 tmp/

@@ -1,0 +1,5 @@
+[swarm_managers]
+prometheus
+
+[swarm_workers]
+prometheus

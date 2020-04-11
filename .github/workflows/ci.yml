@@ -11,12 +11,6 @@ jobs:
     env:
       VAULT_VERSION: '1.4.0'
       VAULT_ADDR: 'https://vault.ghn.me:8200'
-    strategy:
-      fail-fast: false
-      matrix:
-        stack:
-          - name: prometheus
-            host: prometheus.ghn.me
     steps:
     - uses: actions/checkout@v2
     - name: Install Vault
@@ -31,12 +25,6 @@ jobs:
             echo ::add-mask::$VAULT_TOKEN
             echo ::set-env name=VAULT_TOKEN::$VAULT_TOKEN
     - name: Set-up SSH
-      run: |
-            mkdir -p ~/.ssh
-            echo -e "Host *\n  User ansible\n  StrictHostKeyChecking no\n  GlobalKnownHostsFile /dev/null\n  UserKnownHostsFile /dev/null" > ~/.ssh/config
-            vault kv get -field=id_rsa vgh/deploy > ~/.ssh/id_rsa
-            sudo chmod 400 ~/.ssh/id_rsa
+      run: vault kv get -field=id_rsa vgh/deploy > deploy_rsa && chmod 600 deploy_rsa
     - name: Deploy stack
-      run: |
-            # Ansible user should belong to the docker group.
-            docker -H ssh://${{ matrix.stack.host }} stack deploy --prune --compose-file ./swarm/${{ matrix.stack.name }}.yml ${{ matrix.stack.name }}
+      run: ansible-playbook site.yml
