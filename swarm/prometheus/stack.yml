@@ -11,6 +11,7 @@
         state: latest
       - name: pyyaml
         state: latest
+    prometheus_configs: "{{ lookup('fileglob', 'configs/*', wantlist=True) }}"
     prometheus_secrets: "{{ lookup('hashi_vault', 'secret=vgh/data/stack/prometheus:data') }}"
   pre_tasks:
     - name: Ensure Pip is installed.
@@ -31,8 +32,7 @@
         data: "{{ lookup('file', item) | b64encode }}"
         data_is_b64: true
         state: present
-      with_fileglob:
-        - "configs/*"
+      with_items: "{{ prometheus_configs }}"
     - name: Manage secrets
       docker_secret:
         name: "{{ item.key }}"
@@ -273,10 +273,10 @@
                 external: true
             configs:
               alertrules.yml:
-                name: "{{ lookup('fileglob', 'configs/alertrules.yml_v*', wantlist=True) | last | basename }}"
+                name: "{{ prometheus_configs | select('match', '.*\\/alertrules\\.yml_v[0-9]+') | list | last | basename }}"
                 external: true
               prometheus.yml:
-                name: "{{ lookup('fileglob', 'configs/prometheus.yml_v*', wantlist=True) | last | basename }}"
+                name: "{{ prometheus_configs | select('match', '.*\\/prometheus\\.yml_v[0-9]+') | list | last | basename }}"
                 external: true
             networks:
               frontend:
