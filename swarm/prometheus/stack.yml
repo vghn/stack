@@ -11,12 +11,7 @@
         state: latest
       - name: pyyaml
         state: latest
-    docker_swarm_secrets:
-      alertmanager_config.yml: alertmanager_config.yml_v1
-      grafana_security_admin_password: grafana_security_admin_password_v1
-      grafana_smtp_password: grafana_smtp_password_v1
-      grafana_smtp_user: grafana_smtp_user_v1
-      traefik_dashboard_users: traefik_dashboard_users_v2
+    prometheus_secrets: "{{ lookup('hashi_vault', 'secret=vgh/data/stack/prometheus:data') }}"
   pre_tasks:
     - name: Ensure Pip is installed.
       package:
@@ -40,11 +35,12 @@
         - "configs/*"
     - name: Manage secrets
       docker_secret:
-        name: "{{ item.value }}"
-        data: "{{ lookup('hashi_vault', 'secret=vgh/data/stack/prometheus:data')[item.value] | b64encode }}"
+        name: "{{ item.key }}"
+        data: "{{ item.value | b64encode }}"
         data_is_b64: true
         state: present
-      with_dict: "{{ docker_swarm_secrets }}"
+      no_log: true
+      with_dict: "{{ prometheus_secrets }}"
     - name: Deploy stack
       docker_stack:
         state: present
@@ -261,26 +257,26 @@
                       memory: 64M
             secrets:
               alertmanager_config.yml:
-                name:  "{{ docker_swarm_secrets['alertmanager_config.yml'] }}"
+                name: "{{ prometheus_secrets | select('match', 'alertmanager_config\\.yml_v[0-9]+') | list | last }}"
                 external: true
               grafana_security_admin_password:
-                name: "{{ docker_swarm_secrets.grafana_security_admin_password }}"
+                name: "{{ prometheus_secrets | select('match', 'grafana_security_admin_password_v[0-9]+') | list | last }}"
                 external: true
               grafana_smtp_password:
-                name: "{{ docker_swarm_secrets.grafana_smtp_password }}"
+                name: "{{ prometheus_secrets | select('match', 'grafana_smtp_password_v[0-9]+') | list | last }}"
                 external: true
               grafana_smtp_user:
-                name: "{{ docker_swarm_secrets.grafana_smtp_user }}"
+                name: "{{ prometheus_secrets | select('match', 'grafana_smtp_user_v[0-9]+') | list | last }}"
                 external: true
               traefik_dashboard_users:
-                name: "{{ docker_swarm_secrets.traefik_dashboard_users }}"
+                name: "{{ prometheus_secrets | select('match', 'traefik_dashboard_users_v[0-9]+') | list | last }}"
                 external: true
             configs:
               alertrules.yml:
-                name: "{{ lookup('fileglob', 'configs/alertrules.yml_*', wantlist=True) | last | basename }}"
+                name: "{{ lookup('fileglob', 'configs/alertrules.yml_v*', wantlist=True) | last | basename }}"
                 external: true
               prometheus.yml:
-                name: "{{ lookup('fileglob', 'configs/prometheus.yml_*', wantlist=True) | last | basename }}"
+                name: "{{ lookup('fileglob', 'configs/prometheus.yml_v*', wantlist=True) | last | basename }}"
                 external: true
             networks:
               frontend:
