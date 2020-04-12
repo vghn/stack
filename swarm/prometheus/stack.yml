@@ -4,27 +4,19 @@
   become: yes
   vars:
     pip_package: python3-pip
-    pip_install_packages:
-      - name: docker
-        state: latest
-      - name: jsondiff
-        state: latest
-      - name: pyyaml
-        state: latest
-    prometheus_configs: "{{ lookup('fileglob', 'configs/*', wantlist=True) }}"
-    prometheus_secrets: "{{ lookup('hashi_vault', 'secret=vgh/data/stack/prometheus:data') }}"
+    pip_packages: [docker, jsondiff, pyyaml]
+    prometheus_configs: "{{ lookup('fileglob', 'configs/*', wantlist=True) | default({}) }}"
+    prometheus_secrets: "{{ lookup('hashi_vault', 'secret=vgh/data/stack/prometheus:data') | default([]) }}"
   pre_tasks:
     - name: Ensure Pip is installed.
       package:
         name: "{{ pip_package }}"
         state: present
-    - name: Ensure pip_install_packages are installed
+    - name: Ensure Pip packages are installed
       pip:
-        name: "{{ item.name | default(item) }}"
-        version: "{{ item.version | default(omit) }}"
-        state: "{{ item.state | default(omit) }}"
+        name: "{{ pip_packages }}"
+        state: latest
         executable: "{{ 'pip3' if pip_package.startswith('python3') else 'pip' }}"
-      with_items: "{{ pip_install_packages }}"
   tasks:
     - name: Manage configs
       docker_config:
