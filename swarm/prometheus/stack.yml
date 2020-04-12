@@ -25,6 +25,7 @@
         data_is_b64: true
         state: present
       with_items: "{{ prometheus_configs }}"
+      when: prometheus_configs is defined and prometheus_configs
     - name: Manage secrets
       docker_secret:
         name: "{{ item.key }}"
@@ -33,6 +34,7 @@
         state: present
       no_log: true
       with_dict: "{{ prometheus_secrets }}"
+      when: prometheus_secrets is defined and prometheus_secrets
     - name: Deploy stack
       docker_stack:
         state: present
@@ -279,3 +281,5 @@
                 ipam:
                   config:
                     - subnet: 10.2.0.0/24 # Should not conflict with the AWS VPC
+      when: ( prometheus_configs is defined and prometheus_configs ) and
+            ( prometheus_secrets is defined and prometheus_secrets )
