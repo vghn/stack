@@ -41,31 +41,31 @@ scrape_configs:
         labels:
           node: Vault
           group: vgh
-      # - targets:
-      #     - home.ghn.me:9101
-      #   labels:
-      #     node: VDev
-      #     group: vgh.local
-      # - targets:
-      #     - home.ghn.me:9102
-      #   labels:
-      #     node: VDS
-      #     group: vgh.local
-      # - targets:
-      #     - home.ghn.me:9103
-      #   labels:
-      #     node: VBS
-      #     group: vgh.local
-      # - targets:
-      #     - home.ghn.me:9104
-      #   labels:
-      #     node: VPH
-      #     group: vgh.local
-      # - targets:
-      #     - home.ghn.me:9105
-      #   labels:
-      #     node: VMS
-      #     group: vgh.local
+      - targets:
+          - 192.168.1.10:9100
+        labels:
+          node: VDev
+          group: vgh.local
+      - targets:
+          - 192.168.1.11:9100
+        labels:
+          node: VDS
+          group: vgh.local
+      - targets:
+          - 192.168.1.5:9100
+        labels:
+          node: VBS
+          group: vgh.local
+      - targets:
+          - 192.168.1.3:9100
+        labels:
+          node: VPI
+          group: vgh.local
+      - targets:
+          - 192.168.1.9:9100
+        labels:
+          node: VMS
+          group: vgh.local
   - job_name: containers
     static_configs:
       - targets:
