@@ -44,7 +44,7 @@
           - version: '3.8'
             services:
               lb:
-                image: traefik:2
+                image: traefik:2.2
                 hostname: lb-prometheus
                 command:
                   - "--api=true"
