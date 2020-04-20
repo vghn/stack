@@ -37,11 +37,6 @@ scrape_configs:
           node: Prometheus
           group: vgh
       - targets:
-          - vault.ghn.me:9100
-        labels:
-          node: Vault
-          group: vgh
-      - targets:
           - 192.168.1.10:9100
         labels:
           node: VDev
