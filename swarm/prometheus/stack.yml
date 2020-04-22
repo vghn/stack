@@ -49,14 +49,15 @@
                 command:
                   - "--api=true"
                   - "--api.dashboard=true"
-                  - "--entrypoints.web.address=:80"
-                  - "--entrypoints.websecure.address=:443"
+                  - "--entrypoints.http.address=:80"
+                  - "--entrypoints.https.address=:443"
                   - "--providers.docker=true"
                   - "--providers.docker.swarmMode=true"
                   - "--providers.docker.exposedbydefault=false"
                   - "--certificatesresolvers.le.acme.tlschallenge=true"
                   - "--certificatesresolvers.le.acme.email=webmaster@ghn.me"
                   - "--certificatesresolvers.le.acme.storage=/certs/acme.json"
+                  # - --certificatesresolvers.le.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # LetsEncrypt Staging Server - uncomment when testing
                 ports:
                   - '80:80'
                   - '443:443'
@@ -74,11 +75,11 @@
                   labels:
                     - "traefik.enable=true"
                     # Global Redirect to HTTPS
-                    - "traefik.http.routers.https-redirect.entrypoints=web"
-                    - "traefik.http.routers.https-redirect.rule=HostRegexp(`{any:.*}`)"
-                    - "traefik.http.routers.https-redirect.middlewares=https-redirect"
-                    - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-                    - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+                    - "traefik.http.routers.http-catchall.entrypoints=http"
+                    - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+                    - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+                    - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+                    - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
                     # The router rule defined for Traefik must match the path prefixes /api and /dashboard. We recommend to use a "Host Based rule" as Host(`traefik.domain.com`) to match everything on the host domain, or to make sure that the defined rule captures both prefixes
                     # https://docs.traefik.io/operations/dashboard/#dashboard-router-rule
                     - "traefik.http.routers.api.rule=Host(`traefik.prometheus.ghn.me`)"
@@ -140,7 +141,7 @@
                     - "traefik.enable=true"
                     # Routers
                     - "traefik.http.routers.grafana.rule=Host(`prometheus.ghn.me`)"
-                    - "traefik.http.routers.grafana.entrypoints=websecure"
+                    - "traefik.http.routers.grafana.entrypoints=https"
                     - "traefik.http.routers.grafana.tls.certresolver=le"
                     - "traefik.http.routers.grafana.tls=true"
                     # Services
