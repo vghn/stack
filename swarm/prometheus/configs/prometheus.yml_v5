@@ -36,31 +36,6 @@ scrape_configs:
         labels:
           node: Prometheus
           group: vgh
-      - targets:
-          - 192.168.1.10:9100
-        labels:
-          node: VDev
-          group: vgh.local
-      - targets:
-          - 192.168.1.11:9100
-        labels:
-          node: VDS
-          group: vgh.local
-      - targets:
-          - 192.168.1.5:9100
-        labels:
-          node: VBS
-          group: vgh.local
-      - targets:
-          - 192.168.1.3:9100
-        labels:
-          node: VPI
-          group: vgh.local
-      - targets:
-          - 192.168.1.4:9100
-        labels:
-          node: VDK
-          group: vgh.local
   - job_name: containers
     static_configs:
       - targets:
