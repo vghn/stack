@@ -104,7 +104,7 @@
                       cpus: '0.10'
                       memory: 128M
               grafana:
-                image: grafana/grafana:6.7.2
+                image: grafana/grafana:6.7.3
                 hostname: grafana-prometheus
                 environment:
                   GF_SERVER_ROOT_URL: https://prometheus.ghn.me
@@ -162,7 +162,7 @@
                     - "traefik.http.middlewares.security.headers.contentSecurityPolicy=default-src https: blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' 'unsafe-eval'"
                     - "traefik.http.middlewares.security.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
               prometheus:
-                image: prom/prometheus:v2.17.1
+                image: prom/prometheus:v2.17.2
                 hostname: prometheus-prometheus
                 configs:
                   - source: alertrules.yml

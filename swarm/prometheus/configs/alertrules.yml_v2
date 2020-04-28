@@ -34,7 +34,7 @@ groups:
       severity: Warning
     annotations:
       description: "Node {{ $labels.node}} has less than 1GB of free disk space. Free disk space at {{ humanize $value }} GB. Instance: {{ $labels.instance }}; job: {{ $labels.job }}."
-      summary: "LOW DISK SPACE WARING: {{ $labels.instance }}"
+      summary: "LOW DISK SPACE WARNING: {{ $labels.instance }}"
   - alert: node_low_disk_space
     expr: 100 * min(node_filesystem_avail_bytes / node_filesystem_size_bytes{mountpoint=~"/etc/hostname|^/mnt.*|^/data.*"})
       BY (device, fstype, host, instance, job) < 10
@@ -43,7 +43,7 @@ groups:
       severity: Warning
     annotations:
       description: "Warning: node {{ $labels.node }} has less than 10% of free disk space on device {{ $labels.device }} with mount point {{ $labels.mountpoint }}. Available disk space at {{ humanize $value }}%. Instance: {{ $labels.instance }}; job: {{ $labels.job }}."
-      summary: "LOW DISK SPACE WARING: {{ $labels.instance }}"
+      summary: "LOW DISK SPACE WARNING: {{ $labels.instance }}"
 
 # CONTAINERS ###################################################################
 - name: vgh-containers
