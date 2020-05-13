@@ -1,6 +1,6 @@
 # VGH Stack
 
-  [![Build Status](https://travis-ci.com/vghn/stack.svg?branch=master)](https://travis-ci.com/vghn/stack)
+![Build Status](https://github.com/vghn/stack/workflows/CI/badge.svg)
 
 ## Overview
 
