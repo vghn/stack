@@ -104,7 +104,7 @@
                       cpus: '0.10'
                       memory: 128M
               grafana:
-                image: grafana/grafana:7.0.3
+                image: grafana/grafana:7.1.0
                 hostname: grafana-prometheus
                 environment:
                   GF_SERVER_ROOT_URL: https://prometheus.ghn.me
@@ -246,7 +246,7 @@
                     - "traefik.http.routers.alerts.middlewares=auth"
                     - "traefik.http.middlewares.auth.basicauth.usersfile=/run/secrets/traefik_dashboard_users"
               cadvisor:
-                image: gcr.io/google-containers/cadvisor:v0.35.0
+                image: gcr.io/google-containers/cadvisor:v0.36.0
                 hostname: cadvisor-prometheus
                 volumes:
                   - /:/rootfs:ro

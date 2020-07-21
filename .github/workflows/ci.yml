@@ -10,7 +10,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     env:
-      VAULT_VERSION: '1.4.2'
+      VAULT_VERSION: '1.5.0'
       VAULT_ADDR: 'https://vault.ghn.me:8200'
     steps:
     - uses: actions/checkout@v2
